@@ -9,7 +9,7 @@
             <!--<BarListItem class="item-service" :info="serviceInfo"></BarListItem>-->
         </div>
         <div v-show='userInfo.phone' class="exitLogin" @click.stop="exitLogin">退出登录</div>
-        <van-swipe class="banner" :autoplay="3000" indicator-color="white">
+        <van-swipe class="banner" :autoplay="3000" indicator-color="white"  v-if="bannerList.length>0">
             <van-swipe-item v-for="banner in bannerList" :key="banner.id">
                 <div class="img-banner" :style="{backgroundImage:'url('+Common.getImgUrl(banner.icon)+')'}"></div>
             </van-swipe-item>

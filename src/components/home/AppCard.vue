@@ -1,5 +1,5 @@
 <template>
-        <router-link tag='div' :class="{'app-card':true,'wrap':index>2}" :to="{name: 'goodsDetail', params: {mid:info.mid,saleid:info.saleid,proid: info.proid }}">
+        <router-link tag='div' :class="{'app-card':true,'wrap':index>2,'marginRight':index%3 != 2}" :to="{name: 'goodsDetail', params: {mid:info.mid,saleid:info.saleid,proid: info.proid }}">
             <img class="logo" :src="Common.getImgUrl(info.icon)" alt="">
             <div class="name">{{name}}</div>
             <div class="pay">{{info.remark}}</div>
@@ -57,5 +57,8 @@
     }
     .wrap{
         margin-top: 0.1rem;
+    }
+    .marginRight{
+        margin-right: 0.1rem;
     }
 </style>
