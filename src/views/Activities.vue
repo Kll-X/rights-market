@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="activities">
         <div class="activities-top">
             <span class="page-title">活动</span>
         </div>
@@ -36,6 +36,9 @@
 </script>
 
 <style scoped>
+    .activities{
+        padding-bottom: 1.39rem;
+    }
     .activities-top{
         display: flex;
         margin-top: .34rem;

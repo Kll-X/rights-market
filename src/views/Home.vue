@@ -42,7 +42,7 @@
             <div class="zone" v-if="zone == 'special'" v-show="specialApps.length">
                 <guide-headline :info="guide3"></guide-headline>
                 <div class="special-list">
-                    <special-card v-for="(item,l) in specialApps" :key="l" :info="item"></special-card>
+                    <special-card v-for="(item,l) in specialApps" :key="l" :info="item" :index="l"></special-card>
                 </div>
             
             </div>
@@ -289,7 +289,7 @@
         }
         .new-list,.hot-list,.special-list{
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             flex-wrap: wrap
         }
