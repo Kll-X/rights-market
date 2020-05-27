@@ -27,7 +27,7 @@
                 "userInfo"
             ]),
             list(){
-                let tips = this.userInfo.hasNewGift?'已领取':'开通立享';
+                let tips = this.userInfo.vipLevel?this.userInfo.hasNewGift?'已领取':'立即领取':'开通立享';
                 return this.userInfo.vipLevel?[
                     {
                         icon: require('@imgs/mine/icon_gift_vip.png'),

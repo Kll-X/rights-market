@@ -142,7 +142,7 @@
                     dealType: 0,
                     isPay: 1,
                     payType: 10,
-                    amount: 500,
+                    amount: process.env.VUE_APP_BUILD === 'production' ? 500 : 1,
                     orderWay: 1,
                     renewId:'1',
                     smsCode: '',
