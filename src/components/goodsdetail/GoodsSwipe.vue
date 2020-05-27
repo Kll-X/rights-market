@@ -2,14 +2,32 @@
     <!-- 蒙版 -->
     <div id="goods-swipe">
         <van-swipe :loop="false" @change="changeSwipe" ref="swipe">
-            <van-swipe-item
-                v-for="item in swipeList" :key="item.index">
+            <van-swipe-item :class="{'van-swipe-five': (itemDetail.fivego == 1 && swipeIndex == index)}"
+                v-for="(item, index) in swipeList" :key="index">
                 <div class="swipe-item">
                     <img class="swipe-item-icon" :src=" Common.getImgUrl(item.icon)" alt="">
                     <div class="swipe-item-font-wrap">
                         <div class="swipe-item-font-con">
-                            <span class="swipe-item-font-name">{{item.name}}</span>
-                            <span class="swipe-item-font-fee">资费：{{((price)/100).toFixed(2)}}元</span>
+                            <span class="swipe-item-font-name">
+                                {{item.name}}
+                                <img v-show="itemDetail.fivego == 1" class="swipe-item-vip-icon" src="@imgs/goodsdetail/vip.png" alt="">
+                            </span>
+                            <!-- 非会员或未登录的样式 -->
+                            <span v-show="!isVip && itemDetail.fivego != 1" class="swipe-item-font-fee">
+                                资费：{{((itemDetail.price)/100).toFixed(2)}}元
+                                <span v-show="itemDetail.price2" class="swipe-item-font-postposition">
+                                    会员：{{((itemDetail.price2)/100).toFixed(2)}}元
+                                </span>
+                            </span>
+                            <!-- 登录是会员或者五折产品的样式 -->
+                            <span v-show="isVip || itemDetail.fivego == 1" class="swipe-item-font-fee swipe-item-font-vip">
+                                <i v-show="itemDetail.fivego != 1">会员价：</i>
+                                <i v-show="itemDetail.fivego == 1">5折：</i>
+                                {{((itemDetail.price)/100).toFixed(2)}}元
+                                <span v-show="itemDetail.price2" class="swipe-item-font-postposition swipe-item-font-postposition-delete">
+                                    {{((itemDetail.price2)/100).toFixed(2)}}元
+                                </span>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -22,11 +40,13 @@
     export default {
         props: {
             swipeList: Array,
-            price: String,
+            isVip: Number,
+            itemDetail: Object,
         },
         data() {
             return {
-                list: this.swipeList
+                list: this.swipeList,
+                swipeIndex: 0,
             };
         },
         mounted() {
@@ -34,6 +54,7 @@
         },
         methods: {
             changeSwipe(index) {
+                this.swipeIndex = index;
                 this.$emit('change', index);
             }
         },
@@ -76,6 +97,9 @@
                                 align-items: center;
                                 text-align: left;
                                 color: #0F0B1A;
+                                i{
+                                    font-style: normal;
+                                }
                                 span{
                                     flex: 1;
                                     width: 100%;
@@ -86,15 +110,39 @@
                                     opacity: .8;
                                     align-items: flex-end;
                                 }
+                                .swipe-item-vip-icon{
+                                    width: 1rem;
+                                    height: .26rem;
+                                    margin-left: .16rem;
+                                    margin-bottom: .08rem;
+                                }
                                 .swipe-item-font-fee{
                                     font-size: .3rem;
                                     color: #6696FF;
                                     opacity: .8;
                                     align-items: flex-start;
+                                    .swipe-item-font-postposition{
+                                        font-size: .22rem;
+                                        color: #EDAE63;
+                                        opacity: .8;
+                                        margin-left: .15rem;
+                                        margin-top: .05rem;
+                                        align-items: flex-start;
+                                    }
+                                }
+                                .swipe-item-font-vip{
+                                    color: #EDAE63;
+                                    .swipe-item-font-postposition-delete{
+                                        color: #BDBFC2;
+                                        text-decoration: line-through;
+                                    }
                                 }
                             }
                         }
                     }
+                }
+                .van-swipe-five{
+                    background-image: url('../../assets/imgs/goodsdetail/swipeFive.png');
                 }
             }
             .van-swipe__indicators{

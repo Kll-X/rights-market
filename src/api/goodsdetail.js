@@ -56,3 +56,12 @@ export function findMemberTc(data) { // 第三方支付接口
         data: data,
     })
 }
+
+export function queryAcceptFivego(data, headers) { // 查找fivego是否可用接口
+    return request({
+        url: '/api/order/queryAcceptFivego.do',
+        method: 'post',
+        data: data,
+        headers: headers,
+    })
+}

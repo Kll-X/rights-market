@@ -80,7 +80,53 @@ export default new Router({
             meta: {
                 title: '中国移动权益超市'
             }
-        }, {
+        },
+        {
+            path: '/vipBenefit',
+            name: 'vipBenefit',
+            component: () =>
+                import ( /* webpackChunkName: "vipBenefit" */ './views/VipBenefit.vue'),
+            meta: {
+                title: '中国移动权益超市'
+            }
+        },
+        {
+            path: '/vipPreferential',
+            name: 'vipPreferential',
+            component: () =>
+                import( /* webpackChunkName: "vipPreferential" */ './views/VipPreferential.vue'),
+            meta: {
+                title: '中国移动权益超市'
+            }
+        },
+        {
+            path: '/halfPrice',
+            name: 'halfPrice',
+            component: () =>
+                import( /* webpackChunkName: "halfPrice" */ './views/HalfPrice.vue'),
+            meta: {
+                title: '中国移动权益超市'
+            }
+        },
+        {
+            path: '/newGuest',
+            name: 'newGuest',
+            component: () =>
+                import( /* webpackChunkName: "newGuest" */ './views/NewGuest.vue'),
+            meta: {
+                title: '中国移动权益超市'
+            }
+        },
+        {
+            path: '/customerService',
+            name: 'customerService',
+            component: () =>
+                import( /* webpackChunkName: "customerService" */ './views/CustomerService.vue'),
+            meta: {
+                title: '中国移动权益超市'
+            }
+        },
+        {
             path: '/networkError',
             component: require('./views/NetworkError.vue').default,
             name: 'networkError',

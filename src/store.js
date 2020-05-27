@@ -16,7 +16,19 @@ export default new Vuex.Store({
             phoneMaskShow: '',
             timestamp: '',
             provinceCode: null,
-            iswhite:0
+            iswhite:0,
+            isVip:'',
+            expireTime:'',
+            cancelFlag:'',
+            hasNewGift:'',
+            vipTypeTag:['全网会员','5G高级会员'],
+            vipLevelTag:['普通','黄金','铂金'],
+            vipType:'',
+            vipLevel:'',
+            effectTime:'',
+            returnOrderId:'',
+            effect:'',
+            effectDaysBefore:''
         },
         showQuickLogin: false,
         sysInfo: {

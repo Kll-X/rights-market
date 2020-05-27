@@ -15,6 +15,8 @@
     import {getWxconfig} from '@/api/common';
     import {is_weixin,getQuery} from '@/utils/func'
     import {signLogin} from '@/api/login'
+    import {myVip} from '@/api/vipbenefit';
+
 
     export default {
         data(){
@@ -41,7 +43,10 @@
             });
             messageBus.$on('msg_countDown',(time)=>{
                 this.countDown(time)
-            })
+            });
+            messageBus.$on('msg_getVipInfo',()=>{
+                this.getVipInfo()
+            });
             // 判断路由当前是首页则调起检测-弹窗登录
             if(this.$route.name == 'home'){
                 messageBus.$emit('msg_checkLogin','quick')
@@ -96,8 +101,19 @@
         computed:{
             ...mapState([
                 'showQuickLogin',
-                "userInfo"
-            ])
+                "userInfo",
+                "sysInfo"
+            ]),
+        },
+        watch:{
+            '$store.state.userInfo.phone'(n){
+                n && n!='null' &&  this.getVipInfo()
+            },
+            '$route'(){
+                setTimeout(() => { //用setTimeout才有效
+                    document.documentElement.scrollTop = 0;
+                }, 0);
+            }
         },
         methods:{
             ...mapMutations([
@@ -106,6 +122,22 @@
                 'SET_CHANNEL',
                 'SET_SYSINFO'
             ]),
+            getVipInfo(){
+                let that = this;
+                myVip({
+                    proId:'6000692',
+                    salesId:'102125',
+                    channelCode:that.sysInfo.channelCode,
+                    phone:that.userInfo.phone,
+                }).then((res)=>{
+                    if(res.data.resultCode == 0){ //获得vip信息
+                        res.data.data.isVip = 1;
+                        that.SET_USERINFO(res.data.data);
+                    }else{
+                        that.SET_USERINFO({isVip:0});
+                    }
+                })
+            },
             countDown(time){
                 let that = this;
                 let t = getCookie('t');
@@ -135,7 +167,19 @@
                                 phoneMaskShow: '',
                                 timestamp: '',
                                 provinceCode: null,
-                                iswhite:0
+                                iswhite:0,
+                                isVip:'',
+                                expireTime:'',
+                                cancelFlag:'',
+                                hasNewGift:'',
+                                vipTypeTag:['全网会员','5G高级会员'],
+                                vipLevelTag:['普通','黄金','铂金'],
+                                vipType:'',
+                                vipLevel:'',
+                                effectTime:'',
+                                returnOrderId:'',
+                                effect:'',
+                                effectDaysBefore:''
                             }
                         );
                         console.log('转为未登录')
@@ -173,7 +217,6 @@
                     let t = getCookie('t');
                     let pc = getCookie('pc');
                     let pnsign = getCookie('pnsign');
-
                     if (p && pm && t && pc) {//已登录状态
                         // 读取缓存，更新用户信息
                         that.SET_USERINFO({
@@ -195,7 +238,7 @@
                             if(type == 'quick'){
                                 console.log('唤起检测-自动取号-弹窗登录');
                                 // 先判断是否30分钟内曾弹出过登录窗，若是，则不弹出
-                                if(!getCookie('ql') && that.$route.name == 'home'){
+                                if(!getCookie('ql') && (that.$route.name == 'home' || that.$route.name == 'vipBenefit')){
                                     setCookie('ql','true',30);
                                     messageBus.$emit('msg_updatePlan');
                                     that.SET_SHOWQUICKLOGIN(true);
@@ -255,7 +298,7 @@
             });
         },
         beforeDestroy: function () {
-            messageBus.$off(['msg_checkLogin', 'msg_showPopup','msg_countDown']);
+            messageBus.$off(['msg_checkLogin', 'msg_showPopup','msg_countDown','msg_getVipInfo']);
         }
     }
 </script>

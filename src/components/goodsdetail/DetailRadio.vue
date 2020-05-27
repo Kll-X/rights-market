@@ -7,6 +7,7 @@
                 v-for="item in radioObj.list" :key="item.index"
                 :name="item.value">
                 <div class="radio-font" v-for="label in item.label" :key="label.index">{{label}}</div>
+                <span v-show="item.vip" class="radio-vip"></span>
             </van-radio>
         </van-radio-group>
     </div>
@@ -57,6 +58,15 @@
                 position: relative;
                 margin-right: .16rem;
                 margin-bottom: .26rem;
+                .radio-vip{
+                    position: absolute;
+                    width: .56rem;
+                    height: .3rem;
+                    bottom: 0;
+                    right: 0;
+                    background-image: url('../../assets/imgs/goodsdetail/vipIcon.png');
+                    background-size: .56rem .3rem;
+                }
             }
             // .van-radio:nth-child(3n){
             //     margin-right: 0;

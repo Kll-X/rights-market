@@ -3,8 +3,8 @@
         <div class="content">
             <div class="title" :style="{fontSize: content?'.36rem':'.32rem'}">{{title}}</div>
             <div class="txt" v-if="content">{{content}}</div>
-            <div class="btns">
-                <div class="btn" v-for="btn in btns" @click="btn.handler" :key="btn.title">{{btn.txt}}</div>
+            <div :class="{'btns':true,'unique':btns.length == 1}">
+                <div class="btn" :style="btn.style?btn.style:''" v-for="btn in btns" @click="btn.handler" :key="btn.title">{{btn.txt}}</div>
             </div>
         </div>
     </div>
@@ -103,6 +103,13 @@
                 border: 2px solid #6696FF;
             }
             .btn:nth-child(2){
+                background-color: #6696FF;
+                color: white;
+            }
+        }
+        .btns.unique{
+            justify-content: center;
+            .btn{
                 background-color: #6696FF;
                 color: white;
             }

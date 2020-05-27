@@ -6,7 +6,7 @@
                     <OrderItem style="margin-bottom: .24rem;" v-for="item in showList['all']" :info.sync="item" :key="item.orderId" @orderChange="orderChange"></OrderItem>
                     <van-loading v-show="loadingFlag" />
                     <div class="tips-noorder" v-if="showList['all'].length <= 0" >
-                        <img class="img-tips-noorder" src="@imgs/tips_noorder.png" alt="">
+                        <img class="img-tips-noorder" src="@imgs/mine/tips_noorder.png" alt="">
                         <div class="txt-tips-noorder">暂无相关订单</div>
                     </div>
                 </div>
@@ -16,7 +16,7 @@
                     <OrderItem style="margin-bottom: .24rem;" v-for="item in showList['trading']" :info.sync="item" :key="item.orderId" @orderChange="orderChange"></OrderItem>
                     <van-loading v-show="loadingFlag" />
                     <div class="tips-noorder" v-if="showList['trading'].length <= 0" >
-                        <img class="img-tips-noorder" src="@imgs/tips_noorder.png" alt="">
+                        <img class="img-tips-noorder" src="@imgs/mine/tips_noorder.png" alt="">
                         <div class="txt-tips-noorder">暂无相关订单</div>
                     </div>
                 </div>
@@ -26,7 +26,7 @@
                     <OrderItem style="margin-bottom: .24rem;" v-for="item in showList['success']" :info.sync="item" :key="item.orderId" @orderChange="orderChange"></OrderItem>
                     <van-loading v-show="loadingFlag" />
                     <div class="tips-noorder" v-if="showList['success'].length <= 0" >
-                        <img class="img-tips-noorder" src="@imgs/tips_noorder.png" alt="">
+                        <img class="img-tips-noorder" src="@imgs/mine/tips_noorder.png" alt="">
                         <div class="txt-tips-noorder">暂无相关订单</div>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                     <OrderItem style="margin-bottom: .24rem;" v-for="item in showList['close']" :info.sync="item" :key="item.orderId" @orderChange="orderChange"></OrderItem>
                     <van-loading v-show="loadingFlag" />
                     <div class="tips-noorder" v-if="showList['close'].length <= 0" >
-                        <img class="img-tips-noorder" src="@imgs/tips_noorder.png" alt="">
+                        <img class="img-tips-noorder" src="@imgs/mine/tips_noorder.png" alt="">
                         <div class="txt-tips-noorder">暂无相关订单</div>
                     </div>
                 </div>

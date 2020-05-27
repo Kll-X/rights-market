@@ -1,9 +1,9 @@
 <template>
     <div class="home">
         <!-- 顶部背景 -->
-        <img class="top-bg" :src="require('@imgs/home/topBg.png')" />
+        <img class="top-bg" src="@imgs/home/topBg.png" />
         <div v-for="(zone,i) in zonesOrder" :key="i">
-            <div class="zone" v-if="zone == 'basic'">
+            <div class="zone basic" v-if="zone == 'basic'">
                 <!-- 登录状态栏 -->
                 <div class="login-bar">
                     <div class="check-login" @click.stop="checkLogin">
@@ -12,8 +12,14 @@
                     </div>
                     <router-link tag='img' class="search" alt="" :src="search" :to="'search'"></router-link>
                 </div>
+
+
+
                 <!-- 轮播图 -->
                 <banner :bannerData="bannerData1"></banner>
+
+
+                
                 <!-- 分类区 -->
                 <div class="classification">
                     <classification-item v-for="(item,i) in classification" :key="i" :item="item"></classification-item>
@@ -22,24 +28,38 @@
                 <guide-headline v-show="activeRegionFlag" :info="guide0"></guide-headline>
                 <active-region v-show="activeRegionFlag"></active-region>
             </div>
+            <!-- 精选5折购 -->
+            <div class="zone half" v-if="zone == 'half'" v-show="halfApps.length">
+                <!-- <guide-headline :info="guide6" :half="true"></guide-headline>
+                <div class="half-list">
+                    <app-card2 v-for="(item,j) in halfApps" :key="j" :info="item" :index="j"></app-card2>
+                </div> -->
+                <half-price :guide="guide6" :halfApps="halfApps"></half-price>
+            </div>
+            <!-- 会员优惠购 -->
+            <div class="zone vip" v-if="zone == 'vip'" v-show="vipApps.length">
+                <!-- <guide-headline :info="guide5" :vip="true"></guide-headline>
+                <div class="vip-list">
+                    <app-card1 v-for="(item,j) in vipApps" :key="j" :info="item" :index="j" :vip="true"></app-card1>
+                </div> -->
+                <vip-buy :guide="guide5" :vipApps="vipApps"></vip-buy>
+            </div>
             <!-- 商品上新 -->
-            <div class="zone" v-if="zone == 'new'" v-show="newApps.length">
+            <div class="zone new" v-if="zone == 'new'" v-show="newApps.length">
                 <guide-headline :info="guide1"></guide-headline>
                 <div class="new-list">
-                    <app-card v-for="(item,j) in newApps" :key="j" :info="item" :index="j"></app-card>
+                    <app-card1 v-for="(item,j) in newApps" :key="j" :info="item" :index="j"></app-card1>
                 </div>
-                
-            
             </div>
             <!-- 热门推荐 -->
-            <div class="zone" v-if="zone == 'hot'" v-show="hotApps.length">
+            <div class="zone hot" v-if="zone == 'hot'" v-show="hotApps.length">
                 <guide-headline :info="guide2"></guide-headline>
                 <div class="hot-list">
-                    <app-card v-for="(item,k) in hotApps" :key="k" :info="item" :index="k"></app-card>
+                    <app-card1 v-for="(item,k) in hotApps" :key="k" :info="item" :index="k"></app-card1>
                 </div>
             </div>
             <!-- 特色权益 -->
-            <div class="zone" v-if="zone == 'special'" v-show="specialApps.length">
+            <div class="zone special" v-if="zone == 'special'" v-show="specialApps.length">
                 <guide-headline :info="guide3"></guide-headline>
                 <div class="special-list">
                     <special-card v-for="(item,l) in specialApps" :key="l" :info="item" :index="l"></special-card>
@@ -47,7 +67,7 @@
             
             </div>
             <!-- 本地专享 -->
-            <div class="zone" v-if="zone == 'local' && userInfo.phone && localFlag">
+            <div class="zone local" v-if="zone == 'local' && userInfo.phone && localFlag">
                 <guide-headline :info="guide4"></guide-headline>            
                 <banner :bannerData="bannerData2"></banner>
             </div>
@@ -64,7 +84,10 @@
     import ClassificationItem from '@/components/home/ClassificationItem.vue';
     import GuideHeadline from '@/components/home/GuideHeadline.vue';
     import ActiveRegion from '@/components/home/ActiveRegion.vue';
-    import AppCard from '@/components/home/AppCard.vue';
+    import AppCard1 from '@/components/home/AppCard1.vue';
+    // import AppCard2 from '@/components/home/AppCard2.vue';
+    import HalfPrice from '@/components/common/HalfPrice.vue';
+    import VipBuy from '@/components/common/VipBuy.vue';
     import SpecialCard from '@/components/home/SpecialCard.vue';
     import Menu from '@/components/common/Menu.vue';
     import messageBus from "@/utils/messageBus";
@@ -79,10 +102,14 @@
         name: 'home',
         created(){
             getData().then((res)=>{
-                this.newApps = res.data.data['100'];
-                this.hotApps = res.data.data['101'];
-                this.specialApps = res.data.data['102'];
-                this.bannerData1.arr = res.data.data['105'];
+                this.halfApps = res.data.data['108']?res.data.data['108']:[];
+                this.vipApps = res.data.data['109']?res.data.data['109']:[];
+                this.newApps = res.data.data['100']?res.data.data['100']:[];
+                this.hotApps = res.data.data['101']?res.data.data['101']:[];
+                this.specialApps = res.data.data['102']?res.data.data['102']:[];
+                this.bannerData1.arr = res.data.data['105']?res.data.data['105']:[];
+                this.bannerData1.arr[0] && (this.bannerData1.arr[0].needPnsign = true);
+                this.bannerData1.arr[1] && (this.bannerData1.arr[1].needPnsign = true);
                 // if (process.env.NODE_ENV === 'production') {
                 //     this.bannerData1.arr.unshift({
                 //         id: 3,icon:require('@imgs/home/banner1_4.png'),linkurl:'https://rwk.cmicrwx.cn/rwx/rwkvue/RightMarket/',needPnsign:true
@@ -98,7 +125,8 @@
                 //         id: 4,icon:require('@imgs/home/banner1_5.png'),linkurl:'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',needPnsign:true
                 //     })
                 // }
-            }).catch(()=>{
+            }).catch((e)=>{
+                console.log(e)
                 this.$toast.fail('加载失败了，刷新重试哦！');
             });
 
@@ -119,7 +147,7 @@
         },
         data(){
             return{
-                zonesOrder:['basic','new','hot','special','local'],
+                zonesOrder:['basic','half','vip','new','hot','special','local'],
                 search:require('@imgs/search@2x.png'),
                 bannerData1:{
                     height:'2.4rem',
@@ -164,12 +192,21 @@
                 },
                 guide3:{
                     name:'特色权益'
-                    // id:'1',
                 },
                 guide4:{
                     name:'本地专享'
-//                    id:'1'
                 },
+                guide5:{
+                    name:'会员优惠购',
+                    id:'1',
+                    moreDesc:'更多优惠',
+                    path:{name: 'vipPreferential'},
+                },
+                guide6:{
+                    name:'精选5折购'
+                },
+                halfApps:[],
+                vipApps:[],
                 newApps:[],
                 hotApps:[],
                 specialApps:[],
@@ -193,7 +230,10 @@
             ClassificationItem,
             ActiveRegion,
             GuideHeadline,
-            AppCard,
+            AppCard1,
+            // AppCard2,
+            HalfPrice,
+            VipBuy,
             SpecialCard
         },
         computed:{
@@ -287,12 +327,25 @@
             justify-content: space-around;
             align-items: flex-start
         }
-        .new-list,.hot-list,.special-list{
+        .half-list{
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        .vip-list,.new-list,.hot-list,.special-list{
             display: flex;
             justify-content: flex-start;
             align-items: center;
             flex-wrap: wrap
         }
+    }
+    .basic.zone{
+        border-bottom:0;
+        padding-bottom: 0;
+    }
+    .half.zone{
+        padding-bottom: 0.18rem;
     }
 }
     

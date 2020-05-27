@@ -1,6 +1,6 @@
 <template>
     <div class="login">
-        <img class="logo" v-show="plan == 1 || plan == 2" :src="require('@imgs/loginLogo.png')" />
+        <img class="logo" v-show="plan == 1 || plan == 2" src="@imgs/loginLogo.png" />
         <div class="center automatic-tel" v-show="plan == 1" @click.stop="automaticLogin">
             使用手机号码{{userInfo.phoneMaskShow}}登录
         </div>

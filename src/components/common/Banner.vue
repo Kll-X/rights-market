@@ -1,9 +1,4 @@
 <template>
-    <!--<el-carousel :class="['banner',bannerData.colorPlan,bannerData.indicatorSite]" arrow="never" :height="bannerData.height" :indicator-position="bannerData.indicatorPosition">-->
-        <!--<el-carousel-item v-for="(item,i) in bannerData.arr" :key="i">-->
-            <!--<router-link tag='img' class="banner-img" alt="" :src="item.img" :to="'sort?id='+item.id"></router-link>-->
-        <!--</el-carousel-item>-->
-    <!--</el-carousel>-->
     <van-swipe class="banner" ref="banner" :autoplay="3000" @change="onChange" :class="[bannerData.colorPlan]">
         <van-swipe-item v-for="(item, index) in bannerData.arr" :key="index">
             <div class="wrapper">
@@ -42,10 +37,12 @@
                 this.$refs.banner.swipeTo(i);
             },
             jump(link, needPnsign){
-                if (needPnsign) {
-                    location.href = link + '?pnsign=' + this.userInfo.pnsign
-                } else {
-                    location.href = link
+                if (link){
+                    if (needPnsign) {
+                        location.href = link + '?pnsign=' + this.userInfo.pnsign
+                    } else {
+                        location.href = link
+                    }
                 }
             }
         }

@@ -35,6 +35,13 @@ module.exports = {
                     "^/swaggerApi" : "",
                     changeOrigin:true
                 }
+            },
+            '/devApi': {
+                target: 'http://devqymk.cmicrwx.cn',
+                pathRewrite: {
+                    "^/devApi" : "",
+                    changeOrigin:true
+                }
             }
         }
     }

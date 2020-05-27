@@ -1,7 +1,7 @@
 <template>
     <div class="quick-login" @touchmove="maskTouchmove">
         <div class="inner">
-            <img class="logo" v-show="plan == 1 || plan == 2" :src="require('@imgs/loginLogo.png')" />
+            <img class="logo" v-show="plan == 1 || plan == 2" src="@imgs/loginLogo.png" />
         <div class="center automatic-tel" v-show="plan == 1" @click.stop="automaticLogin">
             使用手机号码{{userInfo.phoneMaskShow}}登录
         </div>
@@ -16,10 +16,10 @@
 
 
         <div class="manual-tel" v-show="plan == 2">
-            <input class="center tel-num" type="tel" maxlength="11" placeholder="请输入您的移动号码" ref="telNum" @change="checkTel">
+            <input class="center tel-num" type="tel" maxlength="11" placeholder="请输入您的移动号码" ref="telNum" v-model="telNum"  @change="checkTel">
         </div>
         <div class="center manual-sms" v-show="plan == 2">
-            <input class="sms-code" type="tel" maxlength="6" placeholder="请输入验证码" ref="smsCode" @change="checkSms">
+            <input class="sms-code" type="tel" maxlength="6" placeholder="请输入验证码" ref="smsCode" v-model="smsCode" @change="checkSms">
             <input @click.stop="sendSms" :class="['send',seconds == '获取验证码'?'':'forbidClick']" v-model="seconds" readonly="readonly"/>
         </div>
         <div class="center manual-allow" v-show="plan == 2">
@@ -30,7 +30,7 @@
             登录
         </div>
 
-        <img class="close" :src="require('@imgs/login/close.png')" @click.stop="closeSelf" />
+        <img class="close" src="@imgs/login/close.png" @click.stop="closeSelf" />
         </div>
     </div>
 </template>
@@ -49,6 +49,8 @@
         name: "login",
         data(){
             return{
+                telNum:'',
+                smsCode:'',
                 seconds:'获取验证码',
                 secondsBackup:60,
                 timer:null,
@@ -65,6 +67,7 @@
         created(){
             this.updatePlan();
             messageBus.$on('msg_updatePlan',this.updatePlan);
+
         },
         methods:{
             updatePlan(){
@@ -147,8 +150,8 @@
                 return this.trim(str) !== '' && /^((134)|(135)|(136)|(137)|(138)|(139)|(147)|(150)|(151)|(152)|(157)|(158)|(159)|(172)|(178)|(182)|(183)|(184)|(187)|(188)|(195)|(198))\d{8}$/.test(this.trim(str));
             },
             checkTel(){
-                if(this.isMobile(this.$refs.telNum.value)){
-                    // if(this.isCNMobile(this.$refs.telNum.value)){
+                if(this.isMobile(this.telNum)){
+                    // if(this.isCNMobile(this.telNum)){
                     //     console.log("号码符合规范");
                     //     return true
                     // }else{
@@ -163,7 +166,7 @@
             },
             checkSmsCode(){
                 let that = this;
-                let str = that.$refs.smsCode.value;
+                let str = that.smsCode;
                 return this.trim(str) !== '' && /^\d{6}$/.test(this.trim(str));
             },
             checkSms(){
@@ -186,7 +189,7 @@
                 }
                 // 请求发送验证码
                 sendSmsCode({
-                    phone:Encrypt(that.$refs.telNum.value)  //aes加密
+                    phone:Encrypt(that.telNum)  //aes加密
                 }).then((res)=>{
                     if(res.data.resultCode == 0){
                         this.$toast.success('验证码下发成功');
@@ -239,8 +242,8 @@
                 });
                 // 短信验证码校验
                 checkSmsCode({
-                    phone:Encrypt(that.$refs.telNum.value),  //aes加密
-                    smscode:that.$refs.smsCode.value
+                    phone:Encrypt(that.telNum),  //aes加密
+                    smscode:that.smsCode
                 }).then((res)=>{
                     that.$toast.clear();
                     if(res.data.resultCode == 0){
@@ -267,6 +270,14 @@
                     this.$toast.fail('异常了，请稍后再试哦！');
                 })
             },
+        },
+        watch:{
+            '$store.state.showQuickLogin'(n){
+                if(!n){
+                    this.telNum = ''
+                    this.smsCode = ''
+                }
+            }
         },
         beforeDestroy: function () {
             messageBus.$off(['msg_updatePlan']);

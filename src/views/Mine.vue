@@ -1,52 +1,84 @@
 <template>
     <div class="mine">
-        <div class="avatar" @click="gotoLogin">
+        <div class="avatar" :class="userInfo.vipLevel?'vip':''">
             <img class="img-avatar" :src="userInfo.avatar" alt="">
-            <span class="phone">{{userInfo.phoneMask?userInfo.phoneMask:'请点击登录'}}</span>
+            <div class="phone-area">
+                <div class="phone">
+                    {{userInfo.phoneMask?'你好，'+userInfo.phoneMask:'游客用户'}}
+                    <img v-if="userInfo.vipLevel" class="crown" src="@imgs/mine/crown.png">
+                </div>
+                <div class="phone-tips" v-if="userInfo.phoneMask">{{userInfo.vipLevel?userInfo.vipLevelTag[userInfo.vipLevel]+'会员用户':'升级为黄金会员，享海量专属福利'}}</div>
+            </div>
+            <div v-if="!userInfo.phoneMask" class="gotoLogin" @click="gotoLogin">登录购权益<img class="gotoLogin-img" src="@imgs/mine/arrow_white.png" alt="" srcset=""></div>
+            <div v-if="userInfo.phoneMask&&!userInfo.vipLevel" class="btn-upgrade" @click="$router.push({name:'vipBenefit'})"></div>
         </div>
-        <div class="list">
-            <BarListItem v-for="item in list" :info="item" :key="item.txt"></BarListItem>
-            <!--<BarListItem class="item-service" :info="serviceInfo"></BarListItem>-->
+        <MyOwnRights class="bottomBoder"></MyOwnRights>
+        <div class="zone">
+            <GuideHeadline :info="{name:'我的订单'}"></GuideHeadline>
+            <div class="list">
+                <OrderListItem v-for="item in list" :info="item" :key="item.txt"></OrderListItem>
+            </div>
         </div>
-        <div v-show='userInfo.phone' class="exitLogin" @click.stop="exitLogin">退出登录</div>
+        <div class="zone" v-if="halfApps.length">
+            <HalfPrice :guide="{name:'精选5折购'}" :halfApps="halfApps"></HalfPrice>
+        </div>
+        <div class="zone" v-if="vipApps.length">
+            <VipBuy :guide="{name:'会员优惠购',id:'1',moreDesc:'更多优惠',path:{name: 'vipPreferential'}}" :vipApps="vipApps"></VipBuy>
+        </div>
         <van-swipe class="banner" :autoplay="3000" indicator-color="white"  v-if="bannerList.length>0">
             <van-swipe-item v-for="banner in bannerList" :key="banner.id">
                 <div class="img-banner" :style="{backgroundImage:'url('+Common.getImgUrl(banner.icon)+')'}"></div>
             </van-swipe-item>
         </van-swipe>
+        <div v-show='userInfo.phone' class="exitLogin" @click.stop="exitLogin">退出登录</div>
         <Menu/>
     </div>
 </template>
 
 <script>
     import Menu from '@/components/common/Menu.vue'
-    import BarListItem from '@/components/mine/BarListItem'
+    import OrderListItem from '@/components/mine/OrderListItem'
     import {queryOrderCount,myManager} from '@/api/mine'
+    import {getData} from "@/api/home";
     import { mapState,mapMutations } from 'vuex';
     import messageBus from "@/utils/messageBus";
+    import GuideHeadline from '@/components/home/GuideHeadline.vue';
+    import VipBuy from '@/components/common/VipBuy.vue';
+    import HalfPrice from '@/components/common/HalfPrice.vue';
+    import MyOwnRights from '@/components/mine/MyOwnRights'
 
 
     export default {
         name: "mine",
         components: {
             Menu,
-            BarListItem
+            OrderListItem,
+            GuideHeadline,
+            VipBuy,
+            HalfPrice,
+            MyOwnRights
         },
         data() {
             return {
                 list: [
-                    {icon: require('@imgs/icon_orders_all@2x.png'),txt: '全部订单',num:'0',path:'/myOrder/all',underline: true},
-                    {icon: require('@imgs/icon_orders_trading@2x.png'),txt: '交易中订单',num:'0',path:'myOrder/trading',underline: true},
-                    {icon: require('@imgs/icon_orders_success@2x.png'),txt: '已成功订单',num:'0',path:'myOrder/success', underline: true},
-                    {icon: require('@imgs/icon_orders_close@2x.png'),txt: '已关闭订单',num:'0',path:'myOrder/close'}
+                    {icon: require('@imgs/mine/icon_orders_all@2x.png'),txt: '全部',num:'0',path:'/myOrder/all'},
+                    {icon: require('@imgs/mine/icon_orders_trading@2x.png'),txt: '交易中',num:'0',path:'myOrder/trading'},
+                    {icon: require('@imgs/mine/icon_orders_success@2x.png'),txt: '已成功',num:'0',path:'myOrder/success'},
+                    {icon: require('@imgs/mine/icon_orders_close@2x.png'),txt: '已关闭',num:'0',path:'myOrder/close'}
                 ],
                 serviceInfo: {
                     icon: require('@imgs/icon_service@2x.png'),txt: '客服咨询',num:'',
                 },
-                bannerList: []
+                bannerList: [],
+                halfApps:[],
+                vipApps:[]
             }
         },
         created() {
+            getData().then((res)=>{
+                this.halfApps = res.data.data['108']?res.data.data['108']:[];
+                this.vipApps = res.data.data['109']?res.data.data['109']:[];
+            });
             if (this.userInfo.phone) {
                 queryOrderCount({
                     channelCode: this.sysInfo.channelCode
@@ -128,27 +160,74 @@
 <style scoped lang="less">
 .mine{
     background-color: #f4f5fb;
-    min-height: 100vh;
+    min-height: cacl(~'100vh-1.29rem');
+    padding-bottom: 1.29rem;
 }
 .avatar{
-    height: 3rem;
+    height: 1.1rem;
+    padding-top: .94rem;
+    padding-bottom: .56rem;
+    background: url("../assets/imgs/mine/bg_mine@2x.png") center/100%;
+    border-bottom-left-radius: .2rem;
+    border-bottom-right-radius: .2rem;
     display: flex;
-    flex-direction: column;
+    color: #f7faff; 
     align-items: center;
-    background: url("../assets/imgs/bg_mine@2x.png") center/100%;
-    .img-avatar{
-        width: 1.12rem;
-        height: 1.12rem;
-        margin-top: 1rem;
-        margin-bottom: .2rem;
+    .phone-area{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 3.22rem;
+        padding: 0 .18rem 0 .2rem;
+        text-align: left;
+        .phone{
+            font-size: .28rem;
+            .crown{
+                width: .38rem;
+                margin-left: .1rem;
+            }
+        }
+        .phone-tips{
+            font-size: .2rem;
+        }
     }
-    .phone{
-        color: #f7faff;
-        font-size: .32rem;
+    .img-avatar{
+        width: 1.1rem;
+        height: 1.1rem;
+        margin-left: .8rem;
+    }
+    .gotoLogin{
+        display: flex;
+        align-items: center;
+        font-size: .26rem;
+        margin-left: -.3rem;
+        .gotoLogin-img{
+            height: .15rem;
+            margin-left: .1rem;
+        }
+    }
+    .btn-upgrade{
+        width: 1.4rem;
+        height: .6rem;
+        background: url('../assets/imgs/mine/btn_upgrade@2x.png') center/contain no-repeat;
     }
 }
+.avatar.vip{
+    background-image: url('../assets/imgs/mine/bg_mine_vip@2x.png');
+    color: #3E3C3B;
+}
+.bottomBoder{
+    border-bottom: 0.16rem solid #f4f5fb;
+}
+.zone{
+    background-color: white;
+    // padding: 0 .3rem;
+    // margin-top: .16rem;
+    padding: 0 0.35rem 0.51rem 0.35rem;
+    border-bottom: 0.16rem solid #f4f5fb;
+}
 .list{
-    background-color: #f4f5fb;
+    display: flex;
     .item-service{
         margin-top: .16rem;
     }
@@ -158,12 +237,11 @@
     line-height: 1rem;
     font-size: 0.32rem;
     color:#C07358;
-    margin-top: .16rem;
     margin-bottom: 0.16rem;
     background: #fff;
 }
 .banner{
-   margin-top: .16rem;
+    margin-bottom: .16rem;
 }
 .img-banner{
     height: 1.78rem;
