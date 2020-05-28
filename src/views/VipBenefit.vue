@@ -55,8 +55,12 @@
             <van-swipe-item
                 v-for="(item, index) in bannerData" :key="index">
                 <div class="banner-item">
-                    <img class="banner-img" :src="item.img" alt="">
-                    <img v-if="item.btn"  class="btn-img" :src="item.btn.src" @click.stop="run(item.btn.method)" alt="">
+                    <div class="banner-item-inner">
+                        <img class="banner-img" :src="item.img" alt="">
+                        <img v-if="item.btn"  class="btn-img" :src="item.btn.src" @click.stop="run(item.btn.method)" alt="">
+                        <div class="txt-box" v-html="txtArr[index]"></div>
+                    </div>
+                    
                 </div>
             </van-swipe-item>
             <div v-show="type === 0" class="custom-indicator" slot="indicator">
@@ -75,7 +79,7 @@
                 <div class="title">
                     {{popupInfo.title}}
                 </div>
-                <div class="content" v-html="popupInfo.content.txt" :style="popupInfo.content.style">
+                <div ref="content" class="content" v-html="popupInfo.content.txt" :style="popupInfo.content.style">
                 </div>
             </div>
         </van-popup>
@@ -117,6 +121,7 @@
             </div>
             <div class="popup-btn submit" @click="submitBtn">{{submitIndex == 1?'退订会员':'立即订购'}}</div>
         </van-popup>
+        <BackHome/>
     </div>
 </template>
 
@@ -125,42 +130,28 @@
     import messageBus from "@/utils/messageBus";
     import {delCookie} from "@/utils/cookie";
     import { sendSmsCode,placeOrder} from "@/api/goodsdetail";
+    import BackHome from '@/components/common/BackHome.vue';
+    import {VIPORDER,NEWVIPGIFT} from "@/utils/constant";
+
+
 
 
 
     export default {
         data() {
             return {
+                txtArr:[
+                    `<div>1、用户首次成为中国移动权益超市黄金会员，即可获得入会礼1GB通用流量日包一份。</div>
+                    <div>2、领取次数有且只有一次，流量奖品24小时内直充到账，届时会有短信提示，还请注意查收。</div>
+                    <div>3、1GB流量为日包产品，到账后24小时内有效。</div>`,
+                    `<div>1、会员具有权益产品优惠购资格，以低于在售价的价格购买权益产品。</div>
+                    <div>2、会员购买权益优惠购专区产品后将会收到订购短信提醒，还请实时关注。</div>`,
+                    `<div>1、会员具有精品权益产品5折购资格，每月可选择专区内一款权益产品半价购买。</div>
+                    <div>2、会员购买精选5折购专区权益产品后，会收到订购短信提醒，还请实时关注。</div>`,
+                    `<div>1、专属客服功能仅对会员开放。</div>
+                    <div>2、会员如有相关问题，可直接咨询在线客服解决，或直接拨打10086咨询。</div>`
+                ],
                 submitIndex:0,
-                vipOrderObj:{
-                    proId:'6000784',
-                    salesId:'102160',
-                    name:'用户会员销售品',
-                    // proId: '',
-                    // name: '',
-                    // salesId: '',
-                    dealType: 0,
-                    isPay: 1,
-                    payType: 10,
-                    amount: process.env.VUE_APP_BUILD === 'production' ? 500 : 1,
-                    orderWay: 1,
-                    renewId:'1',
-                    smsCode: '',
-                },
-                firstPackage:{
-                    proId:'6000692',
-                    salesId:'102125',
-                    name:'新人礼包销售品',
-                    // proId: '',
-                    // name: '',
-                    // salesId: '',
-                    dealType: 0,
-                    isPay: 0,
-                    payType: 10,
-                    amount: 0,
-                    orderWay: 0,
-                    smsCode: '',
-                },
                 allowChecked1:0,
                 subscribeShow:false,
                 // 计时器参数
@@ -175,7 +166,7 @@
                     btns:''
                 },
                 must_know:{
-                    title:'会员规则',
+                    title:'权益超市黄金会员须知',
                     content:{
                         txt:`
                         <div>一、订购规则：</div>
@@ -209,8 +200,11 @@
         },
         created(){
             if(!this.userInfo.phone){
-                this.quickLogin()
+                this.quickLogin(true);
             }
+        },
+        components:{
+            BackHome
         },
         computed:{
             ...mapState([
@@ -251,6 +245,11 @@
                         document.documentElement.scrollTop = 0;
                     },0)
                 }
+            },
+            'show'(){
+                setTimeout(()=>{ // 必须用setTimeout才有效
+                    this.$refs.content.scrollTop = 0;
+                },0)
             }
         },
         methods: {
@@ -289,11 +288,11 @@
                 let that = this;
                 // 如果手机号为空，则弹登录窗
                 if (!that.userInfo.phone) {
-                    that.quickLogin();
+                    that.quickLogin(true);
                     return false;
                 }
                 let headers = {'phone': that.userInfo.phone};
-                let data = Object.assign({},that.firstPackage);
+                let data = Object.assign({},NEWVIPGIFT);
                 data.channelCode = that.sysInfo.channelCode;
                 // console.log(data,'新人礼包');
 
@@ -382,7 +381,7 @@
                 }
                 // 如果手机号为空，则跳转到登录页
                 if (!that.userInfo.phone) {
-                    that.quickLogin();
+                    that.quickLogin(true);
                     return false;
                 }
                  // 有选中已同意，才能登录
@@ -391,7 +390,7 @@
                     return false
                 }
                 let headers = {'phone': that.userInfo.phone};
-                let data = Object.assign({},that.vipOrderObj);
+                let data = Object.assign({},VIPORDER);
                 data.channelCode = that.sysInfo.channelCode;
                 data.smsCode = that.subscribeSmsCode;
 
@@ -443,7 +442,7 @@
                     this.subscribeSmsCode = '';
                     this.subscribeShow = true
                 }else{//未登录，弹登录窗
-                    this.quickLogin()
+                    this.quickLogin(true)
                 }
             },
             showPopup(target) {
@@ -462,9 +461,9 @@
                     this[method]()
                 }
             },
-            quickLogin(){
+            quickLogin(noGetPhoneNum){
                 delCookie('ql');
-                messageBus.$emit('msg_checkLogin','quick');
+                messageBus.$emit('msg_checkLogin','quick',noGetPhoneNum);
             },
             unsubscribe(){
                 this.$toast.clear();
@@ -481,11 +480,11 @@
                                 let that = this;
                                 // 如果手机号为空，则弹登录窗
                                 if (!that.userInfo.phone) {
-                                    that.quickLogin();
+                                    that.quickLogin(true);
                                     return false;
                                 }
                                 let headers = {'phone': that.userInfo.phone};
-                                let data = Object.assign({},that.vipOrderObj);
+                                let data = Object.assign({},VIPORDER);
                                 data.channelCode = that.sysInfo.channelCode;
                                 data.dealType = 1; //退订
                                 that.$toast.loading({
@@ -564,7 +563,7 @@
                 .must-know{
                     margin-right: 0.52rem;
                     text-decoration: underline;
-                    font-weight:bold;
+                    font-weight:400;
                     font-size: 0.28rem;
                     color:#3E3C3B;
                 }
@@ -602,6 +601,7 @@
                         }
                     }
                     .status{
+                        font-weight: 400;
                         margin-right: 0.5rem;
                     }
                 }
@@ -623,7 +623,7 @@
                         }
                         .title{
                             font-size: 0.2rem;
-                            font-weight: bold;
+                            font-weight: 400;
                             color:#3e3c3b;
                             white-space:nowrap;
                         }
@@ -661,7 +661,7 @@
                 .must-know{
                     margin-right: 0.52rem;
                     text-decoration: underline;
-                    font-weight:bold;
+                    font-weight:400;
                     font-size: 0.28rem;
                     color:#3E3C3B;
                 }
@@ -691,6 +691,7 @@
                     }
                 }
                 .status{
+                    font-weight: 400;
                     margin-right: 0.5rem;
                 }
             }
@@ -716,17 +717,35 @@
                     width:6.0rem;
                     margin-left: 0.15rem;
                     position: relative;
-                    .banner-img{
-                        display: block;
-                        width:6.0rem;
-                    }
-                    .btn-img{
-                        width:3.39rem;
-                        height: 1.03rem;
-                        position: absolute;
-                        left:50%;
-                        transform: translateX(-50%);
-                        bottom: 0.56rem
+                    .banner-item-inner{
+                        position: relative;
+                        width: 100%;
+                        .banner-img{
+                            display: block;
+                            width:6.0rem;
+                        }
+                        .btn-img{
+                            width:3.39rem;
+                            height: 1.03rem;
+                            position: absolute;
+                            left:50%;
+                            transform: translateX(-50%);
+                            bottom: 0.56rem
+                        }
+                        .txt-box{
+                            width:5.08rem;
+                            height: 4.6rem;
+                            overflow-y: auto;
+                            position: absolute;
+                            top:1.48rem;
+                            left:50%;
+                            transform: translateX(-50%);
+                            font-size:0.28rem;
+                            font-weight:400;
+                            color:rgb(119,105,83);
+                            line-height:0.48rem;
+                            text-align: left;
+                        }
                     }
                 }
             }

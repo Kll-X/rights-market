@@ -35,8 +35,8 @@
             locationCode && this.SET_SYSINFO({
                 locationCode: locationCode
             });
-            messageBus.$on('msg_checkLogin',(type)=>{
-                this.checkLogin(type)
+            messageBus.$on('msg_checkLogin',(type,noGetPhoneNum)=>{
+                this.checkLogin(type,noGetPhoneNum)
             });
             messageBus.$on('msg_showPopup',info=>{
                 this.popupInfo = info;
@@ -50,6 +50,8 @@
             // 判断路由当前是首页则调起检测-弹窗登录
             if(this.$route.name == 'home'){
                 messageBus.$emit('msg_checkLogin','quick')
+            }else if(this.$route.name == 'vipBenefit'){
+                // messageBus.$emit('msg_checkLogin','quick')
             }else{
                 // 其他页面只检测-自动取号
                 messageBus.$emit('msg_checkLogin')
@@ -185,7 +187,7 @@
                         console.log('转为未登录')
                     }, remainingTime);
             },
-            checkLogin(type){
+            checkLogin(type,noGetPhoneNum=false){
                 let that = this;
                 let sign = that.$route.query.sign ? that.$route.query.sign : getQuery('sign');
                 if(sign){//单点登录(不管是否有“已登录”的状态缓存)
@@ -228,28 +230,43 @@
                         });
                         messageBus.$emit('msg_countDown');
                     } else {//非登录状态,自动取号
-                        window.getPhoneNum(function(info) {//取号成功获得phone,phoneMask，等待用户点击一键登录时再触发真正的登录请求
-                            if (info) {
-                                let obj = {};
-                                obj.phoneShow = info.phone;
-                                obj.phoneMaskShow = info.phoneMask;
-                                that.SET_USERINFO(obj);
-                            }
+                        if(noGetPhoneNum){
                             if(type == 'quick'){
-                                console.log('唤起检测-自动取号-弹窗登录');
-                                // 先判断是否30分钟内曾弹出过登录窗，若是，则不弹出
-                                if(!getCookie('ql') && (that.$route.name == 'home' || that.$route.name == 'vipBenefit')){
-                                    setCookie('ql','true',30);
-                                    messageBus.$emit('msg_updatePlan');
-                                    that.SET_SHOWQUICKLOGIN(true);
+                                    console.log('唤起检测-不取号-弹窗登录');
+                                    // 先判断是否30分钟内曾弹出过登录窗，若是，则不弹出
+                                    if((!getCookie('ql') && that.$route.name == 'home') || that.$route.name == 'vipBenefit'){
+                                        setCookie('ql','true',30);
+                                        messageBus.$emit('msg_updatePlan');
+                                        that.SET_SHOWQUICKLOGIN(true);
+                                    }
+                                }else if(type == 'init'){
+                                    console.log('唤起检测-不取号-页面登录');
+                                    that.$router.replace({name: 'login'});
                                 }
-                            }else if(type == 'init'){
-                                console.log('唤起检测-自动取号-页面登录');
-                                that.$router.replace({name: 'login'});
-                            }else{
-                                console.log('唤起检测-自动取号')
-                            }
-                        });
+                        }else{
+                            window.getPhoneNum(function(info) {//取号成功获得phone,phoneMask，等待用户点击一键登录时再触发真正的登录请求
+                                if (info) {
+                                    let obj = {};
+                                    obj.phoneShow = info.phone;
+                                    obj.phoneMaskShow = info.phoneMask;
+                                    that.SET_USERINFO(obj);
+                                }
+                                if(type == 'quick'){
+                                    console.log('唤起检测-自动取号-弹窗登录');
+                                    // 先判断是否30分钟内曾弹出过登录窗，若是，则不弹出
+                                    if((!getCookie('ql') && that.$route.name == 'home') || that.$route.name == 'vipBenefit'){
+                                        setCookie('ql','true',30);
+                                        messageBus.$emit('msg_updatePlan');
+                                        that.SET_SHOWQUICKLOGIN(true);
+                                    }
+                                }else if(type == 'init'){
+                                    console.log('唤起检测-自动取号-页面登录');
+                                    that.$router.replace({name: 'login'});
+                                }else{
+                                    console.log('唤起检测-自动取号')
+                                }
+                            });
+                        }
                     }
                 }
             },

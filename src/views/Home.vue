@@ -34,7 +34,7 @@
                 <div class="half-list">
                     <app-card2 v-for="(item,j) in halfApps" :key="j" :info="item" :index="j"></app-card2>
                 </div> -->
-                <half-price :guide="guide6" :halfApps="halfApps"></half-price>
+                <half-price :guide="guide6" :halfApps="halfApps.slice(0,3)"></half-price>
             </div>
             <!-- 会员优惠购 -->
             <div class="zone vip" v-if="zone == 'vip'" v-show="vipApps.length">
@@ -42,7 +42,7 @@
                 <div class="vip-list">
                     <app-card1 v-for="(item,j) in vipApps" :key="j" :info="item" :index="j" :vip="true"></app-card1>
                 </div> -->
-                <vip-buy :guide="guide5" :vipApps="vipApps"></vip-buy>
+                <vip-buy :guide="guide5" :vipApps="vipApps.slice(0,6)"></vip-buy>
             </div>
             <!-- 商品上新 -->
             <div class="zone new" v-if="zone == 'new'" v-show="newApps.length">
@@ -203,7 +203,10 @@
                     path:{name: 'vipPreferential'},
                 },
                 guide6:{
-                    name:'精选5折购'
+                    name:'精选5折购',
+                    id:'1',
+                    moreDesc:'更多5折',
+                    path:{name: 'halfPrice'},
                 },
                 halfApps:[],
                 vipApps:[],

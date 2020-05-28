@@ -38,7 +38,7 @@
     import messageBus from "@/utils/messageBus";
     import {placeOrder,queryOrderStatus} from "@/api/myOrder";
     import { mapState } from 'vuex';
-    import {APPLIST_CHAODIGOU} from '@/utils/constant'
+    import {APPLIST_CHAODIGOU,VIPORDER} from '@/utils/constant'
 
     export default {
         name: "order-item",
@@ -50,10 +50,12 @@
         },
         data(){
             return {
-                detailLinkFlag: true
+                detailLinkFlag: true,
+                detailLinkPath: ''
             }
         },
         created() {
+            //517活动订单polyfill
             for (let item of APPLIST_CHAODIGOU) {
                 if(+item.salesid == +this.info.salesId) {
                     this.info.price = item.currentPrice;
@@ -64,17 +66,25 @@
                     break;
                 }
             }
+            //会员订单polyfill
+            if(+VIPORDER.salesId == +this.info.salesId) {
+                this.detailLinkPath = {name: 'vipBenefit'};
+            }
         },
         methods: {
             gotoDetail(){
                 if (this.detailLinkFlag){
-                    this.$router.push({
-                        name: 'goodsDetail',
-                        params: {
-                            mid:this.info.mid,
-                            saleid:this.info.saleid,
-                            proid: this.info.proid }
-                    })
+                    if (this.detailLinkPath) {
+                        this.$router.push(this.detailLinkPath);
+                    }else {
+                        this.$router.push({
+                            name: 'goodsDetail',
+                            params: {
+                                mid:this.info.mid,
+                                saleid:this.info.saleid,
+                                proid: this.info.proid }
+                        })
+                    }
                 }
             },
             bindHandler(name){

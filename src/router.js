@@ -5,6 +5,7 @@ import GoodsDetail from './views/GoodsDetail.vue'
 import MyOrder from './views/MyOrder.vue'
 import Mine from './views/Mine.vue'
 import Custompage from './views/CustomPage.vue'
+import VipBenefit from './views/VipBenefit.vue'
 
 Vue.use(Router)
 
@@ -84,8 +85,7 @@ export default new Router({
         {
             path: '/vipBenefit',
             name: 'vipBenefit',
-            component: () =>
-                import ( /* webpackChunkName: "vipBenefit" */ './views/VipBenefit.vue'),
+            component: VipBenefit,
             meta: {
                 title: '中国移动权益超市'
             }

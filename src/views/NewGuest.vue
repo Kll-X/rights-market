@@ -3,8 +3,8 @@
         <div class="new-guest-wrap">
             <!-- <img class="new-guest-bg" src="@imgs/newguest/newguest-bg.png" alt=""> -->
             <div class="new-guest-gift">
-                <div v-show="!hasNewGift" class="new-guest-btn" @click="receiveFunc"></div>
-                <div v-show="hasNewGift" class="new-guest-btn new-guest-received"></div>
+                <div v-show="hasNewGift == '0'" class="new-guest-btn" @click="receiveFunc"></div>
+                <div v-show="hasNewGift == '1'" class="new-guest-btn new-guest-received"></div>
             </div>
             <div class="new-guest-rule">
                 <span @click="show = true">领取规则</span>
@@ -43,6 +43,11 @@
                 "userInfo",
                 "sysInfo"
             ])
+        },
+        watch:{
+            '$store.state.userInfo.hasNewGift'(n){
+                this.hasNewGift = n;
+            },
         },
         data() {
             return {

@@ -170,4 +170,31 @@ const APPLIST_CHAODIGOU = [
     }
 ]
 
-export {STATISTICS,CHANNELCODE,APPLIST_CHAODIGOU,STATISTICS_PROVINCE,STATISTICS_ACTIVITY}
+// 订购会员、退订会员订单参数信息
+const VIPORDER = {
+    proId:process.env.VUE_APP_BUILD === 'production' ?'6001727':'6000784',
+    salesId:process.env.VUE_APP_BUILD === 'production' ?'103015':'102160',
+    name:process.env.VUE_APP_BUILD === 'production' ?'权益超市环境会员（权益超市-话费支付）':'用户会员销售品',
+    dealType: 0,
+    isPay: 1,
+    payType: 10,
+    amount: process.env.VUE_APP_BUILD === 'production' ? 500 : 1,
+    orderWay: 1,
+    renewId:'1',
+    smsCode: '',
+};
+
+// 领取新人礼包订单参数信息
+const NEWVIPGIFT = {
+    proId:process.env.VUE_APP_BUILD === 'production' ?'6001725':'6000692',
+    salesId:process.env.VUE_APP_BUILD === 'production' ?'103011':'102125',
+    name:process.env.VUE_APP_BUILD === 'production' ?'1GB通用流量日包（权益超市会员专属）':'新人礼包销售品',
+    dealType: 0,
+    isPay: 0,
+    payType: 10,
+    amount: 0,
+    orderWay: 0,
+    smsCode: '',
+}
+
+export {STATISTICS,CHANNELCODE,APPLIST_CHAODIGOU,STATISTICS_PROVINCE,STATISTICS_ACTIVITY,VIPORDER,NEWVIPGIFT}

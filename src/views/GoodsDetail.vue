@@ -309,7 +309,7 @@
                 this.isWeixin = true;
             }
             this.mid = this.$route.params.mid;
-            this.isVip = this.userInfo.isVip;
+            if (this.userInfo.isVip !== '') this.isVip = +this.userInfo.isVip;
             this.initialize();
             if (this.userInfo.phone) {
                 this.phoneNumber = this.userInfo.phoneMask;
@@ -338,7 +338,7 @@
                         reslove();
                         return false;
                     }
-                    if (this.userInfo.phone) {
+                    if (this.userInfo.phone && this.userInfo.isVip === '') {
                         myVip({
                             proId: '6000692',
                             salesId: '102125',
@@ -473,6 +473,11 @@
                                         this.paydetailList = item;
                                         this.goodsName = item.name;
                                     }
+                                } else {
+                                    this.$refs.radioOrder.radio = this.detailList[0].tc;
+                                    this.$refs.radioPay.radio = this.detailList[0].paytype;
+                                    this.paydetailList = this.detailList[0];
+                                    this.goodsName = this.detailList[0].name;
                                 }
                             }
                         } else { // 默认选择第一个策略 赋值
@@ -516,6 +521,9 @@
                                     const item = this.detailList[index];
                                     if (radio.value == item.tc && (item.mbusercode !== null && item.mbusercode !== '')) {
                                         radio.vip = true;
+                                        return false;
+                                    } else {
+                                        radio.vip = false;
                                     }
                                 }
                             }

@@ -7,7 +7,7 @@
                     {{userInfo.phoneMask?'你好，'+userInfo.phoneMask:'游客用户'}}
                     <img v-if="userInfo.vipLevel" class="crown" src="@imgs/mine/crown.png">
                 </div>
-                <div class="phone-tips" v-if="userInfo.phoneMask">{{userInfo.vipLevel?userInfo.vipLevelTag[userInfo.vipLevel]+'会员用户':'升级为黄金会员，享海量专属福利'}}</div>
+                <div class="phone-tips" v-if="userInfo.phoneMask">{{userInfo.vipLevel?userInfo.vipLevelTag[+userInfo.vipLevel-1]+'会员用户':'升级为黄金会员，享海量专属福利'}}</div>
             </div>
             <div v-if="!userInfo.phoneMask" class="gotoLogin" @click="gotoLogin">登录购权益<img class="gotoLogin-img" src="@imgs/mine/arrow_white.png" alt="" srcset=""></div>
             <div v-if="userInfo.phoneMask&&!userInfo.vipLevel" class="btn-upgrade" @click="$router.push({name:'vipBenefit'})"></div>
@@ -20,10 +20,10 @@
             </div>
         </div>
         <div class="zone" v-if="halfApps.length">
-            <HalfPrice :guide="{name:'精选5折购'}" :halfApps="halfApps"></HalfPrice>
+            <HalfPrice :guide="{name:'精选5折购',id:'1',moreDesc:'更多5折',path:{name: 'halfPrice'},}" :halfApps="halfApps.slice(0,3)"></HalfPrice>
         </div>
         <div class="zone" v-if="vipApps.length">
-            <VipBuy :guide="{name:'会员优惠购',id:'1',moreDesc:'更多优惠',path:{name: 'vipPreferential'}}" :vipApps="vipApps"></VipBuy>
+            <VipBuy :guide="{name:'会员优惠购',id:'1',moreDesc:'更多优惠',path:{name: 'vipPreferential'}}" :vipApps="vipApps.slice(0,6)"></VipBuy>
         </div>
         <van-swipe class="banner" :autoplay="3000" indicator-color="white"  v-if="bannerList.length>0">
             <van-swipe-item v-for="banner in bannerList" :key="banner.id">

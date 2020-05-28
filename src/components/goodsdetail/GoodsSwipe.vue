@@ -20,8 +20,9 @@
                                 </span>
                             </span>
                             <!-- 登录是会员或者五折产品的样式 -->
-                            <span v-show="isVip || itemDetail.fivego == 1" class="swipe-item-font-fee swipe-item-font-vip">
-                                <i v-show="itemDetail.fivego != 1">会员价：</i>
+                            <span v-show="isVip || itemDetail.fivego == 1" class="swipe-item-font-fee" :class="{'swipe-item-font-vip': itemDetail.price2}">
+                                <i v-show="itemDetail.fivego != 1 && itemDetail.price2">会员价：</i>
+                                <i v-show="itemDetail.fivego != 1 && !itemDetail.price2">资费：</i>
                                 <i v-show="itemDetail.fivego == 1">5折：</i>
                                 {{((itemDetail.price)/100).toFixed(2)}}元
                                 <span v-show="itemDetail.price2" class="swipe-item-font-postposition swipe-item-font-postposition-delete">

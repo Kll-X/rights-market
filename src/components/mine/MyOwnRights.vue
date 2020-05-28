@@ -27,8 +27,8 @@
                 "userInfo"
             ]),
             list(){
-                let tips = this.userInfo.vipLevel?this.userInfo.hasNewGift?'已领取':'立即领取':'开通立享';
-                return this.userInfo.vipLevel?[
+                let tips = +this.userInfo.vipLevel?+this.userInfo.hasNewGift?'已领取':'立即领取':'开通立享';
+                return +this.userInfo.vipLevel?[
                     {
                         icon: require('@imgs/mine/icon_gift_vip.png'),
                         title: '入会有礼',
@@ -75,7 +75,7 @@
                 ]
             },
             name(){
-                return this.userInfo.vipLevel?{name:'我的专属权益',id:'1',moreDesc:'查看详情',path:{name: 'vipBenefit'}}:{name:'会员专属权益',id:'1',moreDesc:'查看详情',path:{name: 'vipBenefit'}}
+                return +this.userInfo.vipLevel?{name:'我的专属权益',id:'1',moreDesc:'查看详情',path:{name: 'vipBenefit'}}:{name:'会员专属权益',id:'1',moreDesc:'查看详情',path:{name: 'vipBenefit'}}
             }
         },
         components:{
