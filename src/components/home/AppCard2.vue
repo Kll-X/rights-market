@@ -52,8 +52,11 @@
         height: 1.4rem;
         // background: url("../../assets/imgs/home/appbg_vip.png") no-repeat center/100% 100%;
         display: flex;
+        display: -webkit-flex; 
         justify-content: flex-start;
-        align-items: center;
+        -webkit-justify-content: flex-start;
+        align-items:center;
+        -webkit-align-items: center;
         padding:0.24rem 0; 
         .logo{
             width:1.4rem;
@@ -65,21 +68,27 @@
             height: 100%;
             flex:1;
             display: flex;
+            display: -webkit-flex; 
             flex-direction: column;
             justify-content: flex-start;
-            align-items: flex-start;
+            -webkit-justify-content: flex-start;
+            align-items:flex-start;
+            -webkit-align-items: flex-start;
             .title{
                 padding: 0.33rem 0 0.18rem;
                 display: flex;
+                display: -webkit-flex; 
                 justify-content: center;
-                align-items: flex-start;
+                -webkit-justify-content: center;
+                align-items:flex-start;
+                -webkit-align-items: flex-start;
                 height:0.25rem;
                 .name{
                     font-size: 0.24rem;
                     color:#68676d;
                     font-weight: bold;
                     // overflow: hidden;  /*超出部分隐藏*/
-                    // white-space: nowrap;  /*禁止换行*/
+                    white-space: nowrap;  /*禁止换行*/
                     // text-overflow: ellipsis; /*省略号*/
                 }
                 .symbol{

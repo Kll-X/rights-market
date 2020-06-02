@@ -190,7 +190,7 @@ const NEWVIPGIFT = {
     salesId:process.env.VUE_APP_BUILD === 'production' ?'103011':'102125',
     name:process.env.VUE_APP_BUILD === 'production' ?'1GB通用流量日包（权益超市会员专属）':'新人礼包销售品',
     dealType: 0,
-    isPay: 0,
+    isPay: 1,
     payType: 10,
     amount: 0,
     orderWay: 0,

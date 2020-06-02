@@ -42,6 +42,13 @@ module.exports = {
                     "^/devApi" : "",
                     changeOrigin:true
                 }
+            },
+            '/greyApi': {
+                target: 'http://grayqymk.cmicrwx.cn',
+                pathRewrite: {
+                    "^/greyApi" : "",
+                    changeOrigin:true
+                }
             }
         }
     }

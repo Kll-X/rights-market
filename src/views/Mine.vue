@@ -7,7 +7,10 @@
                     {{userInfo.phoneMask?'你好，'+userInfo.phoneMask:'游客用户'}}
                     <img v-if="userInfo.vipLevel" class="crown" src="@imgs/mine/crown.png">
                 </div>
-                <div class="phone-tips" v-if="userInfo.phoneMask">{{userInfo.vipLevel?userInfo.vipLevelTag[+userInfo.vipLevel-1]+'会员用户':'升级为黄金会员，享海量专属福利'}}</div>
+                <div class="phone-tips" v-if="userInfo.phoneMask">
+                    {{userInfo.vipLevel?userInfo.vipLevelTag[+userInfo.vipLevel-1]+'会员用户':'升级为黄金会员，享海量专属福利'}}
+                    <span v-if="+userInfo.isVip&&+userInfo.cancelFlag">有效期至{{userInfo.expireTime | timeFormat}}</span>
+                </div>
             </div>
             <div v-if="!userInfo.phoneMask" class="gotoLogin" @click="gotoLogin">登录购权益<img class="gotoLogin-img" src="@imgs/mine/arrow_white.png" alt="" srcset=""></div>
             <div v-if="userInfo.phoneMask&&!userInfo.vipLevel" class="btn-upgrade" @click="$router.push({name:'vipBenefit'})"></div>
@@ -23,11 +26,11 @@
             <HalfPrice :guide="{name:'精选5折购',id:'1',moreDesc:'更多5折',path:{name: 'halfPrice'},}" :halfApps="halfApps.slice(0,3)"></HalfPrice>
         </div>
         <div class="zone" v-if="vipApps.length">
-            <VipBuy :guide="{name:'会员优惠购',id:'1',moreDesc:'更多优惠',path:{name: 'vipPreferential'}}" :vipApps="vipApps.slice(0,6)"></VipBuy>
+            <VipBuy :guide="{name:'会员优惠购',id:'1',moreDesc:'更多优惠',path:{name: 'vipPreferential'}}" :vipApps="vipApps.slice(0,3)"></VipBuy>
         </div>
         <van-swipe class="banner" :autoplay="3000" indicator-color="white"  v-if="bannerList.length>0">
             <van-swipe-item v-for="banner in bannerList" :key="banner.id">
-                <div class="img-banner" :style="{backgroundImage:'url('+Common.getImgUrl(banner.icon)+')'}"></div>
+                <div class="img-banner" :style="{backgroundImage:'url('+Common.getImgUrl(banner.icon)+')'}" @click="gotolink(banner.linkurl)"></div>
             </van-swipe-item>
         </van-swipe>
         <div v-show='userInfo.phone' class="exitLogin" @click.stop="exitLogin">退出登录</div>
@@ -66,9 +69,6 @@
                     {icon: require('@imgs/mine/icon_orders_success@2x.png'),txt: '已成功',num:'0',path:'myOrder/success'},
                     {icon: require('@imgs/mine/icon_orders_close@2x.png'),txt: '已关闭',num:'0',path:'myOrder/close'}
                 ],
-                serviceInfo: {
-                    icon: require('@imgs/icon_service@2x.png'),txt: '客服咨询',num:'',
-                },
                 bannerList: [],
                 halfApps:[],
                 vipApps:[]
@@ -152,6 +152,18 @@
                 if (!this.userInfo.phone) {
                     this.$router.replace({name:'login'})
                 }
+            },
+            gotolink(url){
+                url&&(location.href = url);
+            }
+        },
+        filters: {
+            timeFormat: function (value) {
+                value = value + '';
+                let year = value.slice(0,4);
+                let month = value.slice(4,6);
+                let date = value.slice(6,8);
+                return year + '-' + month + '-' + date;
             }
         }
     }

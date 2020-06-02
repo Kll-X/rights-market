@@ -407,7 +407,9 @@
                         //订购成功，关闭底部弹窗
                         that.subscribeShow = false;
                         messageBus.$emit('msg_getVipInfo');
-                        that.$toast.success({message: '订单已受理，开通结果以短信为准', duration: 4000});
+                        that.$toast.success({message: '订单已受理，开通结果以短信为准', duration: 4000,onClose:()=>{
+                            that.$router.push({name: 'myOrder', params: {type:'all'}});
+                        }});
                     }else{
                         that.$toast.fail({message: '订购失败', duration: 4000});
                     }

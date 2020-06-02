@@ -1,5 +1,5 @@
 <template>
-  <div class="wrap">
+  <div class="wrap" v-show="showFlag">
     <!-- 标题 -->
     <div class="title-wrap">
       <div class="title">{{title}}</div>
@@ -313,10 +313,10 @@
 
 <script>
 
-import Vue from "vue";
-import { Dialog, Popup, Toast } from "vant";
+import { Toast } from "vant";
 import {gotoService} from '@/api/customerservice.js'
-Vue.use(Dialog, Popup, Toast);
+import { mapState } from 'vuex'
+
 export default {
   name: "customerService",
   data() {
@@ -328,10 +328,24 @@ export default {
       partFour: "T-Z",
       provinceCode: "",
       show: false,
-      appKey: ""
+      appKey: "",
+      showFlag: false
     };
   },
   props: ["channelType"],
+  created(){
+     if(this.userInfo.provinceCode) {
+         this.chooseProbyCode(this.userInfo.provinceCode)
+         this.sure();
+     } else {
+       this.showFlag = true;
+     }
+  },
+  computed:{
+      ...mapState([
+          "userInfo" ,
+      ])
+  },
   methods: {
     async sure() {
       if (this.appKey == "" || this.provinceCode == "") {
@@ -371,6 +385,41 @@ export default {
         console.log(goURL);
         window.location.href = goURL;
       }
+    },
+    chooseProbyCode(code){
+        switch(code) {
+            case '551': this.anhui();break;
+            case '100': this.beijing();break;
+            case '200': this.guangdong();break;
+            case '210': this.shanghai();break;
+            case '220': this.tianjin();break;
+            case '230': this.chongqing();break;
+            case '240': this.liaoning();break;
+            case '250': this.jiangsu();break;
+            case '270': this.hubei();break;
+            case '280': this.sichuan();break;
+            case '290': this.shanxi();break;
+            case '311': this.hebei();break;
+            case '351': this.shangxi();break;
+            case '371': this.henan();break;
+            case '431': this.jilin();break;
+            case '451': this.heilongjiang();break;
+            case '471': this.neimenggu();break;
+            case '531': this.shandong();break;
+            case '571': this.zhejiang();break;
+            case '591': this.fujian();break;
+            case '731': this.hunan();break;
+            case '771': this.guangxi();break;
+            case '791': this.jiangxi();break;
+            case '851': this.guizhou();break;
+            case '871': this.yunnan();break;
+            case '891': this.xizang();break;
+            case '898': this.hainan();break;
+            case '931': this.gansu();break;
+            case '951': this.ningxia();break;
+            case '971': this.qinghai();break;
+            case '991': this.xinjiang();break;
+        }
     },
     anhui() {
       switch (this.channelType) {

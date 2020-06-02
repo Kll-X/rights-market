@@ -76,8 +76,11 @@
             white-space: nowrap;  /*禁止换行*/
             text-overflow: ellipsis; /*省略号*/
             display: flex;
+            display: -webkit-flex; 
             justify-content: center;
-            align-items: center;
+            -webkit-justify-content: center;
+            align-items:center;
+            -webkit-align-items: center;
             .symbol{
                 height:0.25rem;
             }

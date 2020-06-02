@@ -42,7 +42,7 @@
                 <div class="vip-list">
                     <app-card1 v-for="(item,j) in vipApps" :key="j" :info="item" :index="j" :vip="true"></app-card1>
                 </div> -->
-                <vip-buy :guide="guide5" :vipApps="vipApps.slice(0,6)"></vip-buy>
+                <vip-buy :guide="guide5" :vipApps="vipApps.slice(0,3)"></vip-buy>
             </div>
             <!-- 商品上新 -->
             <div class="zone new" v-if="zone == 'new'" v-show="newApps.length">
@@ -110,7 +110,7 @@
                 this.bannerData1.arr = res.data.data['105']?res.data.data['105']:[];
                 this.bannerData1.arr[0] && (this.bannerData1.arr[0].needPnsign = true);
                 this.bannerData1.arr[1] && (this.bannerData1.arr[1].needPnsign = true);
-                // if (process.env.NODE_ENV === 'production') {
+                // if (process.env.VUE_APP_BUILD === 'production') {
                 //     this.bannerData1.arr.unshift({
                 //         id: 3,icon:require('@imgs/home/banner1_4.png'),linkurl:'https://rwk.cmicrwx.cn/rwx/rwkvue/RightMarket/',needPnsign:true
                 //     })
@@ -139,7 +139,7 @@
                 customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][0])
             }
             customAnalysis(STATISTICS.activityId, STATISTICS.all[0]);
-            if (this.sysInfo.locationCode && process.env.NODE_ENV == 'production') {
+            if (this.sysInfo.locationCode && process.env.VUE_APP_BUILD == 'production') {
                 customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key);
                 customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key,this.sysInfo.locationCode);
             }

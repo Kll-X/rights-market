@@ -3,7 +3,7 @@
         <div class="new-guest-wrap">
             <!-- <img class="new-guest-bg" src="@imgs/newguest/newguest-bg.png" alt=""> -->
             <div class="new-guest-gift">
-                <div v-show="hasNewGift == '0'" class="new-guest-btn" @click="receiveFunc"></div>
+                <div v-show="hasNewGift == '0' || hasNewGift ==  ''" class="new-guest-btn" @click="receiveFunc"></div>
                 <div v-show="hasNewGift == '1'" class="new-guest-btn new-guest-received"></div>
             </div>
             <div class="new-guest-rule">
@@ -17,7 +17,7 @@
                 <div class="overlay-con">
                     1、用户首次成为中国移动权益超市黄金会员，即可获得入会礼1GB通用流量日包一份。<br>
                     2、领取次数有且只有一次，流量奖品24小时内直充到账，届时会有短信提示，还请注意查收。<br>
-                    3、1GB流量为日包产品，使用期限为领取当日。
+                    3、1GB流量为日包产品，到账后24小时内有效。
                 </div>
             </div>
         </van-overlay>
@@ -32,6 +32,7 @@
     import { Toast } from 'vant';
     import BackHome from '@/components/common/BackHome.vue';
     import messageBus from "@/utils/messageBus";
+    import { NEWVIPGIFT } from '@/utils/constant'
 
     export default {
         name: "newguest",
@@ -68,12 +69,7 @@
                         this.$router.push({name: 'vipBenefit'});
                     } else {
                         let headers = {'phone': this.userInfo.phone};
-                        let data = {
-                            proId: '6000692',
-                            salesId: '102125',
-                            dealType: 0,
-                            isPay: 0,
-                        }
+                        let data = Object.assign({},NEWVIPGIFT);
                         const toast = Toast.loading({
                             message: '领取中,请稍等…',
                             forbidClick: true,
@@ -192,6 +188,7 @@
             }
             .overlay-con{
                 font-size: .24rem;
+                line-height: .36rem;
                 text-align: left;
                 color: #a4a4a6;
             }

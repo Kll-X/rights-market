@@ -130,7 +130,7 @@
                     getListRights({
                         phone: this.userInfo.phone,
                     },{
-                        channelcode: process.env.NODE_ENV == 'production'? '67043':'67047'
+                        channelcode: process.env.VUE_APP_BUILD == 'production'? '67043':'67047'
                     }).then(res=>{
                         this.filterCanOrder(this.applist,res.data.data)
                     })
@@ -138,7 +138,7 @@
                         this.showToast({
                             tips: '订购优惠价权益产品，需先认证移动勋章。',
                             type: 1,
-                            link: process.env.NODE_ENV=='production'?'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index':'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',
+                            link: process.env.VUE_APP_BUILD=='production'?'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index':'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',
                             linkTxt: '立即认证'
                         })
                     }
@@ -147,7 +147,7 @@
                 }
             })
             //pv、uv统计
-            if (process.env.NODE_ENV == 'production') {
+            if (process.env.VUE_APP_BUILD == 'production') {
                 pvAnalysis(STATISTICS_ACTIVITY[517].activityId);
             }
 
@@ -189,7 +189,7 @@
                 checkRules({
                     phone:this.userInfo.phone
                 },{
-                    "channelcode":process.env.NODE_ENV == 'production'? '67043':'67047',
+                    "channelcode":process.env.VUE_APP_BUILD == 'production'? '67043':'67047',
                     "salesid": appinfo.salesid
                 }).then(res=>{
                     if (res.data.resultCode == 0) {
@@ -308,7 +308,7 @@
                 this.showToast({
                     tips: '登录失败请尝试重新登录',
                     type: 1,
-                    link: process.env.NODE_ENV=='production'?'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index':'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',
+                    link: process.env.VUE_APP_BUILD=='production'?'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index':'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',
                     linkTxt: '重新登录'
                 })
             }
