@@ -52,7 +52,7 @@
     import {queryOrderList,queryOrderStatus} from '@/api/myOrder'
     import { mapState } from 'vuex'
     import {customAnalysis} from "@/assets/js/analysis";
-    import {STATISTICS,APPLIST_CHAODIGOU} from "@/utils/constant";
+    import {STATISTICS,APPLIST_CHAODIGOU,APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE} from "@/utils/constant";
     import messageBus from "../utils/messageBus";
 
     export default {
@@ -368,12 +368,20 @@
                         that.getOrderList(that.type)
                     })
                     messageBus.$on('msg_loginFail', () => {
-                        that.$router.replace({name: 'login'})
+                        if(that.sysInfo.channel == 'st'){
+                            messageBus.$emit('msg_checkLogin','init');
+                        }else{
+                            that.$router.replace({name:'login'})
+                        }
                     })
                 } else {
                     // nexttick才执行，防止van-table报错
                     that.$nextTick(() => {
-                        that.$router.replace({name: 'login'})
+                        if(that.sysInfo.channel == 'st'){
+                            messageBus.$emit('msg_checkLogin','init');
+                        }else{
+                            that.$router.replace({name:'login'})
+                        }
                     })
                 }
             }
@@ -465,9 +473,9 @@
                     }
                 }
                 function filterOrderList(list){
-                    // 返回交易中或者退订中的订单
+                    // 返回交易中或者退订中的普通订单,及会员退订订单（普通商品不会有effect=2，会员商品不会有td=5）
                     return list.filter(item => {
-                        return item.status === 0 || item.td == 5;
+                        return item.status === 0 || item.td == 5 || item.effect==2;
                     })
                 }
             },
@@ -510,6 +518,25 @@
                         order.price = item.currentPrice;
                         order.iconUrl = item.icon;
                         order.name = item.title;
+                        order.payType = 1;
+                        break;
+                    }
+                }
+                //针对618活动订单的fix
+                for (let item of APPLIST_VIPOPENING) {
+                    if(+item.saleid == +order.salesId) {
+                        order.price = item.price;
+                        order.iconUrl = item.icon;
+                        order.name = item.name;
+                        order.payType = 1;
+                        break;
+                    }
+                }
+                for (let item of APPLIST_VIPOPENING_NINE) {
+                    if(+item.saleid == +order.salesId) {
+                        order.price = item.price;
+                        order.iconUrl = item.icon;
+                        order.name = item.name;
                         order.payType = 1;
                         break;
                     }

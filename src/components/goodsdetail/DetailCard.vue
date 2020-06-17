@@ -1,6 +1,6 @@
 <template>
     <!-- 商品详情 -->
-    <div id="detail-card">
+    <!-- <div id="detail-card">
         <div class="card-title">{{cardTitle}}</div>
         <van-tabs v-model="active" swipeable :border="false" title-active-color="#6696FF" color="#6696FF" animated>
             <van-tab title="权益说明">
@@ -14,7 +14,11 @@
                 <div class="card-introduce" v-html="orderremark"></div>
             </van-tab>
         </van-tabs>
-        
+    </div> -->
+    <!-- 新版详情样式 -->
+    <div id="detail-card">
+        <!-- <div class="detail-card-title">权益说明</div> -->
+        <div class="detail-card-introduce" v-html="cardIntroduce.qyremark"></div>
     </div>
 </template>
 
@@ -55,6 +59,7 @@
 <style lang="less">
     #detail-card{
         font-size: 0;
+        padding: 0 .35rem .35rem;
         .card-title{
             position: relative;
             height: .88rem;
@@ -90,6 +95,20 @@
                     font-size: .28rem;
                 }
             }
+        }
+        // 新版样式
+        .detail-card-title{
+            font-size: .34rem;
+            color: #333;
+            font-weight: bold;
+            text-align: left;
+            margin-bottom: .38rem;
+        }
+        .detail-card-introduce{
+            text-align: left;
+            font-size: .28rem !important;
+            line-height: .4rem !important;
+            color: #666;
         }
     }
 </style>

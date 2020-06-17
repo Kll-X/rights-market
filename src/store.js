@@ -7,6 +7,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         userInfo: {
+            id:'',
             avatar: require('@imgs/home/avatar@2x.png'),
             token: '',
             userInformation: '',

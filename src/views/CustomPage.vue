@@ -6,6 +6,7 @@
 
 <script>
     import Chaodigou from '@components/customPage/Chaodigou.vue';
+    import VipOpening from '@/components/customPage/VipOpening'
     export default {
         name: "custompage",
         data(){
@@ -17,11 +18,13 @@
         },              
         components: {
             Chaodigou,
+            VipOpening
         },
         created() {
             this.customId =  this.$route.params.customId || 1;
             switch(+this.customId) {
                 case 1: this.customName = 'Chaodigou';break; 
+                case 2: this.customName = 'VipOpening';break; 
             }
         },
         methods:{

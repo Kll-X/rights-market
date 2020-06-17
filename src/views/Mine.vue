@@ -33,7 +33,7 @@
                 <div class="img-banner" :style="{backgroundImage:'url('+Common.getImgUrl(banner.icon)+')'}" @click="gotolink(banner.linkurl)"></div>
             </van-swipe-item>
         </van-swipe>
-        <div v-show='userInfo.phone' class="exitLogin" @click.stop="exitLogin">退出登录</div>
+        <div v-show="userInfo.phone && sysInfo.channel != 'st'" class="exitLogin" @click.stop="exitLogin">退出登录</div>
         <Menu/>
     </div>
 </template>
@@ -79,6 +79,11 @@
                 this.halfApps = res.data.data['108']?res.data.data['108']:[];
                 this.vipApps = res.data.data['109']?res.data.data['109']:[];
             });
+            myManager().then(res => {
+                if (res.data.resultCode == 0) {
+                    this.bannerList = res.data.data;
+                }
+            })
             if (this.userInfo.phone) {
                 queryOrderCount({
                     channelCode: this.sysInfo.channelCode
@@ -101,14 +106,9 @@
                     catch (err){
                         console.log(err)
                     }
-
                 })
-            }
-            myManager().then(res => {
-                if (res.data.resultCode == 0) {
-                    this.bannerList = res.data.data;
-                }
-            })
+                messageBus.$emit('msg_getVipInfo');
+            }            
         },
         computed:{
             ...mapState([
@@ -150,7 +150,11 @@
             },
             gotoLogin(){
                 if (!this.userInfo.phone) {
-                    this.$router.replace({name:'login'})
+                    if(this.sysInfo.channel == 'st'){
+                        messageBus.$emit('msg_checkLogin','init');
+                    }else{
+                        this.$router.replace({name:'login'})
+                    }
                 }
             },
             gotolink(url){

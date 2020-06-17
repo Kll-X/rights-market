@@ -18,11 +18,16 @@
             <div class="orderDate">
                 <span>订购日期：</span>{{info.updateTime | timeFormat}}
             </div>
-            <div class="handlerBtns">
+            <div class="handlerBtns" v-if="!isVipOrder">
                 <div class="btn-bind" v-if="needBind && !+info.td"  @click.stop="bindHandler(info.name)">去绑定</div>
                 <div class="btn-unsubscribe" v-if="info.status === 1 && info.orderWay == 2 && info.td!= -1 && info.td!= 5" @click.stop="tdHandler">退订</div>
                 <div class="btn-td" v-if="info.td == -1" @click.stop="">已退订</div>
                 <div class="btn-tding" v-if="info.td == 5" @click.stop="">退订中</div>
+            </div>
+            <div class="handlerBtns" v-if="isVipOrder">
+                <div class="btn-unsubscribe" v-if="info.effect == 0" @click.stop="tdHandler">退订</div>
+                <div class="btn-td" v-if="info.effect == 1" @click.stop="">已退订</div>
+                <div class="btn-tding" v-if="info.effect == 2" @click.stop="">退订中</div>
             </div>
             <div class="tips">
                 <div class="tip-btn-bind" v-if="needBind && !+info.td">如手机号码未绑定QQ或微信号，绑定后可正常使用。如当前浏览器无法绑定，可复制绑定链接至微信/qq中绑定。</div>
@@ -38,7 +43,7 @@
     import messageBus from "@/utils/messageBus";
     import {placeOrder,queryOrderStatus} from "@/api/myOrder";
     import { mapState } from 'vuex';
-    import {APPLIST_CHAODIGOU,VIPORDER} from '@/utils/constant'
+    import {APPLIST_CHAODIGOU,VIPORDER,APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE} from '@/utils/constant'
 
     export default {
         name: "order-item",
@@ -51,7 +56,8 @@
         data(){
             return {
                 detailLinkFlag: true,
-                detailLinkPath: ''
+                detailLinkPath: '',
+                isVipOrder:false
             }
         },
         created() {
@@ -68,7 +74,31 @@
             }
             //会员订单polyfill
             if(+VIPORDER.salesId == +this.info.salesId) {
+                //会员订单跳转到会员权益页
                 this.detailLinkPath = {name: 'vipBenefit'};
+                //会员订单根据effect判断状态
+                this.isVipOrder = true;
+            }
+            //618活动订单polyfill
+            for (let item of APPLIST_VIPOPENING) {
+                if(+item.saleid == +this.info.salesId) {
+                    this.info.price = item.price;
+                    this.info.iconUrl = item.icon;
+                    this.info.name = item.name;
+                    this.info.payType = 1;
+                    this.detailLinkPath = {path: '/custompage/2'};
+                    break;
+                }
+            }
+            for (let item of APPLIST_VIPOPENING_NINE) {
+                if(+item.saleid == +this.info.salesId) {
+                    this.info.price = item.price;
+                    this.info.iconUrl = item.icon;
+                    this.info.name = item.name;
+                    this.info.payType = 1;
+                    this.detailLinkPath = {path: '/custompage/2'};
+                    break;
+                }
             }
         },
         methods: {
@@ -93,6 +123,28 @@
             },
             tdHandler(){
                 let that = this;
+                let orderData;
+                if(+VIPORDER.salesId == +this.info.salesId) {
+                    orderData = Object.assign({},VIPORDER);
+                    orderData.channelCode = that.sysInfo.channelCode;
+                    orderData.dealType = 1;
+                    orderData.custVipId = that.info.custVipId;
+                } else {
+                    orderData = {
+                        proId: that.info.prodId,
+                        name: that.info.name,
+                        salesId: that.info.salesId,
+                        channelCode: that.sysInfo.channelCode,
+                        dealType: 1,
+                        isPay: 1,
+                        orderWay: 2,
+                        amount: that.info.price,
+                        payType: that.info.qyPayType,
+                        renewId: that.info.renewId,
+                        custVipId: that.info.custVipId
+                    }
+                }
+          
                 messageBus.$emit('msg_showPopup',{
                     flag: true,
                     title: '是否退订该产品?',
@@ -102,18 +154,7 @@
                         {
                             txt: '继续退订',
                             handler: () => {
-                                placeOrder({
-                                    proId: that.info.prodId,
-                                    name: that.info.name,
-                                    salesId: that.info.salesId,
-                                    channelCode:'',
-                                    dealType: 1,
-                                    isPay: 1,
-                                    orderWay:2,
-                                    amount: that.info.price,
-                                    payType: that.info.qyPayType,
-                                    renewId: that.info.renewId
-                                },{
+                                placeOrder(orderData,{
                                     phone: that.userInfo.phone,
                                 }).then(res=>{
                                     messageBus.$emit('msg_showPopup',{
@@ -122,18 +163,25 @@
                                     if (res.data.resultCode === 0 ){
                                         that.$toast.success('退订申请成功');
                                         // 退订成功，要改变订单状态
-                                        queryOrderStatus({
-                                            orderId: that.info.orderId,
-                                            channelCode: that.sysInfo.channelCode
-                                        },{
-                                            phone: that.userInfo.phone
-                                        }).then(res => {
-                                            console.log(res)
-                                            if (res.data.resultCode === 0) {
-                                                let orderData = res.data.data;
-                                                this.$emit('orderChange', orderData, true);
-                                            }
-                                        })
+                                        if (that.isVipOrder) {
+                                            that.info.effect = 2;
+                                        } else {
+                                            that.info.td = 5;
+                                        }
+                                        setTimeout(()=>{
+                                            queryOrderStatus({
+                                                orderId: that.info.orderId,
+                                                channelCode: that.sysInfo.channelCode
+                                            },{
+                                                phone: that.userInfo.phone
+                                            }).then(res => {
+                                                console.log(res)
+                                                if (res.data.resultCode === 0) {
+                                                    let orderData = res.data.data;
+                                                    that.$emit('orderChange', orderData);
+                                                }
+                                            })
+                                        }, 1000)
                                     } else {
                                         that.$toast.fail('退订失败了,请稍后重试！');
                                     }

@@ -59,6 +59,11 @@ const STATISTICS_ACTIVITY = {
     "517":{
         activityId: '200514002'
     },
+    "618":{
+        activityId: '200616000',
+        key_new:'284c95172b4d4366a8fbfdbd19c4fd9f',
+        key_sales:'cd4d6a59785a4493adadc824178481d5'
+    }
 }
 
 // 抄底购（优惠购）活动产品
@@ -170,6 +175,108 @@ const APPLIST_CHAODIGOU = [
     }
 ]
 
+//618会员开幕活动aid
+const AID_VIPOPENING = '20200618001';
+
+// 618会员开幕活动年卡产品
+const APPLIST_VIPOPENING = [
+    {
+        name:'爱奇艺黄金VIP会员年卡',
+        showname: '爱奇艺黄金会员年卡',
+        price:'9900',
+        originprice:'19800',
+        date:'6月18日-6月20日',
+        startdate: '2020/6/10',
+        expiredate: '2020/6/21',
+        icon: require("@/assets/imgs/custompage/2/icon_iqy.png"),
+        saleid: '103017',
+        proid: '6001729'
+    },{
+        name:'芒果TVVIP会员年卡',
+        showname:'芒果TV会员年卡',
+        price:'9900',
+        originprice:'19800',
+        date:'6月18日-6月21日',
+        startdate: '2020/6/10',
+        expiredate: '2020/6/22',
+        icon: require("@/assets/imgs/custompage/2/icon_mtv.png"),
+        saleid: '103021',
+        proid: '6001733'
+    },{
+        name:'优酷视频VIP会员年卡',
+        showname:'优酷会员年卡',
+        price:'9900',
+        originprice:'19800',
+        date:'6月18日-6月22日',
+        startdate: '2020/6/10',
+        expiredate: '2020/6/23',
+        icon: require("@/assets/imgs/custompage/2/icon_youku.png"),
+        saleid: '103019',
+        proid: '6001731'
+    }
+]
+// 618会员开幕活动产品9元购
+const APPLIST_VIPOPENING_NINE = [
+    {
+        name:'喜马拉雅会员月卡',
+        price:'900',
+        originprice:'2500',
+        icon: require("@/assets/imgs/custompage/2/icon_xmly.png"),
+        saleid: '103031',
+        proid: '6001743'
+    },{
+        name:'咪咕视频钻石会员月卡',
+        price:'900',
+        originprice:'2500',
+        icon: require("@/assets/imgs/custompage/2/icon_migu.png"),
+        saleid: '103023',
+        proid: '6001735'
+    },{
+        name:'酷我音乐豪华VIP会员月卡',
+        price:'900',
+        originprice:'1800',
+        icon: require("@/assets/imgs/custompage/2/icon_kuwo.png"),
+        saleid: '103025',
+        proid: '6001737'
+    },{
+        name:'饿了么超级会员月卡',
+        price:'900',
+        originprice:'1500',
+        icon: require("@/assets/imgs/custompage/2/icon_elm.png"),
+        saleid: '102869',
+        proid: '6001573'
+    },{
+        name:'掌阅VIP会员包月卡',
+        price:'900',
+        originprice:'1800',
+        icon: require("@/assets/imgs/custompage/2/icon_zhangyue.png"),
+        saleid: '103029',
+        proid: '6001741'
+    },{
+        name:'QQ阅读会员月卡',
+        price:'900',
+        originprice:'1800',
+        icon: require("@/assets/imgs/custompage/2/icon_qqread.png"),
+        saleid: '103027',
+        proid: '6001739'
+    },{
+        name:'蜻蜓FM超级会员月卡',
+        price:'900',
+        originprice:'3000',
+        icon: require("@/assets/imgs/custompage/2/icon_qingting.png"),
+        saleid: '103033',
+        proid: '6001745'
+    },{
+        name:'书旗小说会员月卡',
+        price:'900',
+        originprice:'1500',
+        icon: require("@/assets/imgs/custompage/2/icon_shuqi.png"),
+        saleid: '103037',
+        proid: '6001749'
+    }
+]
+
+
 // 订购会员、退订会员订单参数信息
 const VIPORDER = {
     proId:process.env.VUE_APP_BUILD === 'production' ?'6001727':'6000784',
@@ -197,4 +304,4 @@ const NEWVIPGIFT = {
     smsCode: '',
 }
 
-export {STATISTICS,CHANNELCODE,APPLIST_CHAODIGOU,STATISTICS_PROVINCE,STATISTICS_ACTIVITY,VIPORDER,NEWVIPGIFT}
+export {STATISTICS,CHANNELCODE,APPLIST_CHAODIGOU,STATISTICS_PROVINCE,STATISTICS_ACTIVITY,VIPORDER,NEWVIPGIFT,APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE,AID_VIPOPENING}

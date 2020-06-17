@@ -50,7 +50,7 @@
                     </van-field>
                 </div>
             </div>
-            <div class="popup-btn submit" @click="submitBtn">立即订购</div>
+            <div class="popup-btn submit" @click="submitBtn">话费支付</div>
         </van-popup>
     </div>
 </template>
@@ -61,7 +61,7 @@
     import { setCookie } from "@/utils/cookie";
     import {getListRights,checkRules,actSignLogin} from '@/api/custompage.js';
     import { sendSmsCode, placeOrder} from "@/api/goodsdetail";
-    import AppCard from '@components/customPage/AppCard.vue';
+    import AppCard from '@components/common/AppCard3.vue';
     import messageBus from "@/utils/messageBus";
     import {APPLIST_CHAODIGOU,STATISTICS_ACTIVITY} from '@/utils/constant';
     import {pvAnalysis} from '@/assets/js/analysis';
@@ -348,14 +348,20 @@
             font-size: 0;
             .close-popup{
                 position: absolute;
-                right: .35rem;
+                top: .3rem;
+                right: .3rem;
                 width: .5rem;
                 height: .5rem;
                 z-index: 9999;
             }
             .popup-title{
+                width: 5.3rem;
+                margin: 0 auto;
                 font-size: .36rem;
-                text-align: left;
+                text-align: center;
+                overflow: hidden;
+                text-overflow:ellipsis;
+                white-space: nowrap;
             }
             .popup-price{
                 margin: .4rem 0 .3rem;
@@ -429,7 +435,7 @@
                                 margin-right: 0.27rem;
                                 border: 0;
                                 font-size: .28rem;
-                                color: #6696FF;
+                                color: #FD7028;
                             }
                         }
                     }
@@ -441,7 +447,7 @@
                 line-height: .88rem;
                 font-size: .36rem;
                 color: #FFF;
-                background: #FE8668;
+                background: #FD7028;
                 text-align: center;
                 border-radius: 2rem;
                 margin: 0 auto;
@@ -451,7 +457,7 @@
                 }
             }
             .submit{
-                background: #6696FF;
+                background: #FD7028;
                 color: #FFF;
             }
         }

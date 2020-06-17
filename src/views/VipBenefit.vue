@@ -116,10 +116,10 @@
                 </div>
             </div>
             <div class="automatic-allow">
-                <img @click.stop="allow('1')" class="allow1"  :src="allowChecked1?require('@imgs/login/checked.png'):require('@imgs/login/nocheck.png')" alt="">
-                <label for="read1" class="read-desc"><span @click.stop="allow('1')">我已阅读并同意</span><span  style="color:#0085d0" @click.stop="showPopup(must_know)">《权益超市黄金会员须知》</span></label>
+                <img @click.stop="allow('1')" class="allow1"  :src="allowChecked1?require('@imgs/login/new_checked.png'):require('@imgs/login/new_nocheck.png')" alt="">
+                <label for="read1" class="read-desc"><span @click.stop="allow('1')">我已阅读并同意</span><span  style="color:#FD7028" @click.stop="showPopup(must_know)">《权益超市黄金会员须知》</span></label>
             </div>
-            <div class="popup-btn submit" @click="submitBtn">{{submitIndex == 1?'退订会员':'立即订购'}}</div>
+            <div class="popup-btn submit" @click="submitBtn">{{submitIndex == 1?'退订会员':'话费支付'}}</div>
         </van-popup>
         <BackHome/>
     </div>
@@ -201,6 +201,8 @@
         created(){
             if(!this.userInfo.phone){
                 this.quickLogin(true);
+            }else{
+                messageBus.$emit('msg_getVipInfo');
             }
         },
         components:{
@@ -234,8 +236,9 @@
                     {id:0,img:require('@imgs/vipbenefit/vip_card1.png'),btn:{src:this.userInfo.hasNewGift == 1?require('@imgs/vipbenefit/ever_get.png'):require('@imgs/vipbenefit/get_now.png'), method: this.userInfo.hasNewGift == 1?'':'get_now'}},
                     {id:1,img:require('@imgs/vipbenefit/vip_card2.png'),btn:{src:require('@imgs/vipbenefit/buy_now.png'),method:'buy_now'}},
                     {id:2,img:require('@imgs/vipbenefit/vip_card3.png'),btn:{src:require('@imgs/vipbenefit/rob_now.png'),method:'rob_now'}},
-                    {id:3,img:require('@imgs/vipbenefit/vip_card4.png'),btn:{src:require('@imgs/vipbenefit/communicate_now.png'),method:'communicate_now'}}
-                ]
+                    {id:3,img:require('@imgs/vipbenefit/vip_card4.png'),btn:{src:this.sysInfo.channel == 'st'?require('@imgs/vipbenefit/communicate_st_now.png'):require('@imgs/vipbenefit/communicate_now.png'),method:this.sysInfo.channel == 'st'?'':'communicate_now'}}
+                ] 
+                
             }
         },
         watch:{
@@ -324,28 +327,28 @@
                                 }
                             ]
                         });
-                    } 
-                    // else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                    //     that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
-                    // } else if(r.data.resultCode == -102) {
-                    //     that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
-                    // } else if(r.data.resultCode == -117) {
-                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                    // } else if(r.data.resultCode == -116) {
-                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                    // } else if(r.data.resultCode == -113) {
-                    //     that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
-                    // } else if(r.data.resultCode == -118) {
-                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
-                    // } else if(r.data.resultCode == -112) {
-                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                    // } else if(r.data.resultCode == 4) {
-                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                    // } else {
-                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
-                    // }
-                    else {
-                        that.$toast.fail({message: '领取失败，请稍后重试', duration: 4000});
+                    }
+                    // else {
+                    //     that.$toast.fail({message: '领取失败，请稍后重试', duration: 4000});
+                    // } 
+                    else if(r.data.resultCode == -1 && r.data.data.code == -1) {
+                        that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
+                    } else if(r.data.resultCode == -102) {
+                        that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
+                    } else if(r.data.resultCode == -117) {
+                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                    } else if(r.data.resultCode == -116) {
+                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                    } else if(r.data.resultCode == -113) {
+                        that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                    } else if(r.data.resultCode == -118) {
+                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                    } else if(r.data.resultCode == -112) {
+                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                    } else if(r.data.resultCode == 4) {
+                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                    } else {
+                        that.$toast.fail({message: r.data.msg, duration: 4000});
                     }
                 }).catch(() => {
                     that.$toast.clear();
@@ -362,7 +365,11 @@
             },
             communicate_now(){
                 // console.log('communicate_now')
-                this.$router.push({name:'customerService'})
+                // if(this.sysInfo.channel == 'st'){
+                //     this.$toast("敬请期待")
+                // }else{
+                    this.$router.push({name:'customerService'})
+                // }
             },
             smsInputCheck(){
                 // 短信码六位数校验
@@ -410,28 +417,29 @@
                         that.$toast.success({message: '订单已受理，开通结果以短信为准', duration: 4000,onClose:()=>{
                             that.$router.push({name: 'myOrder', params: {type:'all'}});
                         }});
-                    }else{
-                        that.$toast.fail({message: '订购失败', duration: 4000});
                     }
-                    // else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                    //     that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
-                    // } else if(r.data.resultCode == -102) {
-                    //     that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
-                    // } else if(r.data.resultCode == -117) {
-                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                    // } else if(r.data.resultCode == -116) {
-                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                    // } else if(r.data.resultCode == -113) {
-                    //     that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
-                    // } else if(r.data.resultCode == -118) {
-                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
-                    // } else if(r.data.resultCode == -112) {
-                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                    // } else if(r.data.resultCode == 4) {
-                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                    // } else {
-                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
+                    // else{
+                    //     that.$toast.fail({message: '订购失败', duration: 4000});
                     // }
+                    else if(r.data.resultCode == -1 && r.data.data.code == -1) {
+                        that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
+                    } else if(r.data.resultCode == -102) {
+                        that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
+                    } else if(r.data.resultCode == -117) {
+                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                    } else if(r.data.resultCode == -116) {
+                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                    } else if(r.data.resultCode == -113) {
+                        that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                    } else if(r.data.resultCode == -118) {
+                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                    } else if(r.data.resultCode == -112) {
+                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                    } else if(r.data.resultCode == 4) {
+                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                    } else {
+                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                    }
                 }).catch(() => {
                     that.$toast.clear();
                 })
@@ -489,6 +497,7 @@
                                 let data = Object.assign({},VIPORDER);
                                 data.channelCode = that.sysInfo.channelCode;
                                 data.dealType = 1; //退订
+                                data.custVipId = that.userInfo.id; //退订增传custVipId字段
                                 that.$toast.loading({
                                     message: '退订中,请稍等…',
                                     forbidClick: true,
@@ -502,28 +511,29 @@
                                         messageBus.$emit('msg_showPopup',false);
                                         that.$toast.success({message: '订单已受理', duration: 4000});
                                         messageBus.$emit('msg_getVipInfo');
-                                    }else{
-                                        that.$toast.fail({message: '退订失败', duration: 4000});
                                     }
-                                    // else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                                    //     that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
-                                    // } else if(r.data.resultCode == -102) {
-                                    //     that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
-                                    // } else if(r.data.resultCode == -117) {
-                                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                                    // } else if(r.data.resultCode == -116) {
-                                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                                    // } else if(r.data.resultCode == -113) {
-                                    //     that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
-                                    // } else if(r.data.resultCode == -118) {
-                                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
-                                    // } else if(r.data.resultCode == -112) {
-                                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                                    // } else if(r.data.resultCode == 4) {
-                                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                                    // } else {
-                                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
+                                    // else{
+                                    //     that.$toast.fail({message: '退订失败', duration: 4000});
                                     // }
+                                    else if(r.data.resultCode == -1 && r.data.data.code == -1) {
+                                        that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
+                                    } else if(r.data.resultCode == -102) {
+                                        that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
+                                    } else if(r.data.resultCode == -117) {
+                                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                                    } else if(r.data.resultCode == -116) {
+                                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                                    } else if(r.data.resultCode == -113) {
+                                        that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                                    } else if(r.data.resultCode == -118) {
+                                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                                    } else if(r.data.resultCode == -112) {
+                                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                    } else if(r.data.resultCode == 4) {
+                                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                    } else {
+                                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                                    }
                                 }).catch(() => {
                                     that.$toast.clear();
                                 })
@@ -771,13 +781,14 @@
             }
         }
         .unsubscribe{
+            display: inline-block;
             position: relative;
             overflow: hidden;
             font-size:0.29rem;
             font-weight:bold;
             color:rgba(192,115,88,1);
             margin-top: 0.5rem;
-            padding-bottom: 1.23rem;
+            margin-bottom: 1.23rem;
         }
         .unsubscribed{
             padding-bottom: 0.5rem;
@@ -829,14 +840,15 @@
             font-size: 0;
             .close-popup{
                 position: absolute;
-                right: .35rem;
+                top: .3rem;
+                right: .3rem;
                 width: .5rem;
                 height: .5rem;
                 z-index: 9999;
             }
             .popup-title{
                 font-size: .36rem;
-                text-align: left;
+                text-align: center;
             }
             .popup-price{
                 margin: .4rem 0 .3rem;
@@ -910,7 +922,7 @@
                                 margin-right: 0.27rem;
                                 border: 0;
                                 font-size: .28rem;
-                                color: #6696FF;
+                                color: #FD7028;
                             }
                         }
                     }
@@ -934,7 +946,7 @@
                 line-height: .88rem;
                 font-size: .36rem;
                 color: #FFF;
-                background: #FE8668;
+                background: #FD7028;
                 text-align: center;
                 border-radius: 2rem;
                 margin: 0 auto;
@@ -944,7 +956,7 @@
                 }
             }
             .submit{
-                background: #6696FF;
+                background: #FD7028;
                 color: #FFF;
             }
         }

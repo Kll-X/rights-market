@@ -118,7 +118,7 @@
                             setCookie('pc',res.data.data.provinceCode);
                             setCookie('pnsign',res.data.data.pnsign);
                             messageBus.$emit('msg_countDown');
-                            messageBus.$emit('msg_check_resetbannerData2');
+                            messageBus.$emit('msg_resetBanner2');
 
                             // 关闭弹窗
                             that.SET_SHOWQUICKLOGIN(false)
@@ -256,7 +256,7 @@
                         setCookie('pc',res.data.data.provinceCode);
                         setCookie('pnsign',res.data.data.pnsign);
                         messageBus.$emit('msg_countDown');
-                        messageBus.$emit('msg_check_resetbannerData2');
+                        messageBus.$emit('msg_resetBanner2');
                         // 关闭弹窗
                         that.SET_SHOWQUICKLOGIN(false)
                     }else{

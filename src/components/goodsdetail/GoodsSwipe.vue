@@ -8,19 +8,26 @@
                     <img class="swipe-item-icon" :src=" Common.getImgUrl(item.icon)" alt="">
                     <div class="swipe-item-font-wrap">
                         <div class="swipe-item-font-con">
-                            <span class="swipe-item-font-name">
+                            <span v-show="!itemDetail.fivego" class="swipe-item-font-name">
+                                {{item.categoryName}}
+                                <!-- <img v-show="itemDetail.fivego == 1" class="swipe-item-vip-icon" src="@imgs/goodsdetail/vip.png" alt=""> -->
+                            </span>
+                            <span v-show="itemDetail.fivego" class="swipe-item-font-name">
+                                会员5折
+                                <!-- <img v-show="itemDetail.fivego == 1" class="swipe-item-vip-icon" src="@imgs/goodsdetail/vip.png" alt=""> -->
+                            </span>
+                            <span class="swipe-item-font-product">
                                 {{item.name}}
-                                <img v-show="itemDetail.fivego == 1" class="swipe-item-vip-icon" src="@imgs/goodsdetail/vip.png" alt="">
                             </span>
                             <!-- 非会员或未登录的样式 -->
-                            <span v-show="!isVip && itemDetail.fivego != 1" class="swipe-item-font-fee">
+                            <!-- <span v-show="!isVip && itemDetail.fivego != 1" class="swipe-item-font-fee">
                                 资费：{{((itemDetail.price)/100).toFixed(2)}}元
                                 <span v-show="itemDetail.price2" class="swipe-item-font-postposition">
                                     会员：{{((itemDetail.price2)/100).toFixed(2)}}元
                                 </span>
-                            </span>
+                            </span> -->
                             <!-- 登录是会员或者五折产品的样式 -->
-                            <span v-show="isVip || itemDetail.fivego == 1" class="swipe-item-font-fee" :class="{'swipe-item-font-vip': itemDetail.price2}">
+                            <!-- <span v-show="isVip || itemDetail.fivego == 1" class="swipe-item-font-fee" :class="{'swipe-item-font-vip': itemDetail.price2}">
                                 <i v-show="itemDetail.fivego != 1 && itemDetail.price2">会员价：</i>
                                 <i v-show="itemDetail.fivego != 1 && !itemDetail.price2">资费：</i>
                                 <i v-show="itemDetail.fivego == 1">5折：</i>
@@ -28,7 +35,7 @@
                                 <span v-show="itemDetail.price2" class="swipe-item-font-postposition swipe-item-font-postposition-delete">
                                     {{((itemDetail.price2)/100).toFixed(2)}}元
                                 </span>
-                            </span>
+                            </span> -->
                         </div>
                     </div>
                 </div>
@@ -64,40 +71,41 @@
 
 <style lang="less">
     #goods-swipe{
-        height: 2.4rem;
+        height: 2.2rem;
         background: #FFF;
         width: 100%;
         overflow: hidden;
         .van-swipe{
             margin: 0 .45rem;
-            height: 2.4rem;
+            height: 2.2rem;
             overflow: visible;
             .van-swipe__track{
                 .van-swipe-item{
-                    background-image: url('../../assets/imgs/goodsdetail/swipeBg.png');
-                    background-size: 6.6rem 2.4rem;
+                    background: url('../../assets/imgs/goodsdetail/swipeBg.png') 0 0 no-repeat;
+                    background-size: 6.4rem 2.2rem;
+                    background-position: center;
                     .swipe-item{
-                        padding: .53rem 0 .61rem .45rem;
+                        padding: .35rem 0 .35rem .80rem;
                         font-size: 0;
                         text-align: left;
                         .swipe-item-icon{
                             display: inline-block;
                             vertical-align: top;
-                            width: 1.26rem;
-                            height: 1.26rem;
-                            margin-right: .25rem;
+                            width: 1.5rem;
+                            height: 1.5rem;
+                            margin-right: .27rem;
                         }
                         .swipe-item-font-wrap{
                             display: inline-block;
-                            width: calc(~"100% - 1.74rem");
+                            width: calc(~"100% - 1.99rem");
                             vertical-align: top;
                             .swipe-item-font-con{
                                 display: flex;
-                                height: 1.26rem;
+                                height: 1.5rem;
                                 flex-flow: column;
                                 align-items: center;
                                 text-align: left;
-                                color: #0F0B1A;
+                                color: #FFF;
                                 i{
                                     font-style: normal;
                                 }
@@ -107,9 +115,12 @@
                                     display: flex;
                                 }
                                 .swipe-item-font-name{
-                                    font-size: .36rem;
-                                    opacity: .8;
+                                    font-size: .28rem;
                                     align-items: flex-end;
+                                }
+                                .swipe-item-font-product{
+                                    font-size: .36rem;
+                                    align-items: flex-start;
                                 }
                                 .swipe-item-vip-icon{
                                     width: 1rem;
@@ -143,7 +154,7 @@
                     }
                 }
                 .van-swipe-five{
-                    background-image: url('../../assets/imgs/goodsdetail/swipeFive.png');
+                    background-image: url('../../assets/imgs/goodsdetail/vipBg.png');
                 }
             }
             .van-swipe__indicators{
