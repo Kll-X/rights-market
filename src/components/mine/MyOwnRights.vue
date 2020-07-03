@@ -5,7 +5,7 @@
             <div class="item" v-for="(item,index) in list" :key="index" @click="$router.push(item.path)">
                 <img :src="item.icon" alt="">
                 <span class="title">{{item.title}}</span>
-                <span class="tips" :class="sysInfo.channel=='st'&&index==3?'colorGray':''">{{item.tips}}</span>
+                <span class="tips">{{item.tips}}</span>
             </div>
         </div>
     </div>
@@ -24,22 +24,9 @@
         },
         computed:{
             ...mapState([
-                "userInfo",
-                "sysInfo"
+                "userInfo"
             ]),
             list(){
-                let tips_customerService,tips_customerService_vip,path_customerService,path_customerService_vip;
-                if(this.sysInfo.channel == 'st') {
-                    tips_customerService = '敬请期待';
-                    path_customerService = {};
-                    tips_customerService_vip = '敬请期待';
-                    path_customerService_vip = {};
-                }else{
-                    tips_customerService = '开通立享';
-                    path_customerService = {name:'vipBenefit'};
-                    tips_customerService_vip = '点击沟通';
-                    path_customerService_vip = {name:'customerService'};
-                }
                 let tips = +this.userInfo.vipLevel?+this.userInfo.hasNewGift?'已领取':'立即领取':'开通立享';
                 return +this.userInfo.vipLevel?[
                     {
@@ -60,8 +47,8 @@
                     },{
                         icon: require('@imgs/mine/icon_service_vip.png'),
                         title: '专属客服',
-                        tips: tips_customerService_vip,
-                        path: path_customerService_vip
+                        tips: '点击沟通',
+                        path: {name:'customerService'}
                     }
                 ]:[
                     {
@@ -82,8 +69,8 @@
                     },{
                         icon: require('@imgs/mine/icon_service.png'),
                         title: '专属客服',
-                        tips: tips_customerService,
-                        path: path_customerService
+                        tips: '开通立享',
+                        path: {name:'vipBenefit'}
                     }
                 ]
             },
@@ -122,8 +109,5 @@
             }
         }
     }
-}
-.colorGray{
-    color:#ccc!important;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <div class="vip-opening">
+    <div class="vip-opening" :class="showTimeFlag?'bg-normal':'bg-latter'">
         <div class="part-crazy" v-if="showTimeFlag">
             <div class="title">年卡5折&nbsp;&nbsp;&nbsp;&nbsp;限时狂欢</div>
             <div class="content">
@@ -37,6 +37,9 @@
                 <BarAppCard class="appcard" v-for="item in applist_halfprice" :key="item.title" :info="item" @order="orderHandler(item)"></BarAppCard>
             </div>
         </div>
+        <div class="btn-more">
+            <img @click="gotolink({name:'home'})" src="@imgs/custompage/2/btn_more.png" alt="">
+        </div>
         <SecondConfirmBuy :info="SecondConfirmInfo"></SecondConfirmBuy>
         <div class="toast" :class="'type'+toast.type" v-if="toast.show">
             <div class="content" :style="toast.contentStyle">
@@ -68,7 +71,7 @@
     import CarzyAppCard from '@/components/common/AppCard4'
     import BarAppCard from '@/components/common/AppCard5'
     import SecondConfirmBuy from '@/components/common/SecondConfirmBuy'
-    import {APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE,AID_VIPOPENING,VIPORDER,STATISTICS_ACTIVITY} from '@/utils/constant'
+    import {APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE,AID_VIPOPENING,VIPORDER,STATISTICS_ACTIVITY,NEWVIPGIFT} from '@/utils/constant'
     import { mapState,mapMutations } from 'vuex'
     import { getData } from "@/api/halfprice";
     import { Toast } from 'vant';
@@ -125,7 +128,7 @@
                     contentStyle:null,
                     tipsStyle:null
                 },
-                showTimeFlag: true
+                showTimeFlag: true//是否显示年卡
             }
         },
         created(){
@@ -149,6 +152,10 @@
                 'SET_USERINFO',
             ]),
             orderHandler(order,formatted,isVipOrder,dontneedVip){
+                //统计普通商品的点击购买按钮数，包括年卡、9元购和5折购
+                if(!isVipOrder){
+                    customAnalysis(STATISTICS_ACTIVITY["618"].activityId,STATISTICS_ACTIVITY["618"].key_btns,order.saleid);
+                }
                 if(!this.checkLogin()) return;
                 let that = this;
                 if(!this.userInfo.isVip && !isVipOrder && !dontneedVip){
@@ -172,11 +179,11 @@
                 }
                 if(order.date){
                     if(new Date().getTime()<new Date(order.startdate).getTime()){
-                        Toast.fail('活动尚未开始');
+                        Toast('活动尚未开始');
                         return;
                     }
                     if(new Date().getTime()>new Date(order.expiredate).getTime()){
-                        Toast.fail('已过期');
+                        Toast('已过期');
                         return;
                     }
                 }
@@ -212,7 +219,10 @@
                             icon: require("@imgs/custompage/2/tips_success.png"),
                         })
                         if (isVipOrder) {
+                            customAnalysis(STATISTICS_ACTIVITY["618"].activityId,STATISTICS_ACTIVITY["618"].key_sales,order.salesId);
                             that.getVipInfo();
+                        } else {
+                            customAnalysis(STATISTICS_ACTIVITY["618"].activityId,STATISTICS_ACTIVITY["618"].key_sales,order.saleid);
                         }
                     } else if(res.resultCode == -137){
                         that.showToast({
@@ -223,7 +233,7 @@
                             icon: require("@imgs/custompage/2/tips_fail.png"),
                         })
                     }else{
-                        Toast.fail({message: res.msg, duration: 4000});
+                        Toast({message: res.msg, duration: 4000});
                     }
                 }
             },
@@ -234,12 +244,14 @@
                     order.name = '黄金会员订购';
                     order.channelCode = this.sysInfo.channelCode;
                     order.isVipOrder = true;
+                    //统计点击开通会员按钮的次数
+                    customAnalysis(STATISTICS_ACTIVITY["618"].activityId,STATISTICS_ACTIVITY["618"].key_btns,order.salesId);
                     this.orderHandler(order,true,true);
                 }
             },
             checkLogin(){
                 if(!this.userInfo.phone){
-                    Toast.fail('请先登录');
+                    Toast('请先登录');
                     let backUrl = encodeURIComponent(this.$route.fullPath);
                     if(this.sysInfo.channel == 'st'){
                         messageBus.$emit('msg_checkLogin','init');
@@ -269,8 +281,8 @@
             getVipInfo(){
                 let that = this;
                 myVip({
-                    proId:'6000692',
-                    salesId:'102125',
+                    proId:NEWVIPGIFT.proId,
+                    salesId:NEWVIPGIFT.salesId,
                     channelCode:that.sysInfo.channelCode,
                     phone:that.userInfo.phone,
                 }).then((res)=>{
@@ -350,9 +362,8 @@
 </script>
 <style scoped lang='less'>
     .vip-opening{
-        background: url("../../assets/imgs/custompage/2/bg.png") center/100% no-repeat;
-        height: 36.22rem;
         padding:0 1.5%;
+        background:url("../../assets/imgs/custompage/2/bg1.png") center/100% no-repeat;
     }
     .part-crazy{
         padding-top: 4.3rem;
@@ -535,5 +546,19 @@
         line-height: .5rem;
         border-top-left-radius: .4rem;
         border-bottom-left-radius: .4rem;
+    }
+    .btn-more{
+        margin:.55rem 0;
+    }
+    .btn-more img{
+        width: 70%;
+    }
+    .bg-latter{
+        background:url("../../assets/imgs/custompage/2/bg1.png") top/100% no-repeat;
+        height: 34.5rem;
+    }
+    .bg-normal{
+        height: 37.96rem;
+        background:url("../../assets/imgs/custompage/2/bg1.png") top/100% no-repeat;
     }
 </style>

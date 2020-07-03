@@ -22,7 +22,7 @@
                 @change="changeRadio"
                 :radioObj="orderList"
                 :isVip="isVip"
-                :itemDetail="paydetailList"/>
+                :itemDetail.sync="paydetailList"/>
             <!-- <RadioCard class="order-radio"
                 ref="radioOrder"
                 @change="changeRadio"
@@ -205,7 +205,7 @@
                     </van-field>
                 </div>
             </div>
-            <div class="popup-btn submit" @click="submitBtn">话费支付</div>
+            <div class="popup-btn submit" @click="submitBtn">确认支付</div>
         </van-popup>
         <BackHome/>
     </div>
@@ -219,9 +219,11 @@
     import DetailCard from '@/components/goodsdetail/DetailCard.vue';
     import OverlayBox from '@/components/goodsdetail/OverlayBox.vue';
     import BackHome from '@/components/common/BackHome.vue';
-    import {STATISTICS} from "@/utils/constant";
+    import {STATISTICS,NEWVIPGIFT} from "@/utils/constant";
     import { getCategory } from "@/api/sort";
     import {customAnalysis} from "@/assets/js/analysis";
+    import {share} from "@/utils/func"
+    import { pagelog } from "@/api/common";
 
     // 接口调用
     import { mapState } from 'vuex';
@@ -229,7 +231,7 @@
     import { getFindMembersBymid, getFindMemberSales, sendSmsCode, placeOrder, payOrderByH5, findMemberTc, queryAcceptFivego } from "@/api/goodsdetail";
     import { Toast } from 'vant';
     import { myVip } from '@/api/vipbenefit';
-import messageBus from '../utils/messageBus';
+    import messageBus from '../utils/messageBus';
     // import { getFindMembers } from "@/api/sort"; // 获取商品列表
 
     export default {
@@ -319,10 +321,11 @@ import messageBus from '../utils/messageBus';
                         {
                             label: ['话费支付', '单次点播'],
                             value: '1',
-                            disable: true,
+                            disable: false,
                             hidden: false,
                             name: '话费支付',
-                        }, {
+                        }, 
+                        {
                             label: ['话费支付', '连续包月'],
                             value: '2',
                             disable: true,
@@ -418,13 +421,14 @@ import messageBus from '../utils/messageBus';
             getIsVip() {
                 return new Promise((reslove, reject) => {
                     if (this.userInfo.isVip == 1) {
+                        this.isVip = 1;
                         reslove();
                         return false;
                     }
                     if (this.userInfo.phone && this.userInfo.isVip === '') {
                         myVip({
-                            proId: '6000692',
-                            salesId: '102125',
+                            proId: NEWVIPGIFT.proId,
+                            salesId: NEWVIPGIFT.salesId,
                             channelCode: this.sysInfo.channelCode,
                             phone: this.userInfo.phone,
                         }).then((res)=>{
@@ -644,6 +648,21 @@ import messageBus from '../utils/messageBus';
                                 }
                             }
                         }
+                        // 初始化价格处理
+                        // let time1 = setInterval(()=> {
+                        //     if (this.$refs.radioOrder.$refs.price1) {
+                        //         for (let index = 0; index < this.$refs.radioOrder.$refs.price1.length; index++) {
+                        //             const item = this.$refs.radioOrder.$refs.price1[index];
+                        //             item.innerHTML = '';
+                        //             item.innerHTML = this.paydetailList.price/100;
+                        //         }
+                        //         for (let index = 0; index < this.$refs.radioOrder.$refs.price2.length; index++) {
+                        //             const item = this.$refs.radioOrder.$refs.price2[index];
+                        //             item.innerHTML = this.paydetailList.price2/100;
+                        //         }
+                        //         clearInterval(time1);
+                        //     }
+                        // }, 100);
                         // 五折会员产品的处理
                         if (this.paydetailList.fivego == 1) {
                             this.isFivego = 1;
@@ -659,8 +678,30 @@ import messageBus from '../utils/messageBus';
                             // 查询当前五折是否可用接口
                             if (this.phoneNumber) this.checkFivego();
                         }
+
+                        //分享及统计
+                        let sharename = this.paydetailList.name || '会员';
+                        let shareImg = this.paydetailList.iconurl?'https:'+ this.Common.getImgUrl(this.paydetailList.iconurl):location.origin + '/imgs/pro/share.png';
+                        share({
+                            title: "买"+sharename+",上中国移动权益超市",
+                            desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                            link: location.href,
+                            imgUrl: shareImg
+                        })
+                        pagelog({
+                            phone: this.userInfo.phone
+                        },{
+                            "isvip":this.userInfo.isVip,//是否会员
+                            "chanelcode":this.sysInfo.fullChannelCode,//超市渠道号
+                            "chanelcode3":this.sysInfo.channelCode,//三级渠道号
+                            "cur_url":location.href,//当前页面url
+                            "up_url":location.origin+'/'+location.search+'#'+window.preRoute.path,//上个页面url
+                            "mid": this.paydetailList.mid,//权益会员id
+                            "mname":this.paydetailList.name// 权益会员名称
+                        });
                     }
-                }).catch(() => {
+                }).catch(e => {
+                   window.console.log(e)
                     Toast({message: '服务器出了点小问题！', duration: 4000});
                 })
             },
@@ -759,7 +800,8 @@ import messageBus from '../utils/messageBus';
                         disable: false,
                         hidden: false,
                         name: '话费支付',
-                    }, {
+                    }, 
+                    {
                         label: ['话费支付', '连续包月'],
                         value: '2',
                         disable: false,
@@ -778,11 +820,28 @@ import messageBus from '../utils/messageBus';
                     //     hidden: false,
                     // }
                 ];
+                // 白名单的处理
+                // if (this.userInfo.iswhite) {
+                //     for (let index = 0; index < this.payList.list.length; index++) {
+                //         const item = this.payList.list[index];
+                //         if (item.value == '2') {
+                //             item.disable = false;
+                //         }
+                //     }
+                // }
                 if (!this.isFristLoad) {
                     this.$router.replace({name: 'goodsDetail', params: {mid: this.mid}});
                     this.changeInitialize(this.goodsList[index].mid);
                 }
                 this.isFristLoad = false;
+                let sharename = this.paydetailList.name || '会员';
+                let shareImg = this.paydetailList.iconurl?'https:'+ this.Common.getImgUrl(this.paydetailList.iconurl):location.origin + '/imgs/pro/share.png';
+                share({
+                    title: "买"+sharename+",上中国移动权益超市",
+                    desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                    link: location.href,
+                    imgUrl: shareImg
+                })
             },
             // 返回对应子组件的radio值
             changeRadio(value, radioObj) {
@@ -806,6 +865,26 @@ import messageBus from '../utils/messageBus';
                         this.goodsName = item.name;
                     }
                 }
+                // 修改swipeRadio中的数据
+                // if (this.$refs.radioOrder.$refs.price1) {
+                //     for (let index = 0; index < this.$refs.radioOrder.$refs.price1.length; index++) {
+                //         const item = this.$refs.radioOrder.$refs.price1[index];
+                //         item.innerHTML = '';
+                //         item.innerHTML = this.paydetailList.price/100;
+                //     }
+                //     for (let index = 0; index < this.$refs.radioOrder.$refs.price2.length; index++) {
+                //         const item = this.$refs.radioOrder.$refs.price2[index];
+                //         item.innerHTML = this.paydetailList.price2/100;
+                //     }
+                // }
+                let sharename = this.paydetailList.name || '会员';
+                let shareImg = this.paydetailList.iconurl?'https:'+ this.Common.getImgUrl(this.paydetailList.iconurl):location.origin + '/imgs/pro/share.png';
+                share({
+                    title: "买"+sharename+",上中国移动权益超市",
+                    desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                    link: location.href,
+                    imgUrl: shareImg
+                })
             },
             // 更改一级套餐选择时，列出对应的支付方式组
             judgeRadio() {
@@ -830,6 +909,13 @@ import messageBus from '../utils/messageBus';
                         for (let k = 0; k < this.payList.list.length; k++) {
                             let pay = this.payList.list[k];
                             if (item.paytype == pay.value) {
+                                // 现网环境下暂时屏蔽掉连续包月
+                                // if (pay.value == '2' && item.provincecode == '1') {
+                                //     continue;
+                                // }
+                                // if (pay.value == '2' && process.env.NODE_ENV == 'production' && !this.userInfo.iswhite) {
+                                //     continue;
+                                // }
                                 if (this.userInfo.provinceCode == null) {
                                     pay.disable = false;
                                 } else {
@@ -866,15 +952,25 @@ import messageBus from '../utils/messageBus';
                         }
                     }
                 }
+                // 屏蔽所有游客可见包月
+                // if (!this.phoneNumber) {
+                    // for (let index = 0; index < this.payList.list.length; index++) {
+                    //     const item = this.payList.list[index];
+                    //     if (item.value == '2'){
+                            // item.disable = true;
+                    //         this.$set(item,'disable',true)
+                    //     }
+                    // }
+                // }
                 // 现网环境下暂时屏蔽掉连续包月
-                if (process.env.NODE_ENV == "production" && !this.userInfo.iswhite) {
-                    for (let index = 0; index < this.payList.list.length; index++) {
-                        const item = this.payList.list[index];
-                        if (item.value == '2'){
-                            item.disable = true;
-                        }
-                    }
-                }
+                // if (process.env.NODE_ENV == 'production' && !this.userInfo.iswhite) {
+                //     for (let index = 0; index < this.payList.list.length; index++) {
+                //         const item = this.payList.list[index];
+                //         if (item.value == '2'){
+                //             item.disable = true;
+                //         }
+                //     }
+                // }
                 // let isFlag = false; // 判断是否有相同的情况 true:有相同的情况 false:没有相同的情况
                 // for (let index = 0; index < this.detailList.length; index++) {
                 //     const item = this.detailList[index];
@@ -968,7 +1064,7 @@ import messageBus from '../utils/messageBus';
                         // this.overlay = true;
                         this.payShow = true;
                     } else { // 第三方支付
-                        const toast = Toast.loading({
+                        const toast = Toast({
                             message: '订购中,请稍等…',
                             forbidClick: true,
                             duration: 0,
@@ -1054,7 +1150,7 @@ import messageBus from '../utils/messageBus';
                     }
                     return false;
                 }
-                const toast = Toast.loading({
+                const toast = Toast({
                     message: '订购中,请稍等…',
                     forbidClick: true,
                     duration: 0,
@@ -1137,6 +1233,28 @@ import messageBus from '../utils/messageBus';
                     toast.clear();
                 })
             },
+        },
+        watch:{
+            '$store.state.userInfo.isVip'(n){
+                this.isVip = n;
+                this.changeInitialize(this.mid);
+            },
+            'paydetailList': {
+                deep: true,
+                handler: function (value) {
+                    if (this.$refs.radioOrder.$refs.price1) {
+                        for (let index = 0; index < this.$refs.radioOrder.$refs.price1.length; index++) {
+                            const item = this.$refs.radioOrder.$refs.price1[index];
+                            item.innerHTML = '';
+                            item.innerHTML = value.price/100;
+                        }
+                        for (let index = 0; index < this.$refs.radioOrder.$refs.price2.length; index++) {
+                            const item = this.$refs.radioOrder.$refs.price2[index];
+                            item.innerHTML = value.price2/100;
+                        }
+                    }
+                },
+            }
         },
     }
 </script>

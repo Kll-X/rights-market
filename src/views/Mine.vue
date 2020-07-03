@@ -28,6 +28,7 @@
         <div class="zone" v-if="vipApps.length">
             <VipBuy :guide="{name:'会员优惠购',id:'1',moreDesc:'更多优惠',path:{name: 'vipPreferential'}}" :vipApps="vipApps.slice(0,3)"></VipBuy>
         </div>
+        <router-link :to="{name: 'faq'}" class="faq"></router-link>
         <van-swipe class="banner" :autoplay="3000" indicator-color="white"  v-if="bannerList.length>0">
             <van-swipe-item v-for="banner in bannerList" :key="banner.id">
                 <div class="img-banner" :style="{backgroundImage:'url('+Common.getImgUrl(banner.icon)+')'}" @click="gotolink(banner.linkurl)"></div>
@@ -48,7 +49,9 @@
     import GuideHeadline from '@/components/home/GuideHeadline.vue';
     import VipBuy from '@/components/common/VipBuy.vue';
     import HalfPrice from '@/components/common/HalfPrice.vue';
-    import MyOwnRights from '@/components/mine/MyOwnRights'
+    import MyOwnRights from '@/components/mine/MyOwnRights';
+    import { getBanner } from '@/utils/func';
+    import { pagelog } from "@/api/common";
 
 
     export default {
@@ -69,21 +72,33 @@
                     {icon: require('@imgs/mine/icon_orders_success@2x.png'),txt: '已成功',num:'0',path:'myOrder/success'},
                     {icon: require('@imgs/mine/icon_orders_close@2x.png'),txt: '已关闭',num:'0',path:'myOrder/close'}
                 ],
-                bannerList: [],
+                bannerList: [
+                    //静态设置列表
+                    // {
+                    //     id: 0,
+                    //     icon: 'mine_618_1.png',
+                    //     startDate: '2020/06/17 00:00:00',
+                    //     endDate: '2020/07/1 00:00:00',
+                    //     name: '权益超市',
+                    // },
+                ],
                 halfApps:[],
                 vipApps:[]
             }
         },
         created() {
+            this.bannerList = getBanner(this.bannerList, this.sysInfo.channelCode);
             getData().then((res)=>{
                 this.halfApps = res.data.data['108']?res.data.data['108']:[];
                 this.vipApps = res.data.data['109']?res.data.data['109']:[];
             });
-            myManager().then(res => {
-                if (res.data.resultCode == 0) {
-                    this.bannerList = res.data.data;
-                }
-            })
+            if (this.bannerList.length == 0) {
+                myManager().then(res => {
+                    if (res.data.resultCode == 0) {
+                        this.bannerList = res.data.data;
+                    }
+                })
+            }
             if (this.userInfo.phone) {
                 queryOrderCount({
                     channelCode: this.sysInfo.channelCode
@@ -104,11 +119,49 @@
                         }
                     }
                     catch (err){
-                        console.log(err)
+                       window.console.log(err)
                     }
                 })
                 messageBus.$emit('msg_getVipInfo');
             }            
+        },
+        mounted(){
+            let that = this;
+            messageBus.$on('msg_loginCheck',()=>{
+                queryOrderCount({
+                    channelCode: that.sysInfo.channelCode
+                },{
+                    phone: that.userInfo.phone,
+                }).then( res =>{
+                    try{
+                        if (res.data.resultCode == 0) {
+                            let data = res.data.data;
+                            for(let item of data) {
+                                switch(item.status) {
+                                    case -99: that.list[0].num = item.count;break;
+                                    case 0: that.list[1].num = item.count;break;
+                                    case 1: that.list[2].num = item.count;break;
+                                    case 2: that.list[3].num = item.count;break;
+                                }
+                            }
+                        }
+                    }
+                    catch (err){
+                       window.console.log(err)
+                    }
+                })
+            })
+            pagelog({
+                phone: this.userInfo.phone
+            },{
+                "isvip":this.userInfo.isVip,//是否会员
+                "chanelcode":this.sysInfo.fullChannelCode,//超市渠道号
+                "chanelcode3":this.sysInfo.channelCode,//三级渠道号
+                "cur_url":location.href,//当前页面url
+                "up_url":location.origin+'/'+location.search+'#'+window.preRoute.path,//上个页面url
+                "mid":"",//权益会员id
+                "mname":""// 权益会员名称
+            });
         },
         computed:{
             ...mapState([
@@ -140,13 +193,13 @@
                                     flag: false
                                 });
                                 messageBus.$emit('msg_countDown',0);
-                                this.$toast.success('您已退出登录')
+                                this.$toast('您已退出登录')
                             }
                         }
                     ]
                 })
                 // messageBus.$emit('msg_countDown',0);
-                // this.$toast.success('您已退出登录')
+                // this.$toast('您已退出登录')
             },
             gotoLogin(){
                 if (!this.userInfo.phone) {
@@ -258,6 +311,14 @@
 }
 .banner{
     margin-bottom: .16rem;
+}
+.faq{
+    display: inline-block;
+    width: 100%;
+    height: 1.62rem;
+    margin-bottom: .16rem;
+    background: url('../assets/imgs/mine/icon_FAQ.png') 0 0 no-repeat;
+    background-size: 100% 1.62rem;
 }
 .img-banner{
     height: 1.78rem;

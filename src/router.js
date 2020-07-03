@@ -6,6 +6,9 @@ import MyOrder from './views/MyOrder.vue'
 import Mine from './views/Mine.vue'
 import Custompage from './views/CustomPage.vue'
 import VipBenefit from './views/VipBenefit.vue'
+import Sort from './views/Sort.vue'
+import HalfPrice from './views/HalfPrice.vue'
+import VipPreferential from './views/VipPreferential.vue'
 
 Vue.use(Router)
 
@@ -26,8 +29,7 @@ export default new Router({
         {
             path: '/sort/:type?',
             name: 'sort',
-            component: () =>
-                import ( /* webpackChunkName: "sort" */ './views/Sort.vue'),
+            component: Sort,
             meta: {
                 title: '中国移动权益超市'
             }
@@ -117,8 +119,7 @@ export default new Router({
         {
             path: '/vipPreferential',
             name: 'vipPreferential',
-            component: () =>
-                import( /* webpackChunkName: "vipPreferential" */ './views/VipPreferential.vue'),
+            component: VipPreferential,
             meta: {
                 title: '中国移动权益超市'
             }
@@ -126,8 +127,7 @@ export default new Router({
         {
             path: '/halfPrice',
             name: 'halfPrice',
-            component: () =>
-                import( /* webpackChunkName: "halfPrice" */ './views/HalfPrice.vue'),
+            component: HalfPrice,
             meta: {
                 title: '中国移动权益超市'
             }
@@ -146,6 +146,15 @@ export default new Router({
             name: 'customerService',
             component: () =>
                 import( /* webpackChunkName: "customerService" */ './views/CustomerService.vue'),
+            meta: {
+                title: '中国移动权益超市'
+            }
+        },
+        {
+            path: '/faq',
+            name: 'faq',
+            component: () =>
+                import( /* webpackChunkName: "newGuest" */ './views/Faq.vue'),
             meta: {
                 title: '中国移动权益超市'
             }

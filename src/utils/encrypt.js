@@ -1,6 +1,6 @@
 // const CryptoJS = require('crypto-js');  //引用AES源码js
 import CryptoJS from 'crypto-js'; //引用AES源码js
-// console.log(CryptoJS);
+//window.console.log(CryptoJS);
 // const key = CryptoJS.enc.Utf8.parse("1de23e756aaf3cc2"); //十六位十六进制数作为密钥
 // const iv = CryptoJS.enc.Utf8.parse('1de23e756aaf3cc2'); //十六位十六进制数作为密钥偏移量
 

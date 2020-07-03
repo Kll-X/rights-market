@@ -42,10 +42,10 @@
                 <guide-headline v-if="sysInfo.channel=='st'" :info="guide7"></guide-headline>
                 <!-- 权益领取轮播图 -->
 
-                <div class="banner3-wrapper" v-if="sysInfo.channel=='st'">
+                <div class="banner3-wrapper" v-if="sysInfo.channel=='st' && banner3_arr.length">
                     <div class="banner3" ref="banner3" @scroll="banner3_scroll">
-                        <div class="content" ref="banner3_content" :style="{width:banner3.arr.length * 1.7 +'rem'}">
-                            <classification-item2 v-for="(item,i) in banner3.arr" :key="i" :item="item"></classification-item2>
+                        <div class="content" ref="banner3_content" :style="{width:banner3_arr.length * 1.7 +'rem'}">
+                            <classification-item2 v-for="(item,i) in banner3_arr" :key="i" :item="item"></classification-item2>
                         </div>
                     </div>
                     <div class="progress-bar" ref="progress_bar">
@@ -134,52 +134,38 @@
     // import store from '@/store'
     import { mapState } from 'vuex'
     import {getData,spec} from "@/api/home";
+    import { pagelog } from "@/api/common";
     import {customAnalysis} from "@/assets/js/analysis";
+    // import {getBanner,getQuery,delQuery} from '@/utils/func';
+    import {getBanner,delQuery} from '@/utils/func';
 
 
     export default {
         name: 'home',
         created(){
+            this.banner1.arr = getBanner(this.banner1.arr, this.sysInfo.channelCode);// 静态取banner
+
             getData().then((res)=>{
                 this.halfApps = res.data.data['108']?res.data.data['108']:[];
                 this.vipApps = res.data.data['109']?res.data.data['109']:[];
                 this.newApps = res.data.data['100']?res.data.data['100']:[];
                 this.hotApps = res.data.data['101']?res.data.data['101']:[];
                 this.specialApps = res.data.data['102']?res.data.data['102']:[];
-                this.banner1.arr = res.data.data['105']?res.data.data['105']:[];
-                this.banner1.arr[0] && (this.banner1.arr[0].needPnsign = true);
-                this.banner1.arr[1] && (this.banner1.arr[1].needPnsign = true);
-                if (process.env.NODE_ENV  !== 'production') {
-                    this.banner1.arr.push({
-                        id: 4,icon:require('@imgs/home/banner1_4.png'),linkurl:location.origin+'/'+location.search+'#/custompage/2'
-                    })
+                if (this.banner1.arr.length === 0) {
+                    this.banner1.arr = res.data.data['105']?res.data.data['105']:[];
+                // this.banner1.arr[0] && (this.banner1.arr[0].needPnsign = true);
                 }
-                // if (process.env.VUE_APP_BUILD === 'production') {
-                //     this.banner1.arr.unshift({
-                //         id: 3,icon:require('@imgs/home/banner1_4.png'),linkurl:'https://rwk.cmicrwx.cn/rwx/rwkvue/RightMarket/',needPnsign:true
-                //     })
-                //     this.banner1.arr.unshift({
-                //         id: 4,icon:require('@imgs/home/banner1_5.png'),linkurl:'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index',needPnsign:true
-                //     })
-                // } else {
-                //     this.banner1.arr.unshift({
-                //         id: 3,icon:require('@imgs/home/banner1_4.png'),linkurl:'https://rwk.cmicrwx.cn/rwx/rwkvue/RightMarket/',needPnsign:true
-                //     })
-                //     this.banner1.arr.unshift({
-                //         id: 4,icon:require('@imgs/home/banner1_5.png'),linkurl:'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',needPnsign:true
-                //     })
-                // }
             }).catch((e)=>{
-                console.log(e)
-                this.$toast.fail('加载失败了，刷新重试哦！');
+               window.console.log(e)
+                this.$toast('加载失败了，刷新重试哦！');
             });
-
+            
             this.resetBanner2();
 
             messageBus.$on('msg_resetBanner2',this.resetBanner2);
             
-            //全渠道、微信渠道、分省渠道统计
-            if (this.sysInfo.channel == 'wx'){
+            //全渠道、微信渠道、手厅渠道、分省渠道统计
+            if (this.sysInfo.channel == 'wx' || this.sysInfo.channel == 'st'){
                 customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][0])
             }
             customAnalysis(STATISTICS.activityId, STATISTICS.all[0]);
@@ -187,7 +173,17 @@
                 customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key);
                 customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key,this.sysInfo.locationCode);
             }
-
+            pagelog({
+                phone: this.userInfo.phone
+            },{
+                "isvip":this.userInfo.isVip,//是否会员
+                "chanelcode":this.sysInfo.fullChannelCode,//超市渠道号
+                "chanelcode3":this.sysInfo.channelCode,//三级渠道号
+                "cur_url":location.href,//当前页面url
+                "up_url":location.origin+'/'+location.search+'#'+window.preRoute.path,//上个页面url
+                "mid":"",//权益会员id
+                "mname":""// 权益会员名称
+            });
         },
         data(){
             return{
@@ -197,9 +193,31 @@
                     indicatorPosition:'outside',
                     indicatorSite:'center',
                     arr:[
-                        {id:0,img:require('@imgs/home/banner1_1.png'),linkurl:'https://dev.coc.10086.cn/coc/web/coc2020/heartChoose/?channelId=C00004001115'},
-                        {id:1,img:require('@imgs/home/banner1_2.png'),linkurl:'https://rwk.cmicrwx.cn/rwx/rwkvue/contractyoung/#/?channelType=newSpring&channelId=C10000034917'},
-                        {id:2,img:require('@imgs/home/banner1_3.png'),linkurl:'https://10086.cn/d/yuYNJj'}
+                        //静态设置列表
+                        // {
+                        //     icon: 'banner1_618_2.png',
+                        //     startDate: '2020/06/17 00:00:00',
+                        //     endDate: '2020/06/22 00:00:00',
+                        // },
+                        // {
+                        //     icon: 'banner1_618_6.jpg',
+                        //     startDate: '2020/06/17 00:00:00',
+                        //     endDate: '2021/06/18 00:00:00',
+                        //     linkurl: 'https://ykhjx.cmicvip.cn/2016tyjf/ykhjx/res/wap/groupbuy.html?sspId=73541',
+                        // },
+                        // {
+                        //     icon: 'home_banner_lingquanyi.jpg',
+                        //     startDate: '2020/06/17 00:00:00',
+                        //     endDate: '2021/06/18 00:00:00',
+                        //     linkurl: 'https://10086.cn/d/yuYNJj',
+                        // },
+                        // {
+                        //     icon: 'home_banner_youhuigou.png',
+                        //     startDate: '2020/06/17 00:00:00',
+                        //     endDate: '2021/06/18 00:00:00',
+                        //     linkurl: 'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index',
+                        //     needPnsign: true
+                        // }
                     ]
                 },
                 classification:[
@@ -272,19 +290,8 @@
                 banner3:{
                     current:0,
                     indicatorPosition:'outside',
-                    indicatorSite:'center',
-                    arr:[
-                        {id:0,title:'5G套内权益',h:'0.76rem',img:require('@imgs/home/banner3_1.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/5g/#/?channelId=C10000037360&version=101'},
-                        {id:1,title:'宝藏卡权益',h:'0.67rem',img:require('@imgs/home/banner3_2.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?channelId=C10000018067&from=singlemessage'},
-                        {id:2,title:'芝麻卡权益',h:'0.70rem',img:require('@imgs/home/banner3_3.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?cardType=2&channelId=C10000018066'},
-                        {id:3,title:'5G家庭会员',h:'0.72rem',img:require('@imgs/home/banner3_4.png'),linkurl:'https://hy.10086.cn/cmccplus/UniAuth.html?WT.ac_id=20191029HYJTQYLQ_MO_O_Z000STKHDICON_WD'},
-                        {id:4,title:'5Gplus会员',h:'0.78rem',img:require('@imgs/home/banner3_5.png'),linkurl:'https://5g.cmicvip.cn/2016tyjf/5gqytc/res/wap/index.html?sspId=67769'},
-                        {id:5,title:'5G直通车',h:'0.52rem',img:require('@imgs/home/banner3_6.png'),linkurl:'https://5g.cmicvip.cn/2016tyjf/5gztc/res/wap/index.html?sspld=70420'},
-                        {id:6,title:'全球通会员',h:'0.66rem',img:require('@imgs/home/banner3_7.png'),linkurl:'https://qqt.cmicrwx.cn/2016tyjf/xhmqqthy/res/wap/activity.html?sspId=66025'},
-                        {id:7,title:'随心系权益',h:'0.76rem',img:require('@imgs/home/banner3_8.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/scene/rightsbaw/index.html#/'},
-                        {id:8,title:'联名卡权益',h:'0.70rem',img:require('@imgs/home/banner3_9.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?channelId=C10000013149&cardType=5'}
-                    ]
-                },
+                    indicatorSite:'center'
+                }
             }
         },
         components: {
@@ -302,7 +309,33 @@
             ...mapState([ 
                 "userInfo" ,
                 "sysInfo"
-            ])
+            ]),
+            banner3_arr(){
+                if(new Date("2020/06/28 00:00:00").getTime() <= new Date().getTime()){//期间
+                    return [
+                        {id:0,title:'5G套内权益',h:'0.76rem',img:require('@imgs/home/banner3_1.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/5g/#/?channelId=C10000037360&from=GR.F000000024'},
+                        {id:1,title:'宝藏卡权益',h:'0.67rem',img:require('@imgs/home/banner3_2.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?channelId=C10000018067&from=GR.F000000016'},
+                        {id:2,title:'芝麻卡权益',h:'0.70rem',img:require('@imgs/home/banner3_3.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?cardType=2&channelId=C10000018066'},
+                        {id:3,title:'明星卡权益',h:'0.70rem',img:require('@imgs/home/banner3_9.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?channelId=C10000013149&cardType=5'},
+                        {id:4,title:'5Gplus会员',h:'0.78rem',img:require('@imgs/home/banner3_5.png'),linkurl:'https://5g.cmicvip.cn/2016tyjf/5gqytc/res/wap/index.html?sspId=67769'},
+                        {id:5,title:'5G直通车',h:'0.52rem',img:require('@imgs/home/banner3_6.png'),linkurl:'https://dev.coc.10086.cn/coc/web/coc2020/pretty_5g/?channelId=C00004003741&pageId=1264892575881678848&type=hot'},
+                        {id:6,title:'全球通会员',h:'0.66rem',img:require('@imgs/home/banner3_7.png'),linkurl:'https://qqt.cmicrwx.cn/2016tyjf/xhmqqthy/res/wap/activity.html?sspId=66025'},
+                        {id:7,title:'随心系权益',h:'0.76rem',img:require('@imgs/home/banner3_8.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/scene/rightsbaw/index.html#?from=GR.F000000001'},
+                        {id:8,title:'5G家庭会员',h:'0.72rem',img:require('@imgs/home/banner3_4.png'),linkurl:'https://hy.10086.cn/cmccplus/UniAuth.html?WT.ac_id=20191029HYJTQYLQ_MO_O_Z000STKHDICON_WD'}
+                    ]
+                }else{//未到期
+                    return [
+                        {id:0,title:'5G套内权益',h:'0.76rem',img:require('@imgs/home/banner3_1.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/5g/#/?channelId=C10000037360&from=GR.F000000024'},
+                        {id:1,title:'宝藏卡权益',h:'0.67rem',img:require('@imgs/home/banner3_2.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?channelId=C10000018067&from=GR.F000000016'},
+                        {id:2,title:'芝麻卡权益',h:'0.70rem',img:require('@imgs/home/banner3_3.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?cardType=2&channelId=C10000018066'},
+                        {id:3,title:'5G家庭会员',h:'0.72rem',img:require('@imgs/home/banner3_4.png'),linkurl:'https://hy.10086.cn/cmccplus/UniAuth.html?WT.ac_id=20191029HYJTQYLQ_MO_O_Z000STKHDICON_WD'},
+                        {id:4,title:'5Gplus会员',h:'0.78rem',img:require('@imgs/home/banner3_5.png'),linkurl:'https://5g.cmicvip.cn/2016tyjf/5gqytc/res/wap/index.html?sspId=67769'},
+                        {id:5,title:'5G直通车',h:'0.52rem',img:require('@imgs/home/banner3_6.png'),linkurl:'https://dev.coc.10086.cn/coc/web/coc2020/pretty_5g/?channelId=C00004003741&pageId=1264892575881678848&type=hot'},
+                        {id:6,title:'全球通会员',h:'0.66rem',img:require('@imgs/home/banner3_7.png'),linkurl:'https://qqt.cmicrwx.cn/2016tyjf/xhmqqthy/res/wap/activity.html?sspId=66025'},
+                        {id:7,title:'随心系权益',h:'0.76rem',img:require('@imgs/home/banner3_8.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/scene/rightsbaw/index.html#?from=GR.F000000001'},
+                    ]
+                }
+            }
         },
         methods:{
             onChange1(i){
@@ -318,11 +351,24 @@
                 this.$refs.banner2[0].swipeTo(i);
             },
             jump(link, needPnsign){
+                let that = this;
                 if (link){
-                    if (needPnsign) {
-                        location.href = link + '?pnsign=' + this.userInfo.pnsign
-                    } else {
-                        location.href = link
+                    // window.console.info(getQuery);
+                    // if(that.sysInfo.channel == 'st' && getQuery('zindex')=='basic' && that.$route.name == 'home'){
+                    if(that.sysInfo.channel == 'st' && that.$route.name == 'home'){
+                        window.leadeon.newWebview({
+                            debug: false,
+                            markID: '',                     //字符串类型，活动 ID （活动id，4.0之后允许不传，4.0之前必填）
+                            type: '',           //字符串类型（分享类型，内部保留字段，允许不传）  4.0 新增
+                            funCode: '',        //字符串类型（分享业务编码，内部保留字段，允许不传）  4.0 新增 详见“统一门户客户端V4.0_接口设计说明书”
+                            bizCode: '', //功能编码，详见“客户端功能编码”(内部使用)
+                            url: needPnsign?link + '?pnsign=' + that.userInfo.pnsign:link, //字符串类型，需要打开的 url，（1、URL中不能有空格；2、参数中如果有汉字，需要对汉字进行encodeURI()编码,最终的结果页面必须对这个参数decodeURI()解码，http://www.w3school.com.cn/jsref/jsref_encodeuri.asp）
+                            success: function(res) {console.log(res)},
+                            error: function(err) {console.log(err)}
+                        });
+                    }else{
+                        //window.console.log(needPnsign ? link + '?pnsign=' + that.userInfo.pnsign:link)
+                        location.href = needPnsign ? link + '?pnsign=' + that.userInfo.pnsign:link
                     }
                 }
             },
@@ -353,20 +399,40 @@
                             if(res.data.data && res.data.data.length > 0){
                                 that.localFlag = true;
                                 res.data.data.forEach((item,i)=>{
-                                    that.$set(that.banner2.arr,i,{id: res.data.data[i].id,img: that.Common.getImgUrl(res.data.data[i].icon),linkurl:res.data.data[i].linkurl});
+                                    that.$set(that.banner2.arr,i,{id: res.data.data[i].id,icon: res.data.data[i].icon,linkurl:res.data.data[i].linkurl});
                                 });
                             }
                         }
                         //else{
-                        //    that.$toast.fail('加载失败了，刷新重试哦！');
+                        //    that.$toast('加载失败了，刷新重试哦！');
                         //}
                     })
                     //.catch(()=>{
-                    //    that.$toast.fail('加载失败了，刷新重试哦！');
+                    //    that.$toast('加载失败了，刷新重试哦！');
                     //});
                 }else{
                     return null
                 }
+            }
+        },
+        beforeRouteLeave(to,from,next){
+            // if(from.name == 'home' && this.sysInfo.channel == 'st' && getQuery('zindex')=='basic'){
+            if(from.name == 'home' && this.sysInfo.channel == 'st'){
+               window.console.log(location.origin+'/'+delQuery(location.search,'zindex')+'#'+ to.fullPath)
+                window.leadeon.newWebview({
+                    debug: false,
+                    markID: '',                     //字符串类型，活动 ID （活动id，4.0之后允许不传，4.0之前必填）
+                    type: '',           //字符串类型（分享类型，内部保留字段，允许不传）  4.0 新增
+                    funCode: '',        //字符串类型（分享业务编码，内部保留字段，允许不传）  4.0 新增 详见“统一门户客户端V4.0_接口设计说明书”
+                    bizCode: '', //功能编码，详见“客户端功能编码”(内部使用)
+                    // url: location.origin+'/'+delQuery(location.search,'zindex')+'#'+ to.fullPath, //字符串类型，需要打开的 url，（1、URL中不能有空格；2、参数中如果有汉字，需要对汉字进行encodeURI()编码,最终的结果页面必须对这个参数decodeURI()解码，http://www.w3school.com.cn/jsref/jsref_encodeuri.asp）
+                    url: location.origin+'/'+location.search+'#'+ to.fullPath, //字符串类型，需要打开的 url，（1、URL中不能有空格；2、参数中如果有汉字，需要对汉字进行encodeURI()编码,最终的结果页面必须对这个参数decodeURI()解码，http://www.w3school.com.cn/jsref/jsref_encodeuri.asp）
+                    success: function() {},
+                    error: function() {}
+                });
+                next(false)
+            }else{
+                next();
             }
         },
         beforeDestroy: function () {

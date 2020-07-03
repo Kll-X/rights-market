@@ -460,16 +460,7 @@ export default {
   },
   props: ["channelType"],
   created(){
-     if(this.userInfo.provinceCode) {
-       if (this.sysInfo.channel == 'st') {
-         this.sure();
-       } else {
-         this[this.provinceDatas[this.userInfo.provinceCode].name]();
-         this.sure();
-       }
-     } else {
-       this.showFlag = true;
-     }
+    this.init()
   },
   computed:{
       ...mapState([
@@ -481,21 +472,22 @@ export default {
     async sure() {
         let goURL = '';
         if (this.sysInfo.channel == 'st') {
-          goURL = 'https://shop.10086.cn/ad/livechat-touch-client/pub-page/liveChatTouchRobert.html?tenantId=' + this.provinceDatas[this.userInfo.provinceCode].tenantId + '&code=BS&channelType=1012&entranceType=rights&artifact=' + this.userInfo.artifact;
+          // goURL = 'https://shop.10086.cn/ad/livechat-touch-client/pub-page/liveChatTouchRobert.html?tenantId=' + this.provinceDatas[this.userInfo.provinceCode].tenantId + '&code=BS&channelType=1012&entranceType=rights&artifact=' + this.userInfo.artifact;
+          goURL = 'https://login.10086.cn/AppSSO.action?targetChannelID=12026&UID='+ this.userInfo.uid +'&TransactionID=123456789&targetUrl=https%3A%2F%2Fshop.10086.cn%2Fad%2Flivechat-touch-client%2Fpub-page%2FliveChatTouchRobert.html%3FtenantId%3D'+ this.provinceDatas[this.userInfo.provinceCode].tenantId +'%26code%3DBS%26channelType%3D1012%26entranceType%3Drights%26type=00';
         } else {
           if (this.appKey == "" || this.provinceCode == "") {
             Toast("请选择省份");
             return;
           }else{
-            console.log("else");
+           window.console.log("else");
             let base_url = "https://cmkf.cmcc-cs.cn:31210/api/nguac/h5/index/";
             let companyId = "ydhkgzh_h5";
             let appKey = this.appKey;
-            console.log(appKey);
+           window.console.log(appKey);
             let deviceNo = this.userInfo.phone;
             // let username = Math.round(Math.random() * 10000);
             let provinceCode = this.provinceCode;
-            console.log(provinceCode);
+           window.console.log(provinceCode);
             let apiVersion = "1.0";
             // let phone = "NoNumber";
             let paramUrl =
@@ -510,17 +502,29 @@ export default {
               provinceCode +
               "&apiVersion=" +
               apiVersion;
-            console.log(paramUrl);
+           window.console.log(paramUrl);
             //  const data1 = await this.$request("livehk/card/temporaryorder", "POST", {
             const data1 = await gotoService(
               {url:paramUrl}
             );
-            console.log(data1);
+           window.console.log(data1);
             goURL = base_url + data1.data.data;
           }
         }
-        console.log(goURL);
+       window.console.log(goURL);
         location.replace(goURL);
+    },
+    init(){
+      if(this.userInfo.provinceCode) {
+       if (this.sysInfo.channel == 'st') {
+         this.sure();
+       } else {
+         this[this.provinceDatas[this.userInfo.provinceCode].name]();
+         this.sure();
+       }
+     } else {
+       this.showFlag = true;
+     }
     },
     anhui() {
       switch (this.channelType) {
@@ -535,7 +539,7 @@ export default {
           break;
       }
       this.provinceCode = "551";
-      console.log(this.provinceCode, this.appKey);
+     window.console.log(this.provinceCode, this.appKey);
     },
     beijing() {
       switch (this.channelType) {
@@ -550,7 +554,7 @@ export default {
           break;
       }
       this.provinceCode = "100";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     guangdong() {
       switch (this.channelType) {
@@ -566,7 +570,7 @@ export default {
           break;
       }
       this.provinceCode = "200";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     shanghai() {
       switch (this.channelType) {
@@ -582,7 +586,7 @@ export default {
           break;
       }
       this.provinceCode = "210";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     tianjin() {
       switch (this.channelType) {
@@ -598,7 +602,7 @@ export default {
           break;
       }
       this.provinceCode = "220";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     chongqing() {
       switch (this.channelType) {
@@ -614,7 +618,7 @@ export default {
           break;
       }
       this.provinceCode = "230";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     liaoning() {
       switch (this.channelType) {
@@ -630,7 +634,7 @@ export default {
           break;
       }
       this.provinceCode = "240";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     jiangsu() {
       switch (this.channelType) {
@@ -646,7 +650,7 @@ export default {
           break;
       }
       this.provinceCode = "250";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     hubei() {
       switch (this.channelType) {
@@ -662,7 +666,7 @@ export default {
           break;
       }
       this.provinceCode = "270";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     sichuan() {
       switch (this.channelType) {
@@ -678,7 +682,7 @@ export default {
           break;
       }
       this.provinceCode = "280";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     shanxi() {
       // 注：这个是陕西！
@@ -695,7 +699,7 @@ export default {
           break;
       }
       this.provinceCode = "290";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     hebei() {
       switch (this.channelType) {
@@ -711,7 +715,7 @@ export default {
           break;
       }
       this.provinceCode = "311";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     shangxi() {
       // 注：这是山西
@@ -728,7 +732,7 @@ export default {
           break;
       }
       this.provinceCode = "351";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     henan() {
       switch (this.channelType) {
@@ -744,7 +748,7 @@ export default {
           break;
       }
       this.provinceCode = "371";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     jilin() {
       switch (this.channelType) {
@@ -760,7 +764,7 @@ export default {
           break;
       }
       this.provinceCode = "431";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     heilongjiang() {
       switch (this.channelType) {
@@ -776,7 +780,7 @@ export default {
           break;
       }
       this.provinceCode = "451";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     neimenggu() {
       switch (this.channelType) {
@@ -792,7 +796,7 @@ export default {
           break;
       }
       this.provinceCode = "471";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     shandong() {
       switch (this.channelType) {
@@ -808,7 +812,7 @@ export default {
           break;
       }
       this.provinceCode = "531";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     zhejiang() {
       switch (this.channelType) {
@@ -824,7 +828,7 @@ export default {
           break;
       }
       this.provinceCode = "571";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     fujian() {
       switch (this.channelType) {
@@ -840,7 +844,7 @@ export default {
           break;
       }
       this.provinceCode = "591";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     hunan() {
       switch (this.channelType) {
@@ -856,7 +860,7 @@ export default {
           break;
       }
       this.provinceCode = "731";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     guangxi() {
       switch (this.channelType) {
@@ -872,7 +876,7 @@ export default {
           break;
       }
       this.provinceCode = "771";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     jiangxi() {
       switch (this.channelType) {
@@ -888,7 +892,7 @@ export default {
           break;
       }
       this.provinceCode = "791";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     guizhou() {
       switch (this.channelType) {
@@ -904,7 +908,7 @@ export default {
           break;
       }
       this.provinceCode = "851";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     yunnan() {
       switch (this.channelType) {
@@ -920,7 +924,7 @@ export default {
           break;
       }
       this.provinceCode = "871";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     xizang() {
       switch (this.channelType) {
@@ -936,7 +940,7 @@ export default {
           break;
       }
       this.provinceCode = "891";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     hainan() {
       switch (this.channelType) {
@@ -952,7 +956,7 @@ export default {
           break;
       }
       this.provinceCode = "898";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     gansu() {
       switch (this.channelType) {
@@ -968,7 +972,7 @@ export default {
           break;
       }
       this.provinceCode = "931";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     ningxia() {
       switch (this.channelType) {
@@ -984,7 +988,7 @@ export default {
           break;
       }
       this.provinceCode = "951";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     qinghai() {
       switch (this.channelType) {
@@ -1000,7 +1004,7 @@ export default {
           break;
       }
       this.provinceCode = "971";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     xinjiang() {
       switch (this.channelType) {
@@ -1016,12 +1020,17 @@ export default {
           break;
       }
       this.provinceCode = "991";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     showPopup() {
       this.show = true;
     }
-  }
+  },
+  watch:{
+    '$store.state.userInfo.provinceCode'(n){
+        n && this.init();
+    }
+  },
 };
 </script>
 

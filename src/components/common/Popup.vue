@@ -2,10 +2,12 @@
     <div class="popup" :style="{'background-color':mask?'rgba(0,0,0,.6)':''}">
         <div class="content">
             <div class="title" :style="{fontSize: content?'.36rem':'.32rem'}">{{title}}</div>
-            <div class="txt" v-if="content">{{content}}</div>
+            <div class="txt" v-if="content" v-html="content"></div>
             <div :class="{'btns':true,'unique':btns.length == 1}">
                 <div class="btn" :style="btn.style?btn.style:''" v-for="btn in btns" @click="btn.handler" :key="btn.title">{{btn.txt}}</div>
             </div>
+            <img class="close-popup" v-if="closeBtn" @click="closePopup"
+                src="@imgs/goodsdetail/close-popup.png" alt="">
         </div>
     </div>
 </template>
@@ -39,15 +41,24 @@
                         },{
                             txt: '确认',
                             handler: function () {
-                                console.log('确认')
+                               window.console.log('确认')
                             }
                         }
                     ]
                 }
-            }
+            },
+            closeBtn:{
+                type: Boolean,
+                default: false
+            },
         },
         data: function () {
             return {
+            }
+        },
+        methods:{
+            closePopup(){
+                messageBus.$emit('msg_showPopup',false)
             }
         },
         watch: {
@@ -68,8 +79,9 @@
     z-index: 100;
     .content{
         position: absolute;
-        top: 4.7rem;
-        left: .85rem;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
         background-color: white;
         width: 5.8rem;
         padding: .7rem .4rem .4rem .4rem;
@@ -113,6 +125,12 @@
                 background-color: #6696FF;
                 color: white;
             }
+        }
+        .close-popup{
+            width:0.5rem;
+            height:0.5rem;
+            position: absolute;
+            top:0.3rem;right:0.3rem
         }
     }
     /*.mask{*/

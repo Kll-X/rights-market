@@ -25,3 +25,12 @@ export function checkRules(headers, data) {
         headers: headers
     })
 }
+
+export function placeActOrder(data,headers){
+    return request({
+        url: '/api/activity/placeOrder.do',
+        method: 'post',
+        data: data,
+        headers: headers
+    })
+}

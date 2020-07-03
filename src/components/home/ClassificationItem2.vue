@@ -11,29 +11,44 @@
 
 <script>
     import messageBus from "@/utils/messageBus";
+    // import {getQuery} from '@/utils/func';
     import { mapState } from 'vuex';
-
 
     export default {
         name: "classification-item2",
         props:['item'],
         computed:{
             ...mapState([
-                "userInfo" 
+                "userInfo",
+                "sysInfo"
             ])
         },
         methods:{
             jump(){
-                if(this.item.rights == 'getRights'){
+                let that = this;
+                if(that.item.rights == 'getRights'){
                     // 先判断是否登录
-                    if(this.userInfo.phone){
-                        this.$router.push({name:'getRights'})
+                    if(that.userInfo.phone){
+                        that.$router.push({name:'getRights'})
                     }else{
                         messageBus.$emit('msg_checkLogin','init')
                     }
                 }else{
-                    // this.$router.push({name: 'sort', params: {type:this.item.id}})
-                    window.location.href = this.item.linkurl
+                    // if(that.sysInfo.channel == 'st' && getQuery('zindex')=='basic' && that.$route.name == 'home'){
+                    if(that.sysInfo.channel == 'st' && that.$route.name == 'home'){
+                        window.leadeon.newWebview({
+                            debug: false,
+                            markID: '',                     //字符串类型，活动 ID （活动id，4.0之后允许不传，4.0之前必填）
+                            type: '',           //字符串类型（分享类型，内部保留字段，允许不传）  4.0 新增
+                            funCode: '',        //字符串类型（分享业务编码，内部保留字段，允许不传）  4.0 新增 详见“统一门户客户端V4.0_接口设计说明书”
+                            bizCode: '', //功能编码，详见“客户端功能编码”(内部使用)
+                            url: that.item.linkurl, //字符串类型，需要打开的 url，（1、URL中不能有空格；2、参数中如果有汉字，需要对汉字进行encodeURI()编码,最终的结果页面必须对这个参数decodeURI()解码，http://www.w3school.com.cn/jsref/jsref_encodeuri.asp）
+                            success: function(res) {console.log(res)},
+                            error: function(err) {console.log(err)}
+                        });
+                    }else{
+                        window.location.href = that.item.linkurl
+                    }
                 }
             }
         }

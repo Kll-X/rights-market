@@ -18,14 +18,14 @@
                                 <div class="radio-font-title-con"><span>{{label}}</span></div>
                             </div>
                             <div class="swipe-price" v-show="itemDetail.tc == item.value">
-                                <div class="swipe-price-fee">¥<span>{{(itemDetail.price/100)}}</span></div>
+                                <div class="swipe-price-fee">¥<span ref="price1"></span></div>
                                 <!-- 是会员，并且有price2的情况 -->
-                                <div v-show="(isVip && itemDetail.price2) || item.fivego" class="swipe-price-origin swipe-price-delete">
-                                    ¥<span>{{(itemDetail.price2/100)}}</span>
+                                <div v-show="(isVip && nowPrice2) || item.fivego" class="swipe-price-origin swipe-price-delete">
+                                    ¥<span ref="price2"></span>
                                 </div>
                                 <!-- 未登录非会员的样式 -->
-                                <div v-show="!isVip && itemDetail.price2 && !item.fivego" class="swipe-price-origin swipe-price-vip">
-                                    <span class="swipe-price-vip-con">黄金会员价¥{{(itemDetail.price2/100)}}</span>
+                                <div v-show="!isVip && nowPrice2 && !item.fivego" class="swipe-price-origin swipe-price-vip">
+                                    <span class="swipe-price-vip-con">黄金会员价¥<span ref="price2"></span></span>
                                 </div>
                             </div>
                             <div class="swipe-price" v-show="itemDetail.tc != item.value">
@@ -99,6 +99,13 @@
                         this.swiper.allowTouchMove = true;
                     }
                 }
+            },
+            'itemDetail': {
+                deep: true,
+                handler: function (value) {
+                    this.nowPrice = value.price;
+                    this.nowPrice2 = value.price2;
+                },
             }
         },
         data() {
@@ -109,15 +116,37 @@
                     slidesOffsetBefore : 17.5,
                     slidesOffsetAfter : 17.5,
                 },
+                nowPrice: '0',
+                nowPrice2: '',
             };
         },
         mounted() {
-
+            this.nowPrice = this.itemDetail.price;
+            if (this.itemDetail.price2) this.nowPrice2 = this.itemDetail.price2;
+            let time1 = setInterval(()=> {
+                if (this.$refs.price1) {
+                    this.initValue();
+                    clearInterval(time1);
+                }
+            }, 100);
+            
         },
         methods: {
             changeRadio() {
                 this.radioObj.value = this.radio;
                 this.$emit('change', this.radio, this.radioObj);
+            },
+            initValue() {
+                this.$nextTick(() => {
+                    for (let index = 0; index < this.$refs.price1.length; index++) {
+                        const item = this.$refs.price1[index];
+                        item.innerHTML = this.itemDetail.price/100;
+                    }
+                    for (let index = 0; index < this.$refs.price2.length; index++) {
+                        const item = this.$refs.price2[index];
+                        item.innerHTML = this.itemDetail.price2/100;
+                    }
+                })
             },
         },
     }

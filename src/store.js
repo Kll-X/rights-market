@@ -19,6 +19,7 @@ export default new Vuex.Store({
             provinceCode: null,
             iswhite:0,
             isVip:'',
+            orderId:'',
             expireTime:'',
             cancelFlag:'',
             hasNewGift:'',
@@ -35,7 +36,8 @@ export default new Vuex.Store({
         sysInfo: {
             channelCode:'',
             channel: 'all',
-            locationCode: ''
+            locationCode: '',
+            fullChannelCode:''
         }
     },
     mutations: {
@@ -49,8 +51,14 @@ export default new Vuex.Store({
             switch (+code) {
                 case CHANNELCODE.st: state.sysInfo.channel = 'st';state.sysInfo.channelCode = +code;break;
                 case CHANNELCODE.wx: state.sysInfo.channel = 'wx';state.sysInfo.channelCode = +code;break;
+                case CHANNELCODE.group: state.sysInfo.channel = 'group';state.sysInfo.channelCode = +code;break;
+                case CHANNELCODE.sms: state.sysInfo.channel = 'sms';state.sysInfo.channelCode = +code;break;
+                case CHANNELCODE.banner: state.sysInfo.channel = 'banner';state.sysInfo.channelCode = +code;break;
                 default: state.sysInfo.channel = 'all';state.sysInfo.channelCode = CHANNELCODE.all;
             }
+        },
+        SET_FULLCHANNEL:(state, code) => {
+            state.sysInfo.fullChannelCode = +code;
         },
         SET_SYSINFO: (state, sysInfo) => {
             Object.assign(state.sysInfo, sysInfo);

@@ -45,7 +45,7 @@
                 <img @click.stop="allow('1')" class="allow1"  :src="allowChecked1?require('@imgs/login/new_checked.png'):require('@imgs/login/new_nocheck.png')" alt="">
                 <label for="read1" class="read-desc"><span @click.stop="allow('1')">我已阅读并同意</span><span  style="color:#FD7028" @click.stop="showPopup(must_know)">《权益超市黄金会员须知》</span></label>
             </div>
-            <div class="popup-btn submit" @click="submitBtn">话费支付</div>
+            <div class="popup-btn submit" @click="submitBtn">确认支付</div>
         </van-popup>
     </div>
 </template>
@@ -115,17 +115,17 @@
                 let that = this;
                 // 短信码不能为空
                 if (this.smsCode == ''){
-                    Toast.fail('请输入验证码');
+                    Toast('请输入验证码');
                     return false;
                 }
                 // 短信码六位数校验
                 if (this.smsCode.length != 6){
-                    Toast.fail('请输入六位验证码');
+                    Toast('请输入六位验证码');
                     return false;
                 }
                 // 如果当前订购产品是会员但却没有勾选同意
                 if (this.info.paydetailList.isVipOrder && !this.allowChecked1) {
-                    Toast.fail('请确认权益超市黄金会员须知');
+                    Toast('请确认权益超市黄金会员须知');
                     return false;
                 }
                 // 如果手机号为空，则跳转到登录页
@@ -133,7 +133,7 @@
                     this.reLogin();
                     return false;
                 }
-                const toast = Toast.loading({
+                const toast = Toast({
                     message: '订购中...',
                     forbidClick: true,
                     duration: 0,
@@ -141,7 +141,7 @@
                 // 校验短信验证码
                 let headers = {'phone': this.info.orderObject.phone};
                 let data = Object.assign({},this.info.paydetailList,{smsCode:this.smsCode});
-                console.log(data)
+               window.console.log(data)
                 placeOrder(data, headers).then((r) => {
                     toast.clear();
                     if (this.info.callback){
@@ -150,7 +150,7 @@
                         if (r.data.resultCode == 0) {
                             that.$router.push({name: 'myOrder', params: {type:'all'}});
                         } else {
-                            Toast.fail({message: r.data.msg, duration: 4000});
+                            Toast({message: r.data.msg, duration: 4000});
                         }
                     }
                 }).catch(() => {
@@ -166,7 +166,7 @@
                         that.coutdownShow = true;
                         that.coutdownFunc();
                     } else {
-                        Toast.fail(response.data.msg);
+                        Toast(response.data.msg);
                     }
                 })
             },

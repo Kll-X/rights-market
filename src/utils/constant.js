@@ -2,7 +2,10 @@
 const CHANNELCODE = {
     all: '',
     wx: 67055,
-    st: 67054
+    st: 67054,
+    group: 67057,
+    sms: 67058,
+    banner: 67059
 }
 
 // 统计key
@@ -42,7 +45,7 @@ const STATISTICS = process.env.VUE_APP_BUILD === 'production' ?{
     ],
     // 手厅
     st: [
-        'f7a24cdc66d44c1c90b59c22eg07d7l4', //分类页
+        'f7a24cdc66d44c1c90b59c22eg07d7l4', //首页
         'f7a24cdc66d44c1c90b59c34fh18e7l5', //详情页
         'f7a24cdc66d44c1c90b59c34fh18e7l6'  //订单页
     ]
@@ -62,7 +65,8 @@ const STATISTICS_ACTIVITY = {
     "618":{
         activityId: '200616000',
         key_new:'284c95172b4d4366a8fbfdbd19c4fd9f',
-        key_sales:'cd4d6a59785a4493adadc824178481d5'
+        key_sales:'cd4d6a59785a4493adadc824178481d5',
+        key_btns:'249b8f8e683f460582908097396678ba'
     }
 }
 
@@ -281,7 +285,7 @@ const APPLIST_VIPOPENING_NINE = [
 const VIPORDER = {
     proId:process.env.VUE_APP_BUILD === 'production' ?'6001727':'6000784',
     salesId:process.env.VUE_APP_BUILD === 'production' ?'103015':'102160',
-    name:process.env.VUE_APP_BUILD === 'production' ?'权益超市环境会员（权益超市-话费支付）':'用户会员销售品',
+    name:process.env.VUE_APP_BUILD === 'production' ?'权益超市黄金会员（权益超市-话费支付）':'用户会员销售品',
     dealType: 0,
     isPay: 1,
     payType: 10,

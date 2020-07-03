@@ -67,7 +67,9 @@
                 <span @click.stop="changeslide(i)" v-for="(item, i) in bannerData" :key="i" :class="{'self-indicator':true,'active-indicator':i==current,'common-indicator':i!=current}"></span>
             </div>
         </van-swipe>
-        <div v-show="type === 1" class="unsubscribe" @click.stop="unsubscribe">
+        <div v-show="type === 1 || type === 2" style="height:0.5rem"></div>
+        <!-- v-show="type === 1 && userInfo.orderId !== '0'" -->
+        <div v-if="false" class="unsubscribe" :class="userInfo.orderId === '0'?'underLine':''" @click.stop="unsubscribe">
             退订会员
         </div>
         <div v-show="type === 2" class="unsubscribed">
@@ -119,7 +121,7 @@
                 <img @click.stop="allow('1')" class="allow1"  :src="allowChecked1?require('@imgs/login/new_checked.png'):require('@imgs/login/new_nocheck.png')" alt="">
                 <label for="read1" class="read-desc"><span @click.stop="allow('1')">我已阅读并同意</span><span  style="color:#FD7028" @click.stop="showPopup(must_know)">《权益超市黄金会员须知》</span></label>
             </div>
-            <div class="popup-btn submit" @click="submitBtn">{{submitIndex == 1?'退订会员':'话费支付'}}</div>
+            <div class="popup-btn submit" @click="submitBtn">{{submitIndex == 1?'退订会员':'确认支付'}}</div>
         </van-popup>
         <BackHome/>
     </div>
@@ -236,7 +238,7 @@
                     {id:0,img:require('@imgs/vipbenefit/vip_card1.png'),btn:{src:this.userInfo.hasNewGift == 1?require('@imgs/vipbenefit/ever_get.png'):require('@imgs/vipbenefit/get_now.png'), method: this.userInfo.hasNewGift == 1?'':'get_now'}},
                     {id:1,img:require('@imgs/vipbenefit/vip_card2.png'),btn:{src:require('@imgs/vipbenefit/buy_now.png'),method:'buy_now'}},
                     {id:2,img:require('@imgs/vipbenefit/vip_card3.png'),btn:{src:require('@imgs/vipbenefit/rob_now.png'),method:'rob_now'}},
-                    {id:3,img:require('@imgs/vipbenefit/vip_card4.png'),btn:{src:this.sysInfo.channel == 'st'?require('@imgs/vipbenefit/communicate_st_now.png'):require('@imgs/vipbenefit/communicate_now.png'),method:this.sysInfo.channel == 'st'?'':'communicate_now'}}
+                    {id:3,img:require('@imgs/vipbenefit/vip_card4.png'),btn:{src:require('@imgs/vipbenefit/communicate_now.png'),method:'communicate_now'}}
                 ] 
                 
             }
@@ -271,7 +273,7 @@
                         that.coutdownShow = true;
                         that.coutdownFunc();
                     } else {
-                        that.$toast.fail('验证码跑丢了，稍后再试哦！');
+                        that.$toast('验证码跑丢了，稍后再试哦！');
                     }
                 })
             },
@@ -297,9 +299,9 @@
                 let headers = {'phone': that.userInfo.phone};
                 let data = Object.assign({},NEWVIPGIFT);
                 data.channelCode = that.sysInfo.channelCode;
-                // console.log(data,'新人礼包');
+                //window.console.log(data,'新人礼包');
 
-                that.$toast.loading({
+                that.$toast({
                     message: '领取中,请稍等…',
                     forbidClick: true,
                     duration: 0,
@@ -329,42 +331,42 @@
                         });
                     }
                     // else {
-                    //     that.$toast.fail({message: '领取失败，请稍后重试', duration: 4000});
+                    //     that.$toast({message: '领取失败，请稍后重试', duration: 4000});
                     // } 
                     else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                        that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
+                        that.$toast({message: '请输入正确的验证码哦', duration: 4000});
                     } else if(r.data.resultCode == -102) {
-                        that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
+                        that.$toast({message: '订购异常,请稍后重试!', duration: 4000});
                     } else if(r.data.resultCode == -117) {
-                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
                     } else if(r.data.resultCode == -116) {
-                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
                     } else if(r.data.resultCode == -113) {
-                        that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                        that.$toast({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
                     } else if(r.data.resultCode == -118) {
-                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                        that.$toast({message: r.data.msg, duration: 4000});
                     } else if(r.data.resultCode == -112) {
-                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                     } else if(r.data.resultCode == 4) {
-                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                     } else {
-                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                        that.$toast({message: r.data.msg, duration: 4000});
                     }
                 }).catch(() => {
                     that.$toast.clear();
                 })
             },
             buy_now(){
-                // console.log('buy_now');
+                //window.console.log('buy_now');
                 this.$router.push({name:'vipPreferential'})
             },
             rob_now(){
-                // console.log('rob_now')
+                //window.console.log('rob_now')
                 this.$router.push({name:'halfPrice'})
 
             },
             communicate_now(){
-                // console.log('communicate_now')
+                //window.console.log('communicate_now')
                 // if(this.sysInfo.channel == 'st'){
                 //     this.$toast("敬请期待")
                 // }else{
@@ -374,7 +376,7 @@
             smsInputCheck(){
                 // 短信码六位数校验
                 if (this.subscribeSmsCode == '' || this.subscribeSmsCode.length != 6){
-                    this.$toast.fail('请输入正确的6位验证码');
+                    this.$toast('请输入正确的6位验证码');
                     return false;
                 }
             },
@@ -383,7 +385,7 @@
                 let that = this;
                 // 短信码六位数校验
                 if (that.subscribeSmsCode == '' || that.subscribeSmsCode.length != 6){
-                    that.$toast.fail('请输入正确的6位验证码');
+                    that.$toast('请输入正确的6位验证码');
                     return false;
                 }
                 // 如果手机号为空，则跳转到登录页
@@ -393,7 +395,7 @@
                 }
                  // 有选中已同意，才能登录
                 if(!that.allowChecked1){
-                    that.$toast.fail("请先勾选同意《权益超市黄金会员须知》");
+                    that.$toast("请先勾选同意《权益超市黄金会员须知》");
                     return false
                 }
                 let headers = {'phone': that.userInfo.phone};
@@ -401,44 +403,44 @@
                 data.channelCode = that.sysInfo.channelCode;
                 data.smsCode = that.subscribeSmsCode;
 
-                that.$toast.loading({
+                that.$toast({
                     message: '订购中,请稍等…',
                     forbidClick: true,
                     duration: 0,
                 });
                 //会员订购
-                // console.log(data,'订购');
+                //window.console.log(data,'订购');
                 placeOrder(data, headers).then((r) => {
                     that.$toast.clear();
                     if (r.data.resultCode == 0) {
                         //订购成功，关闭底部弹窗
                         that.subscribeShow = false;
                         messageBus.$emit('msg_getVipInfo');
-                        that.$toast.success({message: '订单已受理，开通结果以短信为准', duration: 4000,onClose:()=>{
+                        that.$toast({message: '订单已受理，开通结果以短信为准', duration: 4000,onClose:()=>{
                             that.$router.push({name: 'myOrder', params: {type:'all'}});
                         }});
                     }
                     // else{
-                    //     that.$toast.fail({message: '订购失败', duration: 4000});
+                    //     that.$toast({message: '订购失败', duration: 4000});
                     // }
                     else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                        that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
+                        that.$toast({message: '请输入正确的验证码哦', duration: 4000});
                     } else if(r.data.resultCode == -102) {
-                        that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
+                        that.$toast({message: '订购异常,请稍后重试!', duration: 4000});
                     } else if(r.data.resultCode == -117) {
-                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
                     } else if(r.data.resultCode == -116) {
-                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
                     } else if(r.data.resultCode == -113) {
-                        that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                        that.$toast({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
                     } else if(r.data.resultCode == -118) {
-                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                        that.$toast({message: r.data.msg, duration: 4000});
                     } else if(r.data.resultCode == -112) {
-                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                     } else if(r.data.resultCode == 4) {
-                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                     } else {
-                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                        that.$toast({message: r.data.msg, duration: 4000});
                     }
                 }).catch(() => {
                     that.$toast.clear();
@@ -477,6 +479,8 @@
             },
             unsubscribe(){
                 this.$toast.clear();
+
+                if(this.userInfo.orderId === '0'){return}//线下不给退订
                 
                 messageBus.$emit('msg_showPopup',{
                     flag: true,
@@ -498,41 +502,41 @@
                                 data.channelCode = that.sysInfo.channelCode;
                                 data.dealType = 1; //退订
                                 data.custVipId = that.userInfo.id; //退订增传custVipId字段
-                                that.$toast.loading({
+                                that.$toast({
                                     message: '退订中,请稍等…',
                                     forbidClick: true,
                                     duration: 0,
                                 });
-                                // console.log(data,'退订');
+                                //window.console.log(data,'退订');
                                 placeOrder(data, headers).then((r) => {
                                     that.$toast.clear();
                                     if (r.data.resultCode == 0) {
                                         //退订成功，关闭页面弹窗
                                         messageBus.$emit('msg_showPopup',false);
-                                        that.$toast.success({message: '订单已受理', duration: 4000});
+                                        that.$toast({message: '订单已受理', duration: 4000});
                                         messageBus.$emit('msg_getVipInfo');
                                     }
                                     // else{
-                                    //     that.$toast.fail({message: '退订失败', duration: 4000});
+                                    //     that.$toast({message: '退订失败', duration: 4000});
                                     // }
                                     else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                                        that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
+                                        that.$toast({message: '请输入正确的验证码哦', duration: 4000});
                                     } else if(r.data.resultCode == -102) {
-                                        that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
+                                        that.$toast({message: '订购异常,请稍后重试!', duration: 4000});
                                     } else if(r.data.resultCode == -117) {
-                                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
                                     } else if(r.data.resultCode == -116) {
-                                        that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
                                     } else if(r.data.resultCode == -113) {
-                                        that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                                        that.$toast({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
                                     } else if(r.data.resultCode == -118) {
-                                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                                        that.$toast({message: r.data.msg, duration: 4000});
                                     } else if(r.data.resultCode == -112) {
-                                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                                     } else if(r.data.resultCode == 4) {
-                                        that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                                     } else {
-                                        that.$toast.fail({message: r.data.msg, duration: 4000});
+                                        that.$toast({message: r.data.msg, duration: 4000});
                                     }
                                 }).catch(() => {
                                     that.$toast.clear();
@@ -787,13 +791,14 @@
             font-size:0.29rem;
             font-weight:bold;
             color:rgba(192,115,88,1);
-            margin-top: 0.5rem;
             margin-bottom: 1.23rem;
+        }
+        .unsubscribe.underLine{
+            color:rgba(189,191,194,1);
         }
         .unsubscribed{
             padding-bottom: 0.5rem;
             .txt1{
-                padding-top: 0.5rem;
                 font-size:0.3rem;
                 font-weight:400;
                 color:rgba(189,191,194,1);
