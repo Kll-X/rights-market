@@ -50,7 +50,7 @@
                     </van-field>
                 </div>
             </div>
-            <div class="popup-btn submit" @click="submitBtn">立即订购</div>
+            <div class="popup-btn submit" @click="submitBtn">确认支付</div>
         </van-popup>
     </div>
 </template>
@@ -59,9 +59,9 @@
     import { mapState,mapMutations } from 'vuex';
     import { Toast } from 'vant';
     import { setCookie } from "@/utils/cookie";
-    import {getListRights,checkRules,actSignLogin} from '@/api/custompage.js';
-    import { sendSmsCode, placeOrder} from "@/api/goodsdetail";
-    import AppCard from '@components/customPage/AppCard.vue';
+    import {getListRights,checkRules,actSignLogin,placeActOrder} from '@/api/custompage.js';
+    import { sendSmsCode} from "@/api/goodsdetail";
+    import AppCard from '@components/common/AppCard3.vue';
     import messageBus from "@/utils/messageBus";
     import {APPLIST_CHAODIGOU,STATISTICS_ACTIVITY} from '@/utils/constant';
     import {pvAnalysis} from '@/assets/js/analysis';
@@ -102,7 +102,8 @@
         },
         computed:{
             ...mapState([
-                "userInfo"
+                "userInfo",
+                "sysInfo"
             ])
         },
         created() {
@@ -123,6 +124,7 @@
                     setCookie('t',Date.parse(new Date()));
                     setCookie('pc',res.data.data.provinceCode);
                     setCookie('pnsign',res.data.data.pnsign);
+                    setCookie('iswhite',res.data.data.iswhite);
                     messageBus.$emit('msg_countDown');
 
                     this.phoneNumber = this.userInfo.phoneMask;
@@ -130,7 +132,7 @@
                     getListRights({
                         phone: this.userInfo.phone,
                     },{
-                        channelcode: process.env.NODE_ENV == 'production'? '67043':'67047'
+                        channelcode: process.env.VUE_APP_BUILD == 'production'? '67043':'67047'
                     }).then(res=>{
                         this.filterCanOrder(this.applist,res.data.data)
                     })
@@ -138,7 +140,7 @@
                         this.showToast({
                             tips: '订购优惠价权益产品，需先认证移动勋章。',
                             type: 1,
-                            link: process.env.NODE_ENV=='production'?'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index':'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',
+                            link: process.env.VUE_APP_BUILD=='production'?'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index':'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',
                             linkTxt: '立即认证'
                         })
                     }
@@ -147,7 +149,7 @@
                 }
             })
             //pv、uv统计
-            if (process.env.NODE_ENV == 'production') {
+            if (process.env.VUE_APP_BUILD == 'production') {
                 pvAnalysis(STATISTICS_ACTIVITY[517].activityId);
             }
 
@@ -189,7 +191,7 @@
                 checkRules({
                     phone:this.userInfo.phone
                 },{
-                    "channelcode":process.env.NODE_ENV == 'production'? '67043':'67047',
+                    "channelcode":process.env.VUE_APP_BUILD == 'production'? '67043':'67047',
                     "salesid": appinfo.salesid
                 }).then(res=>{
                     if (res.data.resultCode == 0) {
@@ -229,7 +231,7 @@
                         that.coutdownShow = true;
                         that.coutdownFunc();
                     } else {
-                        Toast.fail(response.data.msg);
+                        Toast(response.data.msg);
                         // this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
                         // let backUrl = encodeURIComponent(this.$route.fullPath + '?autobuy=true');
                         // this.$router.replace({name: 'login', query: {'backUrl': backUrl}});
@@ -241,12 +243,12 @@
                 let that = this;
                 // 短信码不能为空
                 if (this.orderObject.smsCode == ''){
-                    Toast.fail('请输入验证码');
+                    Toast('请输入验证码');
                     return false;
                 }
                 // 短信码六位数校验
                 if (this.orderObject.smsCode.length != 6){
-                    Toast.fail('请输入六位验证码');
+                    Toast('请输入六位验证码');
                     return false;
                 }
                 // 如果手机号为空，则跳转到登录页
@@ -254,7 +256,7 @@
                     this.reLogin();
                     return false;
                 }
-                const toast = Toast.loading({
+                const toast = Toast({
                     message: '订购中...',
                     forbidClick: true,
                     duration: 0,
@@ -265,7 +267,7 @@
                     proId: this.paydetailList.proid,
                     name: this.paydetailList.name,
                     salesId: this.paydetailList.saleid,
-                    channelCode: '' ,
+                    channelCode: this.sysInfo.channelCode ,
                     dealType: 0,
                     isPay: 1,
                     payType: 10,
@@ -273,12 +275,12 @@
                     orderWay: '1',//话费支付单次点播
                     smsCode: this.orderObject.smsCode,
                 }
-                placeOrder(data, headers).then((r) => {
+                placeActOrder(data, headers).then((r) => {
                     toast.clear();
                     if (r.data.resultCode == 0) {
                         that.$router.push({name: 'myOrder', params: {type:'all'}});
                     } else {
-                        Toast.fail({message: r.data.msg, duration: 4000});
+                        Toast({message: r.data.msg, duration: 4000});
                     }
                 }).catch(() => {
                     toast.clear();
@@ -308,7 +310,7 @@
                 this.showToast({
                     tips: '登录失败请尝试重新登录',
                     type: 1,
-                    link: process.env.NODE_ENV=='production'?'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index':'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',
+                    link: process.env.VUE_APP_BUILD=='production'?'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index':'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',
                     linkTxt: '重新登录'
                 })
             }
@@ -348,14 +350,20 @@
             font-size: 0;
             .close-popup{
                 position: absolute;
-                right: .35rem;
+                top: .3rem;
+                right: .3rem;
                 width: .5rem;
                 height: .5rem;
                 z-index: 9999;
             }
             .popup-title{
+                width: 5.3rem;
+                margin: 0 auto;
                 font-size: .36rem;
-                text-align: left;
+                text-align: center;
+                overflow: hidden;
+                text-overflow:ellipsis;
+                white-space: nowrap;
             }
             .popup-price{
                 margin: .4rem 0 .3rem;
@@ -429,7 +437,7 @@
                                 margin-right: 0.27rem;
                                 border: 0;
                                 font-size: .28rem;
-                                color: #6696FF;
+                                color: #FD7028;
                             }
                         }
                     }
@@ -441,7 +449,7 @@
                 line-height: .88rem;
                 font-size: .36rem;
                 color: #FFF;
-                background: #FE8668;
+                background: #FD7028;
                 text-align: center;
                 border-radius: 2rem;
                 margin: 0 auto;
@@ -451,7 +459,7 @@
                 }
             }
             .submit{
-                background: #6696FF;
+                background: #FD7028;
                 color: #FFF;
             }
         }

@@ -55,15 +55,21 @@
             <van-swipe-item
                 v-for="(item, index) in bannerData" :key="index">
                 <div class="banner-item">
-                    <img class="banner-img" :src="item.img" alt="">
-                    <img v-if="item.btn"  class="btn-img" :src="item.btn.src" @click.stop="run(item.btn.method)" alt="">
+                    <div class="banner-item-inner">
+                        <img class="banner-img" :src="item.img" alt="">
+                        <img v-if="item.btn"  class="btn-img" :src="item.btn.src" @click.stop="run(item.btn.method)" alt="">
+                        <div class="txt-box" v-html="txtArr[index]"></div>
+                    </div>
+                    
                 </div>
             </van-swipe-item>
             <div v-show="type === 0" class="custom-indicator" slot="indicator">
                 <span @click.stop="changeslide(i)" v-for="(item, i) in bannerData" :key="i" :class="{'self-indicator':true,'active-indicator':i==current,'common-indicator':i!=current}"></span>
             </div>
         </van-swipe>
-        <div v-show="type === 1" class="unsubscribe" @click.stop="unsubscribe">
+        <div v-show="type === 1 || type === 2" style="height:0.5rem"></div>
+        <!-- v-show="type === 1 && userInfo.orderId !== '0'" -->
+        <div v-if="false" class="unsubscribe" :class="userInfo.orderId === '0'?'underLine':''" @click.stop="unsubscribe">
             退订会员
         </div>
         <div v-show="type === 2" class="unsubscribed">
@@ -75,7 +81,7 @@
                 <div class="title">
                     {{popupInfo.title}}
                 </div>
-                <div class="content" v-html="popupInfo.content.txt" :style="popupInfo.content.style">
+                <div ref="content" class="content" v-html="popupInfo.content.txt" :style="popupInfo.content.style">
                 </div>
             </div>
         </van-popup>
@@ -112,11 +118,12 @@
                 </div>
             </div>
             <div class="automatic-allow">
-                <img @click.stop="allow('1')" class="allow1"  :src="allowChecked1?require('@imgs/login/checked.png'):require('@imgs/login/nocheck.png')" alt="">
-                <label for="read1" class="read-desc"><span @click.stop="allow('1')">我已阅读并同意</span><span  style="color:#0085d0" @click.stop="showPopup(must_know)">《权益超市黄金会员须知》</span></label>
+                <img @click.stop="allow('1')" class="allow1"  :src="allowChecked1?require('@imgs/login/new_checked.png'):require('@imgs/login/new_nocheck.png')" alt="">
+                <label for="read1" class="read-desc"><span @click.stop="allow('1')">我已阅读并同意</span><span  style="color:#FD7028" @click.stop="showPopup(must_know)">《权益超市黄金会员须知》</span></label>
             </div>
-            <div class="popup-btn submit" @click="submitBtn">{{submitIndex == 1?'退订会员':'立即订购'}}</div>
+            <div class="popup-btn submit" @click="submitBtn">{{submitIndex == 1?'退订会员':'确认支付'}}</div>
         </van-popup>
+        <BackHome/>
     </div>
 </template>
 
@@ -125,42 +132,28 @@
     import messageBus from "@/utils/messageBus";
     import {delCookie} from "@/utils/cookie";
     import { sendSmsCode,placeOrder} from "@/api/goodsdetail";
+    import BackHome from '@/components/common/BackHome.vue';
+    import {VIPORDER,NEWVIPGIFT} from "@/utils/constant";
+
+
 
 
 
     export default {
         data() {
             return {
+                txtArr:[
+                    `<div>1、用户首次成为中国移动权益超市黄金会员，即可获得入会礼1GB通用流量日包一份。</div>
+                    <div>2、领取次数有且只有一次，流量奖品24小时内直充到账，届时会有短信提示，还请注意查收。</div>
+                    <div>3、1GB流量为日包产品，到账后24小时内有效。</div>`,
+                    `<div>1、会员具有权益产品优惠购资格，以低于在售价的价格购买权益产品。</div>
+                    <div>2、会员购买权益优惠购专区产品后将会收到订购短信提醒，还请实时关注。</div>`,
+                    `<div>1、会员具有精品权益产品5折购资格，每月可选择专区内一款权益产品半价购买。</div>
+                    <div>2、会员购买精选5折购专区权益产品后，会收到订购短信提醒，还请实时关注。</div>`,
+                    `<div>1、专属客服功能仅对会员开放。</div>
+                    <div>2、会员如有相关问题，可直接咨询在线客服解决，或直接拨打10086咨询。</div>`
+                ],
                 submitIndex:0,
-                vipOrderObj:{
-                    proId:'6000784',
-                    salesId:'102160',
-                    name:'用户会员销售品',
-                    // proId: '',
-                    // name: '',
-                    // salesId: '',
-                    dealType: 0,
-                    isPay: 1,
-                    payType: 10,
-                    amount: process.env.VUE_APP_BUILD === 'production' ? 500 : 1,
-                    orderWay: 1,
-                    renewId:'1',
-                    smsCode: '',
-                },
-                firstPackage:{
-                    proId:'6000692',
-                    salesId:'102125',
-                    name:'新人礼包销售品',
-                    // proId: '',
-                    // name: '',
-                    // salesId: '',
-                    dealType: 0,
-                    isPay: 0,
-                    payType: 10,
-                    amount: 0,
-                    orderWay: 0,
-                    smsCode: '',
-                },
                 allowChecked1:0,
                 subscribeShow:false,
                 // 计时器参数
@@ -175,7 +168,7 @@
                     btns:''
                 },
                 must_know:{
-                    title:'会员规则',
+                    title:'权益超市黄金会员须知',
                     content:{
                         txt:`
                         <div>一、订购规则：</div>
@@ -209,8 +202,13 @@
         },
         created(){
             if(!this.userInfo.phone){
-                this.quickLogin()
+                this.quickLogin(true);
+            }else{
+                messageBus.$emit('msg_getVipInfo');
             }
+        },
+        components:{
+            BackHome
         },
         computed:{
             ...mapState([
@@ -241,7 +239,8 @@
                     {id:1,img:require('@imgs/vipbenefit/vip_card2.png'),btn:{src:require('@imgs/vipbenefit/buy_now.png'),method:'buy_now'}},
                     {id:2,img:require('@imgs/vipbenefit/vip_card3.png'),btn:{src:require('@imgs/vipbenefit/rob_now.png'),method:'rob_now'}},
                     {id:3,img:require('@imgs/vipbenefit/vip_card4.png'),btn:{src:require('@imgs/vipbenefit/communicate_now.png'),method:'communicate_now'}}
-                ]
+                ] 
+                
             }
         },
         watch:{
@@ -251,6 +250,11 @@
                         document.documentElement.scrollTop = 0;
                     },0)
                 }
+            },
+            'show'(){
+                setTimeout(()=>{ // 必须用setTimeout才有效
+                    this.$refs.content.scrollTop = 0;
+                },0)
             }
         },
         methods: {
@@ -269,7 +273,7 @@
                         that.coutdownShow = true;
                         that.coutdownFunc();
                     } else {
-                        that.$toast.fail('验证码跑丢了，稍后再试哦！');
+                        that.$toast('验证码跑丢了，稍后再试哦！');
                     }
                 })
             },
@@ -289,15 +293,15 @@
                 let that = this;
                 // 如果手机号为空，则弹登录窗
                 if (!that.userInfo.phone) {
-                    that.quickLogin();
+                    that.quickLogin(true);
                     return false;
                 }
                 let headers = {'phone': that.userInfo.phone};
-                let data = Object.assign({},that.firstPackage);
+                let data = Object.assign({},NEWVIPGIFT);
                 data.channelCode = that.sysInfo.channelCode;
-                // console.log(data,'新人礼包');
+                //window.console.log(data,'新人礼包');
 
-                that.$toast.loading({
+                that.$toast({
                     message: '领取中,请稍等…',
                     forbidClick: true,
                     duration: 0,
@@ -325,50 +329,54 @@
                                 }
                             ]
                         });
-                    } 
-                    // else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                    //     that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
-                    // } else if(r.data.resultCode == -102) {
-                    //     that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
-                    // } else if(r.data.resultCode == -117) {
-                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                    // } else if(r.data.resultCode == -116) {
-                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                    // } else if(r.data.resultCode == -113) {
-                    //     that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
-                    // } else if(r.data.resultCode == -118) {
-                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
-                    // } else if(r.data.resultCode == -112) {
-                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                    // } else if(r.data.resultCode == 4) {
-                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                    // } else {
-                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
-                    // }
-                    else {
-                        that.$toast.fail({message: '领取失败，请稍后重试', duration: 4000});
+                    }
+                    // else {
+                    //     that.$toast({message: '领取失败，请稍后重试', duration: 4000});
+                    // } 
+                    else if(r.data.resultCode == -1 && r.data.data.code == -1) {
+                        that.$toast({message: '请输入正确的验证码哦', duration: 4000});
+                    } else if(r.data.resultCode == -102) {
+                        that.$toast({message: '订购异常,请稍后重试!', duration: 4000});
+                    } else if(r.data.resultCode == -117) {
+                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
+                    } else if(r.data.resultCode == -116) {
+                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
+                    } else if(r.data.resultCode == -113) {
+                        that.$toast({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                    } else if(r.data.resultCode == -118) {
+                        that.$toast({message: r.data.msg, duration: 4000});
+                    } else if(r.data.resultCode == -112) {
+                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                    } else if(r.data.resultCode == 4) {
+                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                    } else {
+                        that.$toast({message: r.data.msg, duration: 4000});
                     }
                 }).catch(() => {
                     that.$toast.clear();
                 })
             },
             buy_now(){
-                // console.log('buy_now');
+                //window.console.log('buy_now');
                 this.$router.push({name:'vipPreferential'})
             },
             rob_now(){
-                // console.log('rob_now')
+                //window.console.log('rob_now')
                 this.$router.push({name:'halfPrice'})
 
             },
             communicate_now(){
-                // console.log('communicate_now')
-                this.$router.push({name:'customerService'})
+                //window.console.log('communicate_now')
+                // if(this.sysInfo.channel == 'st'){
+                //     this.$toast("敬请期待")
+                // }else{
+                    this.$router.push({name:'customerService'})
+                // }
             },
             smsInputCheck(){
                 // 短信码六位数校验
                 if (this.subscribeSmsCode == '' || this.subscribeSmsCode.length != 6){
-                    this.$toast.fail('请输入正确的6位验证码');
+                    this.$toast('请输入正确的6位验证码');
                     return false;
                 }
             },
@@ -377,60 +385,63 @@
                 let that = this;
                 // 短信码六位数校验
                 if (that.subscribeSmsCode == '' || that.subscribeSmsCode.length != 6){
-                    that.$toast.fail('请输入正确的6位验证码');
+                    that.$toast('请输入正确的6位验证码');
                     return false;
                 }
                 // 如果手机号为空，则跳转到登录页
                 if (!that.userInfo.phone) {
-                    that.quickLogin();
+                    that.quickLogin(true);
                     return false;
                 }
                  // 有选中已同意，才能登录
                 if(!that.allowChecked1){
-                    that.$toast.fail("请先勾选同意《权益超市黄金会员须知》");
+                    that.$toast("请先勾选同意《权益超市黄金会员须知》");
                     return false
                 }
                 let headers = {'phone': that.userInfo.phone};
-                let data = Object.assign({},that.vipOrderObj);
+                let data = Object.assign({},VIPORDER);
                 data.channelCode = that.sysInfo.channelCode;
                 data.smsCode = that.subscribeSmsCode;
 
-                that.$toast.loading({
+                that.$toast({
                     message: '订购中,请稍等…',
                     forbidClick: true,
                     duration: 0,
                 });
                 //会员订购
-                // console.log(data,'订购');
+                //window.console.log(data,'订购');
                 placeOrder(data, headers).then((r) => {
                     that.$toast.clear();
                     if (r.data.resultCode == 0) {
                         //订购成功，关闭底部弹窗
                         that.subscribeShow = false;
                         messageBus.$emit('msg_getVipInfo');
-                        that.$toast.success({message: '订单已受理，开通结果以短信为准', duration: 4000});
-                    }else{
-                        that.$toast.fail({message: '订购失败', duration: 4000});
+                        that.$toast({message: '订单已受理，开通结果以短信为准', duration: 4000,onClose:()=>{
+                            that.$router.push({name: 'myOrder', params: {type:'all'}});
+                        }});
                     }
-                    // else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                    //     that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
-                    // } else if(r.data.resultCode == -102) {
-                    //     that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
-                    // } else if(r.data.resultCode == -117) {
-                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                    // } else if(r.data.resultCode == -116) {
-                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                    // } else if(r.data.resultCode == -113) {
-                    //     that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
-                    // } else if(r.data.resultCode == -118) {
-                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
-                    // } else if(r.data.resultCode == -112) {
-                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                    // } else if(r.data.resultCode == 4) {
-                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                    // } else {
-                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
+                    // else{
+                    //     that.$toast({message: '订购失败', duration: 4000});
                     // }
+                    else if(r.data.resultCode == -1 && r.data.data.code == -1) {
+                        that.$toast({message: '请输入正确的验证码哦', duration: 4000});
+                    } else if(r.data.resultCode == -102) {
+                        that.$toast({message: '订购异常,请稍后重试!', duration: 4000});
+                    } else if(r.data.resultCode == -117) {
+                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
+                    } else if(r.data.resultCode == -116) {
+                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
+                    } else if(r.data.resultCode == -113) {
+                        that.$toast({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                    } else if(r.data.resultCode == -118) {
+                        that.$toast({message: r.data.msg, duration: 4000});
+                    } else if(r.data.resultCode == -112) {
+                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                    } else if(r.data.resultCode == 4) {
+                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                    } else {
+                        that.$toast({message: r.data.msg, duration: 4000});
+                    }
                 }).catch(() => {
                     that.$toast.clear();
                 })
@@ -443,7 +454,7 @@
                     this.subscribeSmsCode = '';
                     this.subscribeShow = true
                 }else{//未登录，弹登录窗
-                    this.quickLogin()
+                    this.quickLogin(true)
                 }
             },
             showPopup(target) {
@@ -462,12 +473,14 @@
                     this[method]()
                 }
             },
-            quickLogin(){
+            quickLogin(noGetPhoneNum){
                 delCookie('ql');
-                messageBus.$emit('msg_checkLogin','quick');
+                messageBus.$emit('msg_checkLogin','quick',noGetPhoneNum);
             },
             unsubscribe(){
                 this.$toast.clear();
+
+                if(this.userInfo.orderId === '0'){return}//线下不给退订
                 
                 messageBus.$emit('msg_showPopup',{
                     flag: true,
@@ -481,48 +494,50 @@
                                 let that = this;
                                 // 如果手机号为空，则弹登录窗
                                 if (!that.userInfo.phone) {
-                                    that.quickLogin();
+                                    that.quickLogin(true);
                                     return false;
                                 }
                                 let headers = {'phone': that.userInfo.phone};
-                                let data = Object.assign({},that.vipOrderObj);
+                                let data = Object.assign({},VIPORDER);
                                 data.channelCode = that.sysInfo.channelCode;
                                 data.dealType = 1; //退订
-                                that.$toast.loading({
+                                data.custVipId = that.userInfo.id; //退订增传custVipId字段
+                                that.$toast({
                                     message: '退订中,请稍等…',
                                     forbidClick: true,
                                     duration: 0,
                                 });
-                                // console.log(data,'退订');
+                                //window.console.log(data,'退订');
                                 placeOrder(data, headers).then((r) => {
                                     that.$toast.clear();
                                     if (r.data.resultCode == 0) {
                                         //退订成功，关闭页面弹窗
                                         messageBus.$emit('msg_showPopup',false);
-                                        that.$toast.success({message: '订单已受理', duration: 4000});
+                                        that.$toast({message: '订单已受理', duration: 4000});
                                         messageBus.$emit('msg_getVipInfo');
-                                    }else{
-                                        that.$toast.fail({message: '退订失败', duration: 4000});
                                     }
-                                    // else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                                    //     that.$toast.fail({message: '请输入正确的验证码哦', duration: 4000});
-                                    // } else if(r.data.resultCode == -102) {
-                                    //     that.$toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
-                                    // } else if(r.data.resultCode == -117) {
-                                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                                    // } else if(r.data.resultCode == -116) {
-                                    //     that.$toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
-                                    // } else if(r.data.resultCode == -113) {
-                                    //     that.$toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
-                                    // } else if(r.data.resultCode == -118) {
-                                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
-                                    // } else if(r.data.resultCode == -112) {
-                                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                                    // } else if(r.data.resultCode == 4) {
-                                    //     that.$toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
-                                    // } else {
-                                    //     that.$toast.fail({message: r.data.msg, duration: 4000});
+                                    // else{
+                                    //     that.$toast({message: '退订失败', duration: 4000});
                                     // }
+                                    else if(r.data.resultCode == -1 && r.data.data.code == -1) {
+                                        that.$toast({message: '请输入正确的验证码哦', duration: 4000});
+                                    } else if(r.data.resultCode == -102) {
+                                        that.$toast({message: '订购异常,请稍后重试!', duration: 4000});
+                                    } else if(r.data.resultCode == -117) {
+                                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
+                                    } else if(r.data.resultCode == -116) {
+                                        that.$toast({message: '退订异常,请稍后重试！', duration: 4000});
+                                    } else if(r.data.resultCode == -113) {
+                                        that.$toast({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                                    } else if(r.data.resultCode == -118) {
+                                        that.$toast({message: r.data.msg, duration: 4000});
+                                    } else if(r.data.resultCode == -112) {
+                                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                    } else if(r.data.resultCode == 4) {
+                                        that.$toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                    } else {
+                                        that.$toast({message: r.data.msg, duration: 4000});
+                                    }
                                 }).catch(() => {
                                     that.$toast.clear();
                                 })
@@ -564,7 +579,7 @@
                 .must-know{
                     margin-right: 0.52rem;
                     text-decoration: underline;
-                    font-weight:bold;
+                    font-weight:400;
                     font-size: 0.28rem;
                     color:#3E3C3B;
                 }
@@ -602,6 +617,7 @@
                         }
                     }
                     .status{
+                        font-weight: 400;
                         margin-right: 0.5rem;
                     }
                 }
@@ -623,7 +639,7 @@
                         }
                         .title{
                             font-size: 0.2rem;
-                            font-weight: bold;
+                            font-weight: 400;
                             color:#3e3c3b;
                             white-space:nowrap;
                         }
@@ -661,7 +677,7 @@
                 .must-know{
                     margin-right: 0.52rem;
                     text-decoration: underline;
-                    font-weight:bold;
+                    font-weight:400;
                     font-size: 0.28rem;
                     color:#3E3C3B;
                 }
@@ -691,6 +707,7 @@
                     }
                 }
                 .status{
+                    font-weight: 400;
                     margin-right: 0.5rem;
                 }
             }
@@ -716,17 +733,35 @@
                     width:6.0rem;
                     margin-left: 0.15rem;
                     position: relative;
-                    .banner-img{
-                        display: block;
-                        width:6.0rem;
-                    }
-                    .btn-img{
-                        width:3.39rem;
-                        height: 1.03rem;
-                        position: absolute;
-                        left:50%;
-                        transform: translateX(-50%);
-                        bottom: 0.56rem
+                    .banner-item-inner{
+                        position: relative;
+                        width: 100%;
+                        .banner-img{
+                            display: block;
+                            width:6.0rem;
+                        }
+                        .btn-img{
+                            width:3.39rem;
+                            height: 1.03rem;
+                            position: absolute;
+                            left:50%;
+                            transform: translateX(-50%);
+                            bottom: 0.56rem
+                        }
+                        .txt-box{
+                            width:5.08rem;
+                            height: 4.6rem;
+                            overflow-y: auto;
+                            position: absolute;
+                            top:1.48rem;
+                            left:50%;
+                            transform: translateX(-50%);
+                            font-size:0.28rem;
+                            font-weight:400;
+                            color:rgb(119,105,83);
+                            line-height:0.48rem;
+                            text-align: left;
+                        }
                     }
                 }
             }
@@ -750,18 +785,20 @@
             }
         }
         .unsubscribe{
+            display: inline-block;
             position: relative;
             overflow: hidden;
             font-size:0.29rem;
             font-weight:bold;
             color:rgba(192,115,88,1);
-            margin-top: 0.5rem;
-            padding-bottom: 1.23rem;
+            margin-bottom: 1.23rem;
+        }
+        .unsubscribe.underLine{
+            color:rgba(189,191,194,1);
         }
         .unsubscribed{
             padding-bottom: 0.5rem;
             .txt1{
-                padding-top: 0.5rem;
                 font-size:0.3rem;
                 font-weight:400;
                 color:rgba(189,191,194,1);
@@ -808,14 +845,15 @@
             font-size: 0;
             .close-popup{
                 position: absolute;
-                right: .35rem;
+                top: .3rem;
+                right: .3rem;
                 width: .5rem;
                 height: .5rem;
                 z-index: 9999;
             }
             .popup-title{
                 font-size: .36rem;
-                text-align: left;
+                text-align: center;
             }
             .popup-price{
                 margin: .4rem 0 .3rem;
@@ -889,7 +927,7 @@
                                 margin-right: 0.27rem;
                                 border: 0;
                                 font-size: .28rem;
-                                color: #6696FF;
+                                color: #FD7028;
                             }
                         }
                     }
@@ -913,7 +951,7 @@
                 line-height: .88rem;
                 font-size: .36rem;
                 color: #FFF;
-                background: #FE8668;
+                background: #FD7028;
                 text-align: center;
                 border-radius: 2rem;
                 margin: 0 auto;
@@ -923,7 +961,7 @@
                 }
             }
             .submit{
-                background: #6696FF;
+                background: #FD7028;
                 color: #FFF;
             }
         }

@@ -22,6 +22,7 @@
 <style scoped lang="less">
     #back-home{
         position: fixed;
+        z-index: 1;
         left: 0;
         bottom: 2.18rem;
         font-size: 0;

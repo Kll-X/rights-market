@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=0">
     <meta content="always" name="referrer">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>中国移动权益超市</title>
     <link rel="icon" href="" />
     <script type="text/javascript" src="./js/jq.js"></script>
@@ -15,8 +18,9 @@
     <!-- <script type="text/javascript" src="./js/aes.min.js"></script>
     <script type="text/javascript" src="./js/pad-zeropadding.js"></script> -->
     <script type="text/javascript" src="./js/vconsole.js"></script>
+    <script type="text/javascript" src="./js/leadeon.js"></script>
     <script>
-        if (location.search.search('test=true') > -1) {
+        if ('<%= NODE_ENV %>' != 'production' && location.search.search('test=true') > -1 ) {
             var vconsole = new window.VConsole();
         }
     </script>

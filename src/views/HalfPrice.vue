@@ -16,16 +16,20 @@
             :offset="10">
             <app-card2 :class="{'half-wrap':true,'noPaddingTop':j == 0}" v-for="(item,j) in itemList" :key="j" :info="item" :index="j" />
         </van-list>
+        <BackHome/>
     </div>
 </template>
 
 <script>
     import AppCard2 from '@/components/home/AppCard2.vue'
-    // import { getData } from "@/api/halfprice";
+    import { getData } from "@/api/halfprice";
+    import BackHome from '@/components/common/BackHome.vue';
+
     export default {
         name: "halfprice",
         components: {
-            AppCard2
+            AppCard2,
+            BackHome
         },
         data() {
             return {
@@ -45,30 +49,28 @@
         methods: {
             getList() {
                 this.loading = true;
-                // getData().then((response) => {
+                getData().then((response) => {
                     this.loading = false;
                     this.finished = true;
-                    // if (response.data.resultCode == 0) {
-                        // this.itemList = this.itemList.concat(response.data.data);
-                        let testData = {
-                            cid: "2",
-                            icon: "102173&6000849.png",
-                            mid: "25",
-                            name: "5折蜻蜓FM会员",
-                            originprice: 2500,
-                            price: "1250",
-                            remark: "蜻蜓FM月会员，话费支付-单次点播，25元/月"}
-                        this.itemList = [testData].concat([testData]).concat([testData])
-                    // }
-                // })
+                    if (response.data.resultCode == 0) {
+                        this.itemList = this.itemList.concat(response.data.data);
+                        // let testData = {
+                        //     cid: "2",
+                        //     icon: "102173&6000849.png",
+                        //     mid: "25",
+                        //     name: "5折蜻蜓FM会员",
+                        //     originprice: 2500,
+                        //     price: "1250",
+                        //     remark: "蜻蜓FM月会员，话费支付-单次点播，25元/月"}
+                        // this.itemList = [testData].concat([testData]).concat([testData])
+                    }
+                })
             },
             onLoad() {
                 this.page++;
                 // this.getList();
             }
-        },
-        computed:{
-        },
+        }
     }
 </script>
 

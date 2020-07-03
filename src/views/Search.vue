@@ -89,7 +89,7 @@
         mounted(){
             var that = this;
             getHot().then(function(data){
-                console.log(data.data.data.length)
+               window.console.log(data.data.data.length)
                 if(data.data.data.length){
                     that.searchContents = data.data.data;
                 }else{//无热门搜索关键词，不展示“热门搜索”这四个字
@@ -154,12 +154,12 @@
             },
             getResultMethod(){
                 if(!navigator.onLine){
-                    this.$toast.fail('网络异常,请连接后重试！');
+                    this.$toast('网络异常,请连接后重试！');
                     return;
                 }
                 var str = this.value; 
                 var val = str.replace(/(^\s*)|(\s*$)/g, "");                            
-                console.log(val)
+               window.console.log(val)
                 var that = this;
                 getResult(val).then(function(data){
                     var dataResult = data.data;
@@ -192,7 +192,7 @@
                     this.historyList.unshift(itemWord);
                 }
                  storage.setItem('this.searchWord',JSON.stringify(this.historyList));
-                console.log(this.historyList)               
+               window.console.log(this.historyList)               
             },
             saveWord(name){
                 this.saveHistory(name);

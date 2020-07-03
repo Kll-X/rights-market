@@ -3,8 +3,8 @@
         <div class="new-guest-wrap">
             <!-- <img class="new-guest-bg" src="@imgs/newguest/newguest-bg.png" alt=""> -->
             <div class="new-guest-gift">
-                <div v-show="!hasNewGift" class="new-guest-btn" @click="receiveFunc"></div>
-                <div v-show="hasNewGift" class="new-guest-btn new-guest-received"></div>
+                <div v-show="hasNewGift == '0' || hasNewGift ==  ''" class="new-guest-btn" @click="receiveFunc"></div>
+                <div v-show="hasNewGift == '1'" class="new-guest-btn new-guest-received"></div>
             </div>
             <div class="new-guest-rule">
                 <span @click="show = true">领取规则</span>
@@ -17,7 +17,7 @@
                 <div class="overlay-con">
                     1、用户首次成为中国移动权益超市黄金会员，即可获得入会礼1GB通用流量日包一份。<br>
                     2、领取次数有且只有一次，流量奖品24小时内直充到账，届时会有短信提示，还请注意查收。<br>
-                    3、1GB流量为日包产品，使用期限为领取当日。
+                    3、1GB流量为日包产品，到账后24小时内有效。
                 </div>
             </div>
         </van-overlay>
@@ -32,6 +32,7 @@
     import { Toast } from 'vant';
     import BackHome from '@/components/common/BackHome.vue';
     import messageBus from "@/utils/messageBus";
+    import { NEWVIPGIFT } from '@/utils/constant'
 
     export default {
         name: "newguest",
@@ -43,6 +44,11 @@
                 "userInfo",
                 "sysInfo"
             ])
+        },
+        watch:{
+            '$store.state.userInfo.hasNewGift'(n){
+                this.hasNewGift = n;
+            },
         },
         data() {
             return {
@@ -63,13 +69,9 @@
                         this.$router.push({name: 'vipBenefit'});
                     } else {
                         let headers = {'phone': this.userInfo.phone};
-                        let data = {
-                            proId: '6000692',
-                            salesId: '102125',
-                            dealType: 0,
-                            isPay: 0,
-                        }
-                        const toast = Toast.loading({
+                        let data = Object.assign({},NEWVIPGIFT);
+                        data.channelCode = this.sysInfo.channelCode;
+                        const toast = Toast({
                             message: '领取中,请稍等…',
                             forbidClick: true,
                             duration: 0,
@@ -82,23 +84,23 @@
                                 this.hasNewGift = 1;
                                 messageBus.$emit('msg_getVipInfo');
                             } else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                                Toast.fail({message: '请输入正确的验证码哦', duration: 4000});
+                                Toast({message: '请输入正确的验证码哦', duration: 4000});
                             } else if(r.data.resultCode == -102) {
-                                Toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
+                                Toast({message: '订购异常,请稍后重试!', duration: 4000});
                             } else if(r.data.resultCode == -117) {
-                                Toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                                Toast({message: '退订异常,请稍后重试！', duration: 4000});
                             } else if(r.data.resultCode == -116) {
-                                Toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                                Toast({message: '退订异常,请稍后重试！', duration: 4000});
                             } else if(r.data.resultCode == -113) {
-                                Toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                                Toast({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
                             } else if(r.data.resultCode == -118) {
-                                Toast.fail({message: r.data.msg, duration: 4000});
+                                Toast({message: r.data.msg, duration: 4000});
                             } else if(r.data.resultCode == -112) {
-                                Toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                Toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                             } else if(r.data.resultCode == 4) {
-                                Toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                Toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                             } else {
-                                Toast.fail({message: r.data.msg, duration: 4000});
+                                Toast({message: r.data.msg, duration: 4000});
                             }
                         }).catch(() => {
                             toast.clear();
@@ -187,6 +189,7 @@
             }
             .overlay-con{
                 font-size: .24rem;
+                line-height: .36rem;
                 text-align: left;
                 color: #a4a4a6;
             }

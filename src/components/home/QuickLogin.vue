@@ -108,7 +108,7 @@
                     }).then((res)=>{
                         that.$toast.clear();
                         if(res.data.resultCode == 0){
-                            console.log('一键登录成功');
+                           window.console.log('一键登录成功');
                             // 一键登录成功，更新用户信息
                             that.SET_USERINFO(res.data.data);
                             // cookie缓存登录状态
@@ -117,24 +117,27 @@
                             setCookie('t',Date.parse(new Date()));
                             setCookie('pc',res.data.data.provinceCode);
                             setCookie('pnsign',res.data.data.pnsign);
+                            setCookie('iswhite',res.data.data.iswhite);
+
                             messageBus.$emit('msg_countDown');
-                            messageBus.$emit('msg_check_resetbannerData2');
+                            messageBus.$emit('msg_resetBanner2');
+                            
 
                             // 关闭弹窗
                             that.SET_SHOWQUICKLOGIN(false)
                         }else{
                             if(res.data.msg){
-                                this.$toast.fail(res.data.msg);
+                                this.$toast(res.data.msg);
                             }else{
-                                this.$toast.fail('网络繁忙，请稍后重试!');
+                                this.$toast('网络繁忙，请稍后重试!');
                             }
                         }
                     }).catch(()=>{                   
-                        this.$toast.fail('网络繁忙，请稍后重试');
+                        this.$toast('网络繁忙，请稍后重试');
                     })
 
                 }else{
-                    that.$toast.fail("请先勾选同意《中国移动提供认证服务》");
+                    that.$toast("请先勾选同意《中国移动提供认证服务》");
                 }
             },
             changeTel(){
@@ -152,15 +155,15 @@
             checkTel(){
                 if(this.isMobile(this.telNum)){
                     // if(this.isCNMobile(this.telNum)){
-                    //     console.log("号码符合规范");
+                    //    window.console.log("号码符合规范");
                     //     return true
                     // }else{
-                    //     this.$toast.fail("移动号码才行哦~");
+                    //     this.$toast("移动号码才行哦~");
                     //     return false
                     // }
                     return true
                 }else{
-                    this.$toast.fail("请输入正确的手机号哦~");
+                    this.$toast("请输入正确的手机号哦~");
                     return false
                 }
             },
@@ -172,7 +175,7 @@
             checkSms(){
                 // 短信书写规范检验
                 if(!this.checkSmsCode()){
-                    this.$toast.fail('请输入正确的6位验证码');
+                    this.$toast('请输入正确的6位验证码');
                     return false
                 }
                 return true
@@ -192,7 +195,7 @@
                     phone:Encrypt(that.telNum)  //aes加密
                 }).then((res)=>{
                     if(res.data.resultCode == 0){
-                        this.$toast.success('验证码下发成功');
+                        this.$toast('验证码下发成功');
                         // 开始倒计时
                         that.seconds = '重新获取60s';
                         that.timer = setInterval(() => {
@@ -207,16 +210,16 @@
                             that.seconds = '重新获取'+ that.secondsBackup +'s';
                         }, 1000);
                     }else if(res.data.resultCode == -517){
-                        this.$toast.fail(res.data.msg);
+                        this.$toast(res.data.msg);
                     }else{
                         if(res.data.data && res.data.data.resultdesc){
-                            this.$toast.fail('验证码跑丢了，稍后再试哦！');
+                            this.$toast('验证码跑丢了，稍后再试哦！');
                         }else{
-                            this.$toast.fail('验证码下发失败，请使用中国移动手机号码登录');
+                            this.$toast('验证码下发失败，请使用中国移动手机号码登录');
                         }
                     }
                 }).catch(()=>{
-                    this.$toast.fail('网络繁忙，请稍后重试');
+                    this.$toast('网络繁忙，请稍后重试');
                 })
 
             },
@@ -232,7 +235,7 @@
                 }
                 // 勾选同意检测
                 if(!that.allowChecked2){
-                    that.$toast.fail("请先勾选同意《中国移动提供认证服务》");
+                    that.$toast("请先勾选同意《中国移动提供认证服务》");
                     return
                 }
                 that.$toast.loading({
@@ -255,19 +258,20 @@
                         setCookie('t',Date.parse(new Date()));                            
                         setCookie('pc',res.data.data.provinceCode);
                         setCookie('pnsign',res.data.data.pnsign);
+                        setCookie('iswhite',res.data.data.iswhite);
                         messageBus.$emit('msg_countDown');
-                        messageBus.$emit('msg_check_resetbannerData2');
+                        messageBus.$emit('msg_resetBanner2');
                         // 关闭弹窗
                         that.SET_SHOWQUICKLOGIN(false)
                     }else{
                         if(res.data.data.msg){
-                            this.$toast.fail('异常了，请稍后再试哦！');
+                            this.$toast('异常了，请稍后再试哦！');
                         }else{
-                            this.$toast.fail('异常了，请稍后再试哦！');
+                            this.$toast('异常了，请稍后再试哦！');
                         }
                     }
                 }).catch(()=>{                   
-                    this.$toast.fail('异常了，请稍后再试哦！');
+                    this.$toast('异常了，请稍后再试哦！');
                 })
             },
         },

@@ -1,5 +1,5 @@
 <template>
-  <div class="wrap">
+  <div class="wrap" v-show="showFlag">
     <!-- 标题 -->
     <div class="title-wrap">
       <div class="title">{{title}}</div>
@@ -313,10 +313,10 @@
 
 <script>
 
-import Vue from "vue";
-import { Dialog, Popup, Toast } from "vant";
+import { Toast } from "vant";
 import {gotoService} from '@/api/customerservice.js'
-Vue.use(Dialog, Popup, Toast);
+import { mapState } from 'vuex'
+
 export default {
   name: "customerService",
   data() {
@@ -328,49 +328,203 @@ export default {
       partFour: "T-Z",
       provinceCode: "",
       show: false,
-      appKey: ""
+      appKey: "",
+      showFlag: false,
+      provinceDatas: {
+        '551': {
+          name: 'anhui',
+          tenantId: 1000079
+        },
+        '100': {
+          name: 'beijing',
+          tenantId: 1000064
+        },
+        '200': {
+          name: 'guangdong',
+          tenantId: 1000061
+        },
+        '210': {
+          name: 'shanghai',
+          tenantId: 1000065
+        },
+        '220':{
+          name: 'tianjin',
+          tenantId: 1000066
+        },
+        '230':{
+          name: 'chongqing',
+          tenantId: 1000067
+        },
+        '240':{
+          name: 'liaoning',
+          tenantId: 1000068
+        },
+        '250':{
+          name: 'jiangsu',
+          tenantId: 1000002
+        },
+        '270':{
+          name: 'hubei',
+          tenantId: 1000069
+        },
+        '280':{
+          name: 'sichuan',
+          tenantId: 1000070
+        },
+        '290':{
+          name: 'shanxi',
+          tenantId: 1000056
+        },
+        '311':{
+          name: 'hebei',
+          tenantId: 1000047
+        },
+        '351':{
+          name: 'shangxi',
+          tenantId: 1000055
+        },
+        '371':{
+          name: 'henan',
+          tenantId: 1000071
+        },
+        '431':{
+          name: 'jilin',
+          tenantId: 1000072
+        },
+        '451':{
+          name: 'heilongjiang',
+          tenantId: 1000034
+        },
+        '471':{
+          name: 'neimenggu',
+          tenantId: 1000073
+        },
+        '531':{
+          name: 'shandong',
+          tenantId: 1000058
+        },
+        '571':{
+          name: 'zhejiang',
+          tenantId: 1000080
+        },
+        '591':{
+          name: 'fujian',
+          tenantId: 1000048
+        },
+        '731':{
+          name: 'hunan',
+          tenantId: 1000063
+        },
+        '771':{
+          name: 'guangxi',
+          tenantId: 1000078
+        },
+        '791':{
+          name: 'jiangxi',
+          tenantId: 1000035
+        },
+        '851':{
+          name: 'guizhou',
+          tenantId: 1000074
+        },
+        '871':{
+          name: 'yunnan',
+          tenantId: 1000077
+        },
+        '891':{
+          name: 'xizang',
+          tenantId: 1000075
+        },
+        '898':{
+          name: 'hainan',
+          tenantId: 1000076
+        },
+        '931':{
+          name: 'gansu',
+          tenantId: 1000081
+        },
+        '951':{
+          name: 'ningxia',
+          tenantId: 1000082
+        },
+        '971':{
+          name: 'qinghai',
+          tenantId: 1000001
+        },
+        '991':{
+          name: 'xinjiang',
+          tenantId: 1000083
+        }
+      }
     };
   },
   props: ["channelType"],
+  created(){
+    this.init()
+  },
+  computed:{
+      ...mapState([
+          "userInfo" ,
+          "sysInfo"
+      ])
+  },
   methods: {
     async sure() {
-      if (this.appKey == "" || this.provinceCode == "") {
-        Toast("请选择省份");
-      } else {
-        console.log("else");
-        let base_url = "https://cmkf.cmcc-cs.cn:31210/api/nguac/h5/index/";
-        let companyId = "qycs_h5";
-        let appKey = this.appKey;
-        console.log(appKey);
-        let deviceNo = Math.round(Math.random() * 10000);
-        let username = Math.round(Math.random() * 10000);
-        let provinceCode = this.provinceCode;
-        console.log(provinceCode);
-        let apiVersion = "1.0";
-        // let phone = "NoNumber";
-        let paramUrl =
-          "companyId=" +
-          companyId +
-          "&appKey=" +
-          appKey +
-          "&deviceNo=" +
-          deviceNo +
-          "&username=" +
-          username +
-          "&provinceCode=" +
-          provinceCode +
-          "&apiVersion=" +
-          apiVersion;
-        console.log(paramUrl);
-        //  const data1 = await this.$request("livehk/card/temporaryorder", "POST", {
-        const data1 = await gotoService(
-          {url:paramUrl}
-        );
-        console.log(data1);
-        let goURL = base_url + data1.data.data;
-        console.log(goURL);
-        window.location.href = goURL;
-      }
+        let goURL = '';
+        if (this.sysInfo.channel == 'st') {
+          // goURL = 'https://shop.10086.cn/ad/livechat-touch-client/pub-page/liveChatTouchRobert.html?tenantId=' + this.provinceDatas[this.userInfo.provinceCode].tenantId + '&code=BS&channelType=1012&entranceType=rights&artifact=' + this.userInfo.artifact;
+          goURL = 'https://login.10086.cn/AppSSO.action?targetChannelID=12026&UID='+ this.userInfo.uid +'&TransactionID=123456789&targetUrl=https%3A%2F%2Fshop.10086.cn%2Fad%2Flivechat-touch-client%2Fpub-page%2FliveChatTouchRobert.html%3FtenantId%3D'+ this.provinceDatas[this.userInfo.provinceCode].tenantId +'%26code%3DBS%26channelType%3D1012%26entranceType%3Drights%26type=00';
+        } else {
+          if (this.appKey == "" || this.provinceCode == "") {
+            Toast("请选择省份");
+            return;
+          }else{
+           window.console.log("else");
+            let base_url = "https://cmkf.cmcc-cs.cn:31210/api/nguac/h5/index/";
+            let companyId = "ydhkgzh_h5";
+            let appKey = this.appKey;
+           window.console.log(appKey);
+            let deviceNo = this.userInfo.phone;
+            // let username = Math.round(Math.random() * 10000);
+            let provinceCode = this.provinceCode;
+           window.console.log(provinceCode);
+            let apiVersion = "1.0";
+            // let phone = "NoNumber";
+            let paramUrl =
+              "companyId=" +
+              companyId +
+              "&appKey=" +
+              appKey +
+              "&deviceNo=" +
+              deviceNo +
+            
+              "&provinceCode=" +
+              provinceCode +
+              "&apiVersion=" +
+              apiVersion;
+           window.console.log(paramUrl);
+            //  const data1 = await this.$request("livehk/card/temporaryorder", "POST", {
+            const data1 = await gotoService(
+              {url:paramUrl}
+            );
+           window.console.log(data1);
+            goURL = base_url + data1.data.data;
+          }
+        }
+       window.console.log(goURL);
+        location.replace(goURL);
+    },
+    init(){
+      if(this.userInfo.provinceCode) {
+       if (this.sysInfo.channel == 'st') {
+         this.sure();
+       } else {
+         this[this.provinceDatas[this.userInfo.provinceCode].name]();
+         this.sure();
+       }
+     } else {
+       this.showFlag = true;
+     }
     },
     anhui() {
       switch (this.channelType) {
@@ -381,11 +535,11 @@ export default {
           this.appKey = "jybd_webchat#AH57908557366";
           break;
         default:
-          this.appKey = "qycs_h5#AH23455379901";
+          this.appKey = "ydhkgzh_h5#AH41763296306&ent=2bdf5e6ef1504726b1473c917a28f973";
           break;
       }
       this.provinceCode = "551";
-      console.log(this.provinceCode, this.appKey);
+     window.console.log(this.provinceCode, this.appKey);
     },
     beijing() {
       switch (this.channelType) {
@@ -396,11 +550,11 @@ export default {
           this.appKey = "jybd_webchat#BJ21420655482";
           break;
         default:
-          this.appKey = "qycs_h5#BJ03659088143";
+          this.appKey = "ydhkgzh_h5#BJ67170632097&ent=41c9e7fde3d44f9e9c0e2c91bc75b083";
           break;
       }
       this.provinceCode = "100";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     guangdong() {
       switch (this.channelType) {
@@ -411,12 +565,12 @@ export default {
           this.appKey = "jybd_webchat#GD69025858938";
           break;
         default:
-          this.appKey = "qycs_h5#GD46078862221";
+          this.appKey = "ydhkgzh_h5#GD38211704055&ent=eae4968f1aa44a8ba6190bdb88fb7940";
 
           break;
       }
       this.provinceCode = "200";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     shanghai() {
       switch (this.channelType) {
@@ -427,12 +581,12 @@ export default {
           this.appKey = "jybd_webchat#SH64781292295";
           break;
         default:
-          this.appKey = "qycs_h5#SH30734907845";
+          this.appKey = "ydhkgzh_h5#SH60251975418&ent=46e4d51b93e143cdb22188147d25bb70";
 
           break;
       }
       this.provinceCode = "210";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     tianjin() {
       switch (this.channelType) {
@@ -443,12 +597,12 @@ export default {
           this.appKey = "jybd_webchat#TJ62173490842";
           break;
         default:
-          this.appKey = "qycs_h5#TJ47965392852";
+          this.appKey = "ydhkgzh_h5#TJ94793165157&ent=a406fbf2a20447f0a07706b6cc7a42a7";
 
           break;
       }
       this.provinceCode = "220";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     chongqing() {
       switch (this.channelType) {
@@ -459,12 +613,12 @@ export default {
           this.appKey = "jybd_webchat#CQ36132565921";
           break;
         default:
-          this.appKey = "qycs_h5#CQ37208483342";
+          this.appKey = "ydhkgzh_h5#CQ83957522609&ent=adef8b678f674003af3f9c2046938edc";
 
           break;
       }
       this.provinceCode = "230";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     liaoning() {
       switch (this.channelType) {
@@ -475,12 +629,12 @@ export default {
           this.appKey = "jybd_webchat#LN30199987537";
           break;
         default:
-          this.appKey = "qycs_h5#LN27126552110";
+          this.appKey = "ydhkgzh_h5#LN10772936622&ent=d3b3a7bec0464379afa32860ab905be2";
 
           break;
       }
       this.provinceCode = "240";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     jiangsu() {
       switch (this.channelType) {
@@ -491,12 +645,12 @@ export default {
           this.appKey = "jybd_webchat#JS34877479827";
           break;
         default:
-          this.appKey = "qycs_h5#JS41007826934";
+          this.appKey = "ydhkgzh_h5#JS41382283141&ent=d8453c62f0044da5974d7236b83aee2a";
 
           break;
       }
       this.provinceCode = "250";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     hubei() {
       switch (this.channelType) {
@@ -507,12 +661,12 @@ export default {
           this.appKey = "jybd_webchat#HB48677208638";
           break;
         default:
-          this.appKey = "qycs_h5#HB09405065225";
+          this.appKey = "ydhkgzh_h5#HB37885126366&ent=2066883562684e9292e12f2f8b21ef31";
 
           break;
       }
       this.provinceCode = "270";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     sichuan() {
       switch (this.channelType) {
@@ -523,12 +677,12 @@ export default {
           this.appKey = "jybd_webchat#SC54169194934";
           break;
         default:
-          this.appKey = "qycs_h5#SC60251975724";
+          this.appKey = "ydhkgzh_h5#SC80205932109&ent=572c3e73b0ed41b8904483f3234c00a3";
 
           break;
       }
       this.provinceCode = "280";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     shanxi() {
       // 注：这个是陕西！
@@ -540,12 +694,12 @@ export default {
           this.appKey = "jybd_webchat#SN58690671336";
           break;
         default:
-          this.appKey = "qycs_h5#SN05436022493";
+          this.appKey = "ydhkgzh_h5#SN09457089487&ent=aa6853556c3c46e6a1597914c99ec463";
 
           break;
       }
       this.provinceCode = "290";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     hebei() {
       switch (this.channelType) {
@@ -556,12 +710,12 @@ export default {
           this.appKey = "jybd_webchat#HE54880676761";
           break;
         default:
-          this.appKey = "qycs_h5#HE81975417025";
+          this.appKey = "ydhkgzh_h5#HE39236401782&ent=c4a21f09978e4a49abb96aab825de790";
 
           break;
       }
       this.provinceCode = "311";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     shangxi() {
       // 注：这是山西
@@ -573,12 +727,12 @@ export default {
           this.appKey = "jybd_webchat#SX79522419576";
           break;
         default:
-          this.appKey = "qycs_h5#SX34055878628";
+          this.appKey = "ydhkgzh_h5#SX94716749009&ent=f395f8de44634313a9c9052480cf8735";
 
           break;
       }
       this.provinceCode = "351";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     henan() {
       switch (this.channelType) {
@@ -589,12 +743,12 @@ export default {
           this.appKey = "jybd_webchat#HA10996954173";
           break;
         default:
-          this.appKey = "qycs_h5#HA63158425476";
+          this.appKey = "ydhkgzh_h5#HA18620672109&ent=ad7ebabf6e7b4807aebd45501080da5e";
 
           break;
       }
       this.provinceCode = "371";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     jilin() {
       switch (this.channelType) {
@@ -605,12 +759,12 @@ export default {
           this.appKey = "jybd_webchat#JL21420655949";
           break;
         default:
-          this.appKey = "qycs_h5#JL60349934406";
+          this.appKey = "ydhkgzh_h5#JL97836346497&ent=a55919b14b03440597d7cd1a33991593";
 
           break;
       }
       this.provinceCode = "431";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     heilongjiang() {
       switch (this.channelType) {
@@ -621,12 +775,12 @@ export default {
           this.appKey = "jybd_webchat#HL40279946144";
           break;
         default:
-          this.appKey = "qycs_h5#HL82449191674";
+          this.appKey = "ydhkgzh_h5#HL35408158413&ent=4ab3cbba53ed46a5a73f8b8bf89049f3";
 
           break;
       }
       this.provinceCode = "451";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     neimenggu() {
       switch (this.channelType) {
@@ -637,12 +791,12 @@ export default {
           this.appKey = "jybd_webchat#NM94673198899";
           break;
         default:
-          this.appKey = "qycs_h5#NM61305398053";
+          this.appKey = "ydhkgzh_h5#NM51002850039&ent=97ff389794ed4aa4bb12528dcc5de049";
 
           break;
       }
       this.provinceCode = "471";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     shandong() {
       switch (this.channelType) {
@@ -653,12 +807,12 @@ export default {
           this.appKey = "jybd_webchat#SD61895197725";
           break;
         default:
-          this.appKey = "qycs_h5#SD14615799225";
+          this.appKey = "ydhkgzh_h5#SD79630664324&ent=2fc49d7396ce409b81989f3ae12cba77";
 
           break;
       }
       this.provinceCode = "531";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     zhejiang() {
       switch (this.channelType) {
@@ -669,12 +823,12 @@ export default {
           this.appKey = "jybd_webchat#ZJ76271384570";
           break;
         default:
-          this.appKey = "qycs_h5#ZJ15834571051";
+          this.appKey = "ydhkgzh_h5#ZJ40672960510&ent=ab92bc45e7bb4c5d8ad6e66ccea11ba4";
 
           break;
       }
       this.provinceCode = "571";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     fujian() {
       switch (this.channelType) {
@@ -685,12 +839,12 @@ export default {
           this.appKey = "jybd_webchat#FJ09695030754";
           break;
         default:
-          this.appKey = "qycs_h5#FJ03406084353";
+          this.appKey = "ydhkgzh_h5#FJ81006876932&ent=410a67a69f0742c48cba356b7cbbc773";
 
           break;
       }
       this.provinceCode = "591";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     hunan() {
       switch (this.channelType) {
@@ -701,12 +855,12 @@ export default {
           this.appKey = "jybd_webchat#HN68931288949";
           break;
         default:
-          this.appKey = "qycs_h5#HN76312709227";
+          this.appKey = "ydhkgzh_h5#HI06138049026&ent=81d3a0a54eb545008aa457a163b8afe5";
 
           break;
       }
       this.provinceCode = "731";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     guangxi() {
       switch (this.channelType) {
@@ -717,12 +871,12 @@ export default {
           this.appKey = "jybd_webchat#GX23905271086";
           break;
         default:
-          this.appKey = "qycs_h5#GX12946500053";
+          this.appKey = "ydhkgzh_h5#GX87442111298&ent=a62f5179d07c4e0eb0e3a7bb81bab6b6";
 
           break;
       }
       this.provinceCode = "771";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     jiangxi() {
       switch (this.channelType) {
@@ -733,12 +887,12 @@ export default {
           this.appKey = "jybd_webchat#JX19438228368";
           break;
         default:
-          this.appKey = "qycs_h5#JX90765972800";
+          this.appKey = "ydhkgzh_h5#JX84072815205&ent=213ff30ab41b4c159f5d5feeb71939ce";
 
           break;
       }
       this.provinceCode = "791";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     guizhou() {
       switch (this.channelType) {
@@ -749,12 +903,12 @@ export default {
           this.appKey = "jybd_webchat#GZ86200651813";
           break;
         default:
-          this.appKey = "ydhkgzh_h5#GZ63158425529";
+          this.appKey = "ydhkgzh_h5#GZ07994036046&ent=20c67107a17540acb819b6a39938b332";
 
           break;
       }
       this.provinceCode = "851";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     yunnan() {
       switch (this.channelType) {
@@ -765,12 +919,12 @@ export default {
           this.appKey = "jybd_webchat#YN98031837091";
           break;
         default:
-          this.appKey = "qycs_h5#GZ48217735554";
+          this.appKey = "ydhkgzh_h5#YN49588382975&ent=8e9078fb65ae436fac6be6cadad77212";
 
           break;
       }
       this.provinceCode = "871";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     xizang() {
       switch (this.channelType) {
@@ -781,12 +935,12 @@ export default {
           this.appKey = "jybd_webchat#XZ98665154497";
           break;
         default:
-          this.appKey = "qycs_h5#XZ45371272371";
+          this.appKey = "ydhkgzh_h5#XZ98077829446&ent=e1443cf8b70c401a98f6497fcaa5f2f9";
 
           break;
       }
       this.provinceCode = "891";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     hainan() {
       switch (this.channelType) {
@@ -797,12 +951,12 @@ export default {
           this.appKey = "jybd_webchat#HI90821996233";
           break;
         default:
-          this.appKey = "qycs_h5#HI07662076286";
+          this.appKey = "ydhkgzh_h5#HI06138049026&ent=81d3a0a54eb545008aa457a163b8afe5";
 
           break;
       }
       this.provinceCode = "898";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     gansu() {
       switch (this.channelType) {
@@ -813,12 +967,12 @@ export default {
           this.appKey = "jybd_webchat#GS81314769336";
           break;
         default:
-          this.appKey = "qycs_h5#GS76032813818";
+          this.appKey = "ydhkgzh_h5#GS20177941060&ent=99187301fbec41dea876b8e1d43778fd";
 
           break;
       }
       this.provinceCode = "931";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     ningxia() {
       switch (this.channelType) {
@@ -829,12 +983,12 @@ export default {
           this.appKey = "jybd_webchat#NX83981301972";
           break;
         default:
-          this.appKey = "qycs_h5#NX01933079951";
+          this.appKey = "ydhkgzh_h5#NX86432114940&ent=eb120f99c3634b419d2eac87cd4ea344";
 
           break;
       }
       this.provinceCode = "951";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     qinghai() {
       switch (this.channelType) {
@@ -845,12 +999,12 @@ export default {
           this.appKey = "jybd_webchat#QH68302422921";
           break;
         default:
-          this.appKey = "qycs_h5#QH48591273424";
+          this.appKey = "ydhkgzh_h5#QH62913727283&ent=d5cf016e94f2495fa4011c1fabd9bbbb";
 
           break;
       }
       this.provinceCode = "971";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     xinjiang() {
       switch (this.channelType) {
@@ -861,17 +1015,22 @@ export default {
           this.appKey = "jybd_webchat#XJ62913727188";
           break;
         default:
-          this.appKey = "qycs_h5#XJ84195356293";
+          this.appKey = "ydhkgzh_h5#XJ97428548263&ent=a471411ff7f346a3a094492956422967";
 
           break;
       }
       this.provinceCode = "991";
-      console.log(this.provinceCode);
+     window.console.log(this.provinceCode);
     },
     showPopup() {
       this.show = true;
     }
-  }
+  },
+  watch:{
+    '$store.state.userInfo.provinceCode'(n){
+        n && this.init();
+    }
+  },
 };
 </script>
 

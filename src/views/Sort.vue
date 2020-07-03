@@ -47,12 +47,11 @@
 
 <script>
     import Menu from '@/components/common/Menu.vue';
-    import {customAnalysis} from "@/assets/js/analysis";
-    import {STATISTICS} from "@/utils/constant";
     import { mapState } from 'vuex';
     // 接口调用
     import { getCategory } from "@/api/sort";
     import { getFindMembers } from "@/api/sort";
+    import { pagelog } from "@/api/common";
 
     export default {
         name: "sort",
@@ -73,9 +72,17 @@
         mounted() {
             // 获取列表
             this.getList();
-            if (this.sysInfo.channel == 'st'){
-                customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][0])
-            }
+            pagelog({
+                phone: this.userInfo.phone
+            },{
+                "isvip":this.userInfo.isVip,//是否会员
+                "chanelcode":this.sysInfo.fullChannelCode,//超市渠道号
+                "chanelcode3":this.sysInfo.channelCode,//三级渠道号
+                "cur_url":location.href,//当前页面url
+                "up_url":location.origin+'/'+location.search+'#'+window.preRoute.path,//上个页面url
+                "mid":"",//权益会员id
+                "mname":""// 权益会员名称
+            });
         },
         methods: {
             // 获取tabs内容
@@ -160,7 +167,8 @@
         },
         computed:{
             ...mapState([
-                "sysInfo"
+                "sysInfo",
+                "userInfo"
             ])
         },
     }
