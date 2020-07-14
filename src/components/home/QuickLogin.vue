@@ -16,10 +16,10 @@
 
 
         <div class="manual-tel" v-show="plan == 2">
-            <input class="center tel-num" type="tel" maxlength="11" placeholder="请输入您的移动号码" ref="telNum" v-model="telNum"  @change="checkTel">
+            <input class="center tel-num" type="tel" maxlength="11" placeholder="请输入您的移动号码" ref="telNum" v-model="telNum"  @change="checkTel" @focus="blocklogHandler('登录弹窗','0000','0003');">
         </div>
         <div class="center manual-sms" v-show="plan == 2">
-            <input class="sms-code" type="tel" maxlength="6" placeholder="请输入验证码" ref="smsCode" v-model="smsCode" @change="checkSms">
+            <input class="sms-code" type="tel" maxlength="6" placeholder="请输入验证码" ref="smsCode" v-model="smsCode" @change="checkSms" @focus="blocklogHandler('登录弹窗','0000','0004');">
             <input @click.stop="sendSms" :class="['send',seconds == '获取验证码'?'':'forbidClick']" v-model="seconds" readonly="readonly"/>
         </div>
         <div class="center manual-allow" v-show="plan == 2">
@@ -41,12 +41,14 @@
     import { setCookie,delCookie } from "@/utils/cookie";
     import {Encrypt} from '@/utils/encrypt'
     import messageBus from "@/utils/messageBus";
+    import { blocklogMixin } from "@/mixins/log"
 
 
 
 
     export default {
         name: "login",
+        mixins: [blocklogMixin],
         data(){
             return{
                 telNum:'',
@@ -67,7 +69,8 @@
         created(){
             this.updatePlan();
             messageBus.$on('msg_updatePlan',this.updatePlan);
-
+            //曝光统计
+            this.blocklogHandler('登录弹窗','0000','');
         },
         methods:{
             updatePlan(){
@@ -83,19 +86,25 @@
             ]),
             readAgreement(){
                 delCookie('ql');
+                this.blocklogHandler('登录弹窗','0000','0008');
                 location.href = 'https://wap.cmpassport.com/resources/html/contract.html'
             },
             maskTouchmove(e){
                 e.preventDefault();
             },
             closeSelf(){
+                this.blocklogHandler('登录弹窗','0000','0000');
                 this.SET_SHOWQUICKLOGIN(false)
             },
             allow(i){
                 this['allowChecked'+i] = !this['allowChecked'+i] ;
+                if (this['allowChecked'+i]){
+                    this.blocklogHandler('登录弹窗','0000','0007');
+                }
             },
             automaticLogin(){
                 let that = this;
+                that.blocklogHandler('登录弹窗','0000','0001');
                 // 有选中已同意，才能登录
                 if(that.allowChecked1){
                     that.$toast.loading({
@@ -141,7 +150,8 @@
                 }
             },
             changeTel(){
-                this.plan = 2
+                this.plan = 2;
+                this.blocklogHandler('登录弹窗','0000','0002');
             },
             trim(x){
                 return x.replace(/^\s+|\s+$/gm,'');
@@ -221,10 +231,11 @@
                 }).catch(()=>{
                     this.$toast('网络繁忙，请稍后重试');
                 })
-
+                this.blocklogHandler('登录弹窗','0000','0005');
             },
             manualLogin(){
                 let that = this;
+                this.blocklogHandler('登录弹窗','0000','0006'); 
                 // 号码检测
                 if(!that.checkTel()){
                     return

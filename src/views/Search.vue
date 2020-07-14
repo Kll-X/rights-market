@@ -57,12 +57,14 @@
 <script>
     import { getResult,getHot } from "@/api/search";// 接口调用
     import BackHome from '@/components/common/BackHome.vue';
+    import { pagelogMixin,blocklogMixin } from "@/mixins/log"
 
     export default {
         name: "search",
         components: {
             BackHome
         },
+        mixins: [pagelogMixin,blocklogMixin],
         data(){
             return{
                 value :'',
@@ -85,6 +87,7 @@
             }else{//无历史记录
                 this.isShowHistory = false;
             }
+            this.blocklogHandler('搜索入口','0003','0001');
         },
         mounted(){
             var that = this;

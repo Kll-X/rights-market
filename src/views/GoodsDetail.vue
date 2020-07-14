@@ -692,7 +692,7 @@
                             phone: this.userInfo.phone
                         },{
                             "isvip":this.userInfo.isVip,//是否会员
-                            "chanelcode":this.sysInfo.fullChannelCode,//超市渠道号
+                            "chanelcode":this.sysInfo.selfChannelCode,//超市渠道号
                             "chanelcode3":this.sysInfo.channelCode,//三级渠道号
                             "cur_url":location.href,//当前页面url
                             "up_url":location.origin+'/'+location.search+'#'+window.preRoute.path,//上个页面url
@@ -1064,6 +1064,7 @@
                         // this.overlay = true;
                         this.payShow = true;
                     } else { // 第三方支付
+                        this.payShow = false;
                         const toast = Toast({
                             message: '订购中,请稍等…',
                             forbidClick: true,
@@ -1077,6 +1078,7 @@
                             salesId: this.paydetailList.saleid,
                             mobile: this.orderObject.mobile,
                             channelCode: this.sysInfo.channelCode,
+                            selfChannelCode: this.sysInfo.selfChannelCode,
                             returnUrl: window.location.origin + '/transfer.html'+ channelCode,
                             paymentType: this.paymentTypeList[this.payList.value],
                         }
@@ -1198,6 +1200,7 @@
                     name: this.paydetailList.name,
                     salesId: this.paydetailList.saleid,
                     channelCode: this.sysInfo.channelCode ,
+                    selfChannelCode: this.sysInfo.selfChannelCode,
                     dealType: 0,
                     isPay: 1,
                     payType: 10,

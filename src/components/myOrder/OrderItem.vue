@@ -163,6 +163,7 @@
                 if(+VIPORDER.salesId == +this.info.salesId) {
                     orderData = Object.assign({},VIPORDER);
                     orderData.channelCode = that.sysInfo.channelCode;
+                    orderData.selfChannelCode = that.sysInfo.selfChannelCode;
                     orderData.dealType = 1;
                     orderData.custVipId = that.info.custVipId;
                 } else {
@@ -171,6 +172,7 @@
                         name: that.info.name,
                         salesId: that.info.salesId,
                         channelCode: that.sysInfo.channelCode,
+                        selfChannelCode: that.sysInfo.selfChannelCode,
                         dealType: 1,
                         isPay: 1,
                         orderWay: 2,

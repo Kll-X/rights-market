@@ -141,7 +141,7 @@
                 // 校验短信验证码
                 let headers = {'phone': this.info.orderObject.phone};
                 let data = Object.assign({},this.info.paydetailList,{smsCode:this.smsCode});
-               window.console.log(data)
+                window.console.log(data)
                 placeOrder(data, headers).then((r) => {
                     toast.clear();
                     if (this.info.callback){

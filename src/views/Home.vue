@@ -6,18 +6,18 @@
             <div class="zone basic" v-if="zone == 'basic'" :style="{overflow:sysInfo.channel=='st'?'hidden':'visible'}">
                 <!-- 登录状态栏 -->
                 <div class="login-bar" v-if="sysInfo.channel!='st'">
-                    <div class="check-login" @click.stop="checkLogin">
+                    <div class="check-login" @click.stop="loginBtnHandler('首页个人信息1','0005')">
                         <img class="avatar" :src="userInfo.avatar" alt="">
                         <span class="nickname">{{userInfo.phoneMask ? userInfo.phoneMask:'未登录'}}</span>
                     </div>
-                    <router-link tag='img' class="search" alt="" :src="require('@imgs/search@2x.png')" :to="'search'"></router-link>
+                    <router-link tag='img' class="search" alt="" :src="require('@imgs/search@2x.png')" @click="blocklogHandler('搜索入口','0003','0001')" :to="'search'"></router-link>
                 </div>
                 <div class="login-bar-st" v-if="sysInfo.channel=='st'">
                     <div class="check-login"> <!-- @click.stop="checkLogin" -->
                         <img class="avatar" :src="userInfo.phone?require('@imgs/home/avatar_st2@2x.png'):require('@imgs/home/avatar_st1@2x.png')" alt="">
                         <span class="nickname">{{userInfo.phoneMask ? userInfo.phoneMask:'游客用户'}}</span>
                     </div>
-                    <img class="jumb-btn" alt="" @click.stop="checkLogin" :src="userInfo.phone?require('@imgs/home/mine.png'):require('@imgs/home/login.png')" />
+                    <img class="jumb-btn" alt="" @click.stop="loginBtnHandler('首页个人信息2','0006')" :src="userInfo.phone?require('@imgs/home/mine.png'):require('@imgs/home/login.png')" />
                 </div>
 
 
@@ -25,7 +25,7 @@
                 <van-swipe class="banner banner1" ref="banner1" :autoplay="3000" @change="onChange1">
                     <van-swipe-item v-for="(item, index) in banner1.arr" :key="index">
                         <div class="wrapper">
-                            <img class="banner-img" alt="" v-lazy="Common.getImgUrl(item.icon)" @click.stop="jump(item.linkurl, item.needPnsign)" />
+                            <img class="banner-img" alt="" v-lazy="Common.getImgUrl(item.icon)" @click.stop="bannerHandler(item.linkurl, item.needPnsign, '首页banner','0007',index)" />
                         </div>
                     </van-swipe-item>
                     <div v-show="sysInfo.channel!='st'" class="custom-indicator" slot="indicator">
@@ -45,7 +45,7 @@
                 <div class="banner3-wrapper" v-if="sysInfo.channel=='st' && banner3_arr.length">
                     <div class="banner3" ref="banner3" @scroll="banner3_scroll">
                         <div class="content" ref="banner3_content" :style="{width:banner3_arr.length * 1.7 +'rem'}">
-                            <classification-item2 v-for="(item,i) in banner3_arr" :key="i" :item="item"></classification-item2>
+                            <classification-item2 v-for="(item,i) in banner3_arr" :key="i" :item="item" @click.native="blocklogHandler('分类区tap2','0009',i<9?'000'+(i+1):'00'+(i+1)),item.linkurl"></classification-item2>
                         </div>
                     </div>
                     <div class="progress-bar" ref="progress_bar">
@@ -102,7 +102,7 @@
                 <van-swipe class="banner banner2" ref="banner2" :autoplay="3000" @change="onChange2">
                     <van-swipe-item v-for="(item, index) in banner2.arr" :key="index">
                         <div class="wrapper">
-                            <img class="banner-img" alt="" v-lazy="Common.getImgUrl(item.icon)" @click.stop="jump(item.linkurl, item.needPnsign)" />
+                            <img class="banner-img" alt="" v-lazy="Common.getImgUrl(item.icon)" @click.stop="bannerHandler(item.linkurl, item.needPnsign,'本地专享','0015',index)" />
                         </div>
                     </van-swipe-item>
                     <div class="custom-indicator" slot="indicator">
@@ -134,7 +134,7 @@
     // import store from '@/store'
     import { mapState } from 'vuex'
     import {getData,spec} from "@/api/home";
-    import { pagelog } from "@/api/common";
+    import { pagelogMixin,blocklogMixin } from "@/mixins/log"
     import {customAnalysis} from "@/assets/js/analysis";
     // import {getBanner,getQuery,delQuery} from '@/utils/func';
     import {getBanner,delQuery} from '@/utils/func';
@@ -142,6 +142,7 @@
 
     export default {
         name: 'home',
+        mixins: [pagelogMixin,blocklogMixin],
         created(){
             this.banner1.arr = getBanner(this.banner1.arr, this.sysInfo.channelCode);// 静态取banner
 
@@ -164,6 +165,17 @@
 
             messageBus.$on('msg_resetBanner2',this.resetBanner2);
             
+            // 集团渠道插码
+            if(this.sysInfo.channelCode == 67057){
+                (function(){
+                    let sdcjs = document.getElementById("sdcjs");
+                    if (sdcjs){
+                        sdcjs.parentNode.removeChild(sdcjs);
+                    }
+                    var s=document.createElement("script"); s.async=true;s.id='sdcjs'; s.src="./js/jt_sdc_load.js";    
+                    var s2=document.getElementsByTagName("script")[0]; s2.parentNode.insertBefore(s,s2);
+                }());
+            }
             //全渠道、微信渠道、手厅渠道、分省渠道统计
             if (this.sysInfo.channel == 'wx' || this.sysInfo.channel == 'st'){
                 customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][0])
@@ -173,17 +185,13 @@
                 customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key);
                 customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key,this.sysInfo.locationCode);
             }
-            pagelog({
-                phone: this.userInfo.phone
-            },{
-                "isvip":this.userInfo.isVip,//是否会员
-                "chanelcode":this.sysInfo.fullChannelCode,//超市渠道号
-                "chanelcode3":this.sysInfo.channelCode,//三级渠道号
-                "cur_url":location.href,//当前页面url
-                "up_url":location.origin+'/'+location.search+'#'+window.preRoute.path,//上个页面url
-                "mid":"",//权益会员id
-                "mname":""// 权益会员名称
-            });
+            //曝光统计：搜索
+            this.blocklogHandler("搜索入口,首页banner",'0003,0007','')
+            if (this.sysInfo.channel == 'st') {
+                this.blocklogHandler("首页个人信息2,分类区tap2",'0006,0009','')
+            }else{
+                this.blocklogHandler("首页个人信息1",'0005','')
+            }
         },
         data(){
             return{
@@ -317,11 +325,12 @@
                         {id:1,title:'宝藏卡权益',h:'0.67rem',img:require('@imgs/home/banner3_2.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?channelId=C10000018067&from=GR.F000000016'},
                         {id:2,title:'芝麻卡权益',h:'0.70rem',img:require('@imgs/home/banner3_3.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?cardType=2&channelId=C10000018066'},
                         {id:3,title:'明星卡权益',h:'0.70rem',img:require('@imgs/home/banner3_9.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?channelId=C10000013149&cardType=5'},
-                        {id:4,title:'5Gplus会员',h:'0.78rem',img:require('@imgs/home/banner3_5.png'),linkurl:'https://5g.cmicvip.cn/2016tyjf/5gqytc/res/wap/index.html?sspId=67769'},
-                        {id:5,title:'5G直通车',h:'0.52rem',img:require('@imgs/home/banner3_6.png'),linkurl:'https://dev.coc.10086.cn/coc/web/coc2020/pretty_5g/?channelId=C00004003741&pageId=1264892575881678848&type=hot'},
-                        {id:6,title:'全球通会员',h:'0.66rem',img:require('@imgs/home/banner3_7.png'),linkurl:'https://qqt.cmicrwx.cn/2016tyjf/xhmqqthy/res/wap/activity.html?sspId=66025'},
-                        {id:7,title:'随心系权益',h:'0.76rem',img:require('@imgs/home/banner3_8.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/scene/rightsbaw/index.html#?from=GR.F000000001'},
-                        {id:8,title:'5G家庭会员',h:'0.72rem',img:require('@imgs/home/banner3_4.png'),linkurl:'https://hy.10086.cn/cmccplus/UniAuth.html?WT.ac_id=20191029HYJTQYLQ_MO_O_Z000STKHDICON_WD'}
+                        {id:4,title:'哆啦锦鲤卡',h:'0.70rem',img:require('@imgs/home/banner3_10.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?cardType=1&channelId=C10000029343&from=GR.F000000031'},
+                        {id:5,title:'5Gplus会员',h:'0.78rem',img:require('@imgs/home/banner3_5.png'),linkurl:'https://5g.cmicvip.cn/2016tyjf/5gqytc/res/wap/index.html?sspId=67769'},
+                        {id:6,title:'5G直通车',h:'0.52rem',img:require('@imgs/home/banner3_6.png'),linkurl:'https://dev.coc.10086.cn/coc/web/coc2020/pretty_5g/?channelId=C00004003741&pageId=1264892575881678848&type=hot'},
+                        {id:7,title:'全球通会员',h:'0.66rem',img:require('@imgs/home/banner3_7.png'),linkurl:'https://qqt.cmicrwx.cn/2016tyjf/xhmqqthy/res/wap/activity.html?sspId=66025'},
+                        {id:8,title:'随心系权益',h:'0.76rem',img:require('@imgs/home/banner3_8.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/scene/rightsbaw/index.html#?from=GR.F000000001'},
+                        {id:9,title:'5G家庭会员',h:'0.72rem',img:require('@imgs/home/banner3_4.png'),linkurl:'https://hy.10086.cn/cmccplus/UniAuth.html?WT.ac_id=20191029HYJTQYLQ_MO_O_Z000STKHDICON_WD'}
                     ]
                 }else{//未到期
                     return [
@@ -329,10 +338,11 @@
                         {id:1,title:'宝藏卡权益',h:'0.67rem',img:require('@imgs/home/banner3_2.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?channelId=C10000018067&from=GR.F000000016'},
                         {id:2,title:'芝麻卡权益',h:'0.70rem',img:require('@imgs/home/banner3_3.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?cardType=2&channelId=C10000018066'},
                         {id:3,title:'5G家庭会员',h:'0.72rem',img:require('@imgs/home/banner3_4.png'),linkurl:'https://hy.10086.cn/cmccplus/UniAuth.html?WT.ac_id=20191029HYJTQYLQ_MO_O_Z000STKHDICON_WD'},
-                        {id:4,title:'5Gplus会员',h:'0.78rem',img:require('@imgs/home/banner3_5.png'),linkurl:'https://5g.cmicvip.cn/2016tyjf/5gqytc/res/wap/index.html?sspId=67769'},
-                        {id:5,title:'5G直通车',h:'0.52rem',img:require('@imgs/home/banner3_6.png'),linkurl:'https://dev.coc.10086.cn/coc/web/coc2020/pretty_5g/?channelId=C00004003741&pageId=1264892575881678848&type=hot'},
-                        {id:6,title:'全球通会员',h:'0.66rem',img:require('@imgs/home/banner3_7.png'),linkurl:'https://qqt.cmicrwx.cn/2016tyjf/xhmqqthy/res/wap/activity.html?sspId=66025'},
-                        {id:7,title:'随心系权益',h:'0.76rem',img:require('@imgs/home/banner3_8.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/scene/rightsbaw/index.html#?from=GR.F000000001'},
+                        {id:4,title:'哆啦锦鲤卡',h:'0.70rem',img:require('@imgs/home/banner3_10.png'),linkurl:'https://apiserv.cmicrwx.cn/fcyr4/index.html#/?cardType=1&channelId=C10000029343&from=GR.F000000031'},
+                        {id:5,title:'5Gplus会员',h:'0.78rem',img:require('@imgs/home/banner3_5.png'),linkurl:'https://5g.cmicvip.cn/2016tyjf/5gqytc/res/wap/index.html?sspId=67769'},
+                        {id:6,title:'5G直通车',h:'0.52rem',img:require('@imgs/home/banner3_6.png'),linkurl:'https://dev.coc.10086.cn/coc/web/coc2020/pretty_5g/?channelId=C00004003741&pageId=1264892575881678848&type=hot'},
+                        {id:7,title:'全球通会员',h:'0.66rem',img:require('@imgs/home/banner3_7.png'),linkurl:'https://qqt.cmicrwx.cn/2016tyjf/xhmqqthy/res/wap/activity.html?sspId=66025'},
+                        {id:8,title:'随心系权益',h:'0.76rem',img:require('@imgs/home/banner3_8.png'),linkurl:'https://apiserv.cmicrwx.cn/cmcc/rights/scene/rightsbaw/index.html#?from=GR.F000000001'},
                     ]
                 }
             }
@@ -349,6 +359,10 @@
             },
             changeslide2(i){
                 this.$refs.banner2[0].swipeTo(i);
+            },
+            bannerHandler(link, needPnsign, blockname,blockid,index){
+                this.jump(link, needPnsign);
+                this.blocklogHandler(blockname,blockid,index<9?'000'+(index+1):'00'+(index+1),link);
             },
             jump(link, needPnsign){
                 let that = this;
@@ -379,6 +393,14 @@
                 let d=parseFloat(window.getComputedStyle(this.$refs.progress[0], null).width);
                 let percent = this.$refs.banner3[0].scrollLeft/(a-b);
                 this.$refs.progress[0].style.left = percent*(c-d) + 'px'
+            },
+            loginBtnHandler(blockname,blockid) {
+                this.checkLogin();
+                if (this.userInfo.phone) {
+                    this.blocklogHandler(blockname,blockid,'0002')
+                } else {
+                    this.blocklogHandler(blockname,blockid,'0001')
+                }
             },
             checkLogin(){
                 if(this.userInfo.phone){

@@ -1,6 +1,6 @@
 <template>
     <!-- 单选框 -->
-    <div id="back-home" :style="{display:sysInfo.channel=='st'?'none':'flex'}">
+    <div id="back-home" :style="{display:sysInfo.channel=='st'?'none':'flex'}" @click="blocklogHandler('首页浮标','0004','0001')">
         <router-link to="/home" class="back-home-icon">
             <img class="back-home-img" src="@imgs/back_home.png" alt="">
         </router-link>
@@ -8,9 +8,15 @@
 </template>
 
 <script>
+    import { blocklogMixin } from "@/mixins/log"
     import { mapState } from 'vuex';
     export default {
         name: 'backhome',
+        mixins:[blocklogMixin],
+        created() {
+            //曝光统计
+            this.blocklogHandler("首页浮标",'0004','')
+        },
         computed:{
             ...mapState([
                 "sysInfo"

@@ -24,6 +24,7 @@
     import AppCard2 from '@/components/home/AppCard2.vue'
     import { getData } from "@/api/halfprice";
     import BackHome from '@/components/common/BackHome.vue';
+    import { pagelogMixin } from "@/mixins/log"
 
     export default {
         name: "halfprice",
@@ -31,6 +32,7 @@
             AppCard2,
             BackHome
         },
+        mixins: [pagelogMixin],
         data() {
             return {
                 // ----

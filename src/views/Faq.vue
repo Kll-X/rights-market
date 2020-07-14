@@ -17,8 +17,10 @@
 </template>
 
 <script>
+    import { pagelogMixin } from "@/mixins/log"
     export default {
         name: "faq",
+        mixins: [pagelogMixin],
         data(){
             return{
                 faqList: [{

@@ -51,10 +51,11 @@
     // 接口调用
     import { getCategory } from "@/api/sort";
     import { getFindMembers } from "@/api/sort";
-    import { pagelog } from "@/api/common";
+    import { pagelogMixin,blocklogMixin } from "@/mixins/log"
 
     export default {
         name: "sort",
+        mixins: [pagelogMixin,blocklogMixin],
         components: {
             Menu
         },
@@ -69,20 +70,13 @@
                 sortList: ['视频会员','音乐会员','阅读学习','生活服务','移动会员'],
             };
         },
+        created() {
+            //曝光统计：搜索
+            this.blocklogHandler("搜索入口",'0003','')
+        },
         mounted() {
             // 获取列表
             this.getList();
-            pagelog({
-                phone: this.userInfo.phone
-            },{
-                "isvip":this.userInfo.isVip,//是否会员
-                "chanelcode":this.sysInfo.fullChannelCode,//超市渠道号
-                "chanelcode3":this.sysInfo.channelCode,//三级渠道号
-                "cur_url":location.href,//当前页面url
-                "up_url":location.origin+'/'+location.search+'#'+window.preRoute.path,//上个页面url
-                "mid":"",//权益会员id
-                "mname":""// 权益会员名称
-            });
         },
         methods: {
             // 获取tabs内容

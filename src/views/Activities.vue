@@ -15,7 +15,7 @@
     import { mapState } from 'vuex'
     import { getData } from "@/api/activities";
     import { getBanner } from '@/utils/func';
-    import { pagelog } from "@/api/common";
+    import { pagelogMixin } from "@/mixins/log"
 
 
     export default {
@@ -54,6 +54,7 @@
             }
             
         },              
+        mixins: [pagelogMixin],
         components: {
             Menu,
             ActivityCard
@@ -72,17 +73,6 @@
                     that.activityList = res.data.data[103];
                 })
             }
-            pagelog({
-                phone: this.userInfo.phone
-            },{
-                "isvip":this.userInfo.isVip,//是否会员
-                "chanelcode":this.userInfo.fullChannelCode,//超市渠道号
-                "chanelcode3":this.sysInfo.channelCode,//三级渠道号
-                "cur_url":location.href,//当前页面url
-                "up_url":location.origin+'/'+location.search+'#'+window.preRoute.path,//上个页面url
-                "mid":"",//权益会员id
-                "mname":""// 权益会员名称
-            });
         },
     }
 </script>

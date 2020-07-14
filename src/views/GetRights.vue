@@ -10,9 +10,11 @@
 
 <script>
     import Menu from '@/components/common/Menu.vue'
+    import { pagelogMixin } from "@/mixins/log"
 
     export default {
         name: "get-rights",
+        mixins: [pagelogMixin],
         data(){
             return {
                 rights:[

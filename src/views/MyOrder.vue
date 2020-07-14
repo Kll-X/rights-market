@@ -54,6 +54,7 @@
     import {customAnalysis} from "@/assets/js/analysis";
     import {STATISTICS,APPLIST_CHAODIGOU,APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE} from "@/utils/constant";
     import messageBus from "../utils/messageBus";
+    import { pagelogMixin } from "@/mixins/log"
 
     export default {
         name: "my-order",
@@ -61,6 +62,7 @@
             OrderItem,
             BackHome
         },
+        mixins: [pagelogMixin],
         computed:{
             ...mapState([
                 "userInfo",

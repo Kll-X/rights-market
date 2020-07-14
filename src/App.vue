@@ -33,10 +33,10 @@
         },
         created(){
             let channelCode = getQuery('channelCode');
-            let fullChannelCode = getQuery('fullChannelCode');
+            let selfChannelCode = getQuery('selfChannelCode');
             let locationCode = getQuery('location') || this.$route.query.location;
             channelCode && this.SET_CHANNEL(channelCode);
-            fullChannelCode && this.SET_FULLCHANNEL(fullChannelCode);
+            selfChannelCode && this.SET_SELFCHANNEL(selfChannelCode);
             locationCode && this.SET_SYSINFO({
                 locationCode: locationCode
             });
@@ -121,7 +121,7 @@
                 'SET_SHOWQUICKLOGIN',
                 'SET_CHANNEL',
                 'SET_SYSINFO',
-                'SET_FULLCHANNEL'
+                'SET_SELFCHANNEL'
             ]),
             checkRouteToLogin(){
                 if(this.$route.name == 'home'){

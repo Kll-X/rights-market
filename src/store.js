@@ -37,7 +37,7 @@ export default new Vuex.Store({
             channelCode:'',
             channel: 'all',
             locationCode: '',
-            fullChannelCode:''
+            selfChannelCode:''
         }
     },
     mutations: {
@@ -57,8 +57,8 @@ export default new Vuex.Store({
                 default: state.sysInfo.channel = 'all';state.sysInfo.channelCode = CHANNELCODE.all;
             }
         },
-        SET_FULLCHANNEL:(state, code) => {
-            state.sysInfo.fullChannelCode = +code;
+        SET_SELFCHANNEL:(state, code) => {
+            state.sysInfo.selfChannelCode = code;
         },
         SET_SYSINFO: (state, sysInfo) => {
             Object.assign(state.sysInfo, sysInfo);

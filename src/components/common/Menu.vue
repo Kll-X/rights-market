@@ -1,8 +1,8 @@
 <template>
     <div class="menu" :style="{display:sysInfo.channel=='st'?'none':'flex'}">
-        <div class="item-wrapper" v-for="item in list" :key="item.txt">
+        <div class="item-wrapper" v-for="(item,index) in list" :key="item.txt">
             <router-link :to="item.router" class="item">
-                <div class="icon" :class="item.className"></div>
+                <div class="icon" :class="item.className" @click="blocklogHandler('底栏','0002','000'+(index+1))"></div>
                 {{item.txt}}
             </router-link>
         </div>
@@ -11,8 +11,14 @@
 
 <script>
     import { mapState } from 'vuex';
+    import { blocklogMixin } from "@/mixins/log"
     export default {
         name: "menubar",
+        mixins: [blocklogMixin],
+        created(){
+            //曝光统计
+            this.blocklogHandler('底栏','0002','');
+        },
         data: function () {
             return {
                 list: [

@@ -316,9 +316,11 @@
 import { Toast } from "vant";
 import {gotoService} from '@/api/customerservice.js'
 import { mapState } from 'vuex'
+import { pagelogMixin } from "@/mixins/log"
 
 export default {
   name: "customerService",
+  mixins: [pagelogMixin],
   data() {
     return {
       title: "城市定位",

@@ -171,6 +171,7 @@
                             order = Object.assign({},VIPORDER);
                             order.name = '黄金会员订购';
                             order.channelCode = that.sysInfo.channelCode;
+                            order.selfChannelCode = that.sysInfo.selfChannelCode;
                             order.isVipOrder = true;
                             that.orderHandler(order,true,true);
                         }
@@ -196,6 +197,7 @@
                         name: order.name,
                         salesId: order.saleid,
                         channelCode: this.sysInfo.channelCode ,
+                        selfChannelCode: this.sysInfo.selfChannelCode ,
                         dealType: 0,
                         isPay: 1,
                         payType: 10,
@@ -243,6 +245,7 @@
                     order = Object.assign({},VIPORDER);
                     order.name = '黄金会员订购';
                     order.channelCode = this.sysInfo.channelCode;
+                    order.selfChannelCode = this.sysInfo.selfChannelCode;
                     order.isVipOrder = true;
                     //统计点击开通会员按钮的次数
                     customAnalysis(STATISTICS_ACTIVITY["618"].activityId,STATISTICS_ACTIVITY["618"].key_btns,order.salesId);
@@ -310,6 +313,7 @@
                             order = Object.assign({},VIPORDER);
                             order.name = '黄金会员订购';
                             order.channelCode = that.sysInfo.channelCode;
+                            order.selfChannelCode = that.sysInfo.selfChannelCode;
                             order.isVipOrder = true;
                             that.orderHandler(order,true,true);
                         }

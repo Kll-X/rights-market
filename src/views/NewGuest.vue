@@ -33,9 +33,11 @@
     import BackHome from '@/components/common/BackHome.vue';
     import messageBus from "@/utils/messageBus";
     import { NEWVIPGIFT } from '@/utils/constant'
+    import { pagelogMixin } from "@/mixins/log"
 
     export default {
-        name: "newguest",
+        name: "newguest",       
+        mixins: [pagelogMixin],
         components: {
             BackHome
         },

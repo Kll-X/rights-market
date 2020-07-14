@@ -134,12 +134,11 @@
     import { sendSmsCode,placeOrder} from "@/api/goodsdetail";
     import BackHome from '@/components/common/BackHome.vue';
     import {VIPORDER,NEWVIPGIFT} from "@/utils/constant";
-
-
-
+    import { pagelogMixin } from "@/mixins/log"
 
 
     export default {
+        mixins: [pagelogMixin],
         data() {
             return {
                 txtArr:[
@@ -402,6 +401,7 @@
                 let data = Object.assign({},VIPORDER);
                 data.channelCode = that.sysInfo.channelCode;
                 data.smsCode = that.subscribeSmsCode;
+                data.selfChannelCode = that.sysInfo.selfChannelCode?that.sysInfo.selfChannelCode:''; //订购、退订增传selfChannelCode子段
 
                 that.$toast({
                     message: '订购中,请稍等…',
@@ -502,6 +502,7 @@
                                 data.channelCode = that.sysInfo.channelCode;
                                 data.dealType = 1; //退订
                                 data.custVipId = that.userInfo.id; //退订增传custVipId字段
+                                data.selfChannelCode = that.sysInfo.selfChannelCode?that.sysInfo.selfChannelCode:''; //订购、退订增传selfChannelCode子段
                                 that.$toast({
                                     message: '退订中,请稍等…',
                                     forbidClick: true,
