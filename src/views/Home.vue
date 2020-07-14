@@ -11,6 +11,7 @@
                         <span class="nickname">{{userInfo.phoneMask ? userInfo.phoneMask:'未登录'}}</span>
                     </div>
                     <router-link tag='img' class="search" alt="" :src="require('@imgs/search@2x.png')" @click="blocklogHandler('搜索入口','0003','0001')" :to="'search'"></router-link>
+
                 </div>
                 <div class="login-bar-st" v-if="sysInfo.channel=='st'">
                     <div class="check-login"> <!-- @click.stop="checkLogin" -->
@@ -18,6 +19,7 @@
                         <span class="nickname">{{userInfo.phoneMask ? userInfo.phoneMask:'游客用户'}}</span>
                     </div>
                     <img class="jumb-btn" alt="" @click.stop="loginBtnHandler('首页个人信息2','0006')" :src="userInfo.phone?require('@imgs/home/mine.png'):require('@imgs/home/login.png')" />
+
                 </div>
 
 
@@ -26,6 +28,7 @@
                     <van-swipe-item v-for="(item, index) in banner1.arr" :key="index">
                         <div class="wrapper">
                             <img class="banner-img" alt="" v-lazy="Common.getImgUrl(item.icon)" @click.stop="bannerHandler(item.linkurl, item.needPnsign, '首页banner','0007',index)" />
+
                         </div>
                     </van-swipe-item>
                     <div v-show="sysInfo.channel!='st'" class="custom-indicator" slot="indicator">
@@ -103,6 +106,7 @@
                     <van-swipe-item v-for="(item, index) in banner2.arr" :key="index">
                         <div class="wrapper">
                             <img class="banner-img" alt="" v-lazy="Common.getImgUrl(item.icon)" @click.stop="bannerHandler(item.linkurl, item.needPnsign,'本地专享','0015',index)" />
+
                         </div>
                     </van-swipe-item>
                     <div class="custom-indicator" slot="indicator">
@@ -135,6 +139,7 @@
     import { mapState } from 'vuex'
     import {getData,spec} from "@/api/home";
     import { pagelogMixin,blocklogMixin } from "@/mixins/log"
+
     import {customAnalysis} from "@/assets/js/analysis";
     // import {getBanner,getQuery,delQuery} from '@/utils/func';
     import {getBanner,delQuery} from '@/utils/func';
@@ -176,6 +181,7 @@
                     var s2=document.getElementsByTagName("script")[0]; s2.parentNode.insertBefore(s,s2);
                 }());
             }
+
             //全渠道、微信渠道、手厅渠道、分省渠道统计
             if (this.sysInfo.channel == 'wx' || this.sysInfo.channel == 'st'){
                 customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][0])
@@ -192,6 +198,7 @@
             }else{
                 this.blocklogHandler("首页个人信息1",'0005','')
             }
+
         },
         data(){
             return{
