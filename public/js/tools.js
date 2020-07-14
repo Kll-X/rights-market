@@ -1,9 +1,9 @@
 var ajaxUrl = '';
 if (location.host.search('testqymk') > -1) {
-    ajaxUrl = 'http://testqymk.cmicrwx.cn/'
+    ajaxUrl = 'https://testqymk.cmicrwx.cn/'
         // ajaxUrl = "http://localhost:8080/testApi/"
 } else if (location.host.search('localhost') > -1) {
-    ajaxUrl = 'http://testqymk.cmicrwx.cn/'
+    ajaxUrl = 'https://testqymk.cmicrwx.cn/'
         // ajaxUrl = "http://localhost:8080/testApi/"
 } else {
     ajaxUrl = '/'
@@ -57,7 +57,7 @@ function getPhoneNum(callback) {
     var info = {
             preSign: sign
         }
-        // console.log(info.preSign);
+        //window.console.log(info.preSign);
     $.ajax({
         dataType: 'json',
         headers: { 'Content-Type': 'application/json;charset=utf8' },
@@ -67,7 +67,7 @@ function getPhoneNum(callback) {
     }).then(function(res) {
         res = getJson(res);
         if (!res.data.sign) {
-            console.log('取号错误1：', res);
+           window.console.log('取号错误1：', res);
             callback(false);
             return;
         }
@@ -80,7 +80,7 @@ function getPhoneNum(callback) {
             expandParams: 'phoneNum=13802885443',
             isTest: test ? '0' : '1',
         };
-        // console.log('YDRZ_data',YDRZ_data);
+        //window.console.log('YDRZ_data',YDRZ_data);
         YDRZ.getTokenInfo({
             data: YDRZ_data,
             success: function(res) {
@@ -97,27 +97,27 @@ function getPhoneNum(callback) {
                         type: 'post',
                         data: JSON.stringify(info)
                     }).then(function(res) {
-                        console.log(res);
+                       window.console.log(res);
                         res = getJson(res);
                         if (res.resultCode == 0) {
                             callback(res.data);
                         } else {
-                            console.log('取号错误2：', res);
+                           window.console.log('取号错误2：', res);
                             callback(false);
                         }
                     })
                 } else {
-                    console.log('取号错误3：', res);
+                   window.console.log('取号错误3：', res);
                     callback(false);
                 }
             },
             error: function(res) {
-                console.log('取号错误4：', res);
+               window.console.log('取号错误4：', res);
                 callback(false);
             }
         })
     }, function(err) {
-        console.log('取号错误5：', err);
+       window.console.log('取号错误5：', err);
         callback(false);
     })
 
@@ -126,7 +126,7 @@ function getPhoneNum(callback) {
             try {
                 data = data === "" ? {} : JSON.parse(data);
             } catch (err) {
-                console.log("data数据格式错误", err)
+               window.console.log("data数据格式错误", err)
                 data = {};
             }
         }
@@ -159,7 +159,7 @@ function init_login() {
             url: '/mobile.php/index/isFL_openid/channel/lsc',
             type: 'post',
         }).then(function(res) {
-            console.log(res);
+           window.console.log(res);
             //不是第一次登陆
             if (res.status !== 1) {
                 //是否正式账号
@@ -169,7 +169,7 @@ function init_login() {
                 }).then(function(res) {
                     //不是正式账号
                     res = getJson(res);
-                    console.log(res.status)
+                   window.console.log(res.status)
                     if (res.status !== 1) {
                         startGetPhone();
                     }
@@ -182,7 +182,7 @@ function init_login() {
         function startGetPhone() {
             //智能取号之后的流程
             getPhoneNum(function(res, account) {
-                console.log(res)
+               window.console.log(res)
                     //是否取号成功
                 if (res) {
                     phone = res.mobile;
@@ -192,11 +192,11 @@ function init_login() {
                     if (account && account.phone) {
                         pop.addClass('pop-bindTip').open('', getInterfaceHtml(phoneMask, 2));
                         $(".pop-bindTip").find(".pop-change-num").on("click", function() {
-                            console.log("换号码");
+                           window.console.log("换号码");
                             changePhone(function(res, phone) {
                                 res = getJson(res);
-                                console.log(res)
-                                console.log("确定");
+                               window.console.log(res)
+                               window.console.log("确定");
                                 $.ajax({
                                     url: '/mobile.php/subscriber/bind_phone/channel/lsc',
                                     type: 'post',
@@ -207,10 +207,10 @@ function init_login() {
                                     }
                                 }).then(function(res) {
                                     if (res.status === 1) {
-                                        console.log("覆盖成功")
+                                       window.console.log("覆盖成功")
                                         window.location.href = location.href
                                     } else {
-                                        console.log("覆盖失败")
+                                       window.console.log("覆盖失败")
                                     }
                                     pop.close();
                                 })
@@ -219,8 +219,8 @@ function init_login() {
                             })
                         })
                         $(".pop-bindTip").find(".confirm").on("click", function() {
-                            console.log("覆盖为手机账号信息");
-                            console.log(phone)
+                           window.console.log("覆盖为手机账号信息");
+                           window.console.log(phone)
                             $.ajax({
                                 url: '/mobile.php/subscriber/bind_phone/channel/lsc',
                                 type: 'post',
@@ -232,24 +232,24 @@ function init_login() {
                                 }
                             }).then(function(res) {
                                 if (res.status === 1) {
-                                    console.log("覆盖成功")
+                                   window.console.log("覆盖成功")
                                     window.location.href = location.href
                                 } else {
-                                    console.log("覆盖失败")
+                                   window.console.log("覆盖失败")
                                 }
                                 pop.close();
                             })
                         })
                         $(".pop-bindTip").find(".deny").on("click", function() {
-                            console.log("保持非正式账号");
+                           window.console.log("保持非正式账号");
                             pop.close();
                         })
                     } else {
                         pop.addClass('pop-bindTip').open('', getInterfaceHtml(phoneMask, 1));
                         $(".pop-bindTip").find(".pop-change-num").on("click", function() {
-                            console.log("换号码");
+                           window.console.log("换号码");
                             changePhone(function(res, phone) {
-                                console.log("确定");
+                               window.console.log("确定");
                                 res = getJson(res);
                                 $.ajax({
                                     url: '/mobile.php/subscriber/bind_phone/channel/lsc',
@@ -261,9 +261,9 @@ function init_login() {
                                     }
                                 }).then(function(res) {
                                     if (res.status === 1) {
-                                        console.log("绑定成功")
+                                       window.console.log("绑定成功")
                                     } else {
-                                        console.log("绑定失败")
+                                       window.console.log("绑定失败")
                                     }
                                     pop.close();
                                 })
@@ -272,7 +272,7 @@ function init_login() {
                             })
                         })
                         $(".pop-bindTip").find(".confirm").on("click", function() {
-                            console.log("绑定");
+                           window.console.log("绑定");
                             $.ajax({
                                 url: '/mobile.php/subscriber/bind_phone/channel/lsc',
                                 type: 'post',
@@ -283,15 +283,15 @@ function init_login() {
                                 }
                             }).then(function(res) {
                                 if (res.status === 1) {
-                                    console.log("绑定成功")
+                                   window.console.log("绑定成功")
                                 } else {
-                                    console.log("绑定失败")
+                                   window.console.log("绑定失败")
                                 }
                                 pop.close();
                             })
                         })
                         $(".pop-bindTip").find(".deny").on("click", function() {
-                            console.log("保持非正式账号");
+                           window.console.log("保持非正式账号");
                             pop.close();
                         })
                     }
@@ -322,7 +322,7 @@ function init_login() {
         function startGetPhone() {
             //智能取号之后的流程
             getPhoneNum(function(res, account) {
-                console.log(res)
+               window.console.log(res)
                     //是否取号成功
                     // if (true) {
                 if (res) {
@@ -333,9 +333,9 @@ function init_login() {
                     if (account && account.phone) {
                         pop.addClass('pop-bindTip').open('', getInterfaceHtml(phoneMask, 4));
                         $(".pop-bindTip").find(".pop-change-num").on("click", function() {
-                            console.log("换号码");
+                           window.console.log("换号码");
                             changePhone(function(res, phone) {
-                                console.log("确定");
+                               window.console.log("确定");
                                 res = getJson(res);
                                 $.ajax({
                                     url: '/mobile.php/subscriber/phoneLogin/channel/lsc',
@@ -346,7 +346,7 @@ function init_login() {
                                     }
                                 }).then(function(res) {
                                     if (res.status === 1) {
-                                        console.log("登录成功")
+                                       window.console.log("登录成功")
                                         window.location.href = location.href
                                     } else {
                                         alert("登录失败")
@@ -358,7 +358,7 @@ function init_login() {
                             })
                         })
                         $(".pop-bindTip").find(".confirm").on("click", function() {
-                            console.log("登录正式账号");
+                           window.console.log("登录正式账号");
                             $.ajax({
                                 url: '/mobile.php/subscriber/phoneLogin/channel/lsc',
                                 type: 'post',
@@ -369,7 +369,7 @@ function init_login() {
                                 }
                             }).then(function(res) {
                                 if (res.status === 1) {
-                                    console.log("登录成功");
+                                   window.console.log("登录成功");
                                     window.location.href = location.href;
                                 } else {
                                     alert("登录失败")
@@ -378,15 +378,15 @@ function init_login() {
                             })
                         })
                         $(".pop-bindTip").find(".deny").on("click", function() {
-                            console.log("生成游客账号");
+                           window.console.log("生成游客账号");
                             pop.close();
                         })
                     } else {
                         pop.addClass('pop-bindTip').open('', getInterfaceHtml(phoneMask, 3));
                         $(".pop-bindTip").find(".pop-change-num").on("click", function() {
-                            console.log("换号码");
+                           window.console.log("换号码");
                             changePhone(function(res, phone) {
-                                console.log("确定");
+                               window.console.log("确定");
                                 res = getJson(res);
                                 $.ajax({
                                     url: '/mobile.php/subscriber/phoneLogin/channel/lsc',
@@ -397,7 +397,7 @@ function init_login() {
                                     }
                                 }).then(function(res) {
                                     if (res.status === 1) {
-                                        console.log("登录成功")
+                                       window.console.log("登录成功")
                                         window.location.href = location.href;
                                     } else {
                                         alert("登录失败")
@@ -409,7 +409,7 @@ function init_login() {
                             })
                         })
                         $(".pop-bindTip").find(".confirm").on("click", function() {
-                            console.log("生成正式账号");
+                           window.console.log("生成正式账号");
                             $.ajax({
                                 url: '/mobile.php/subscriber/phoneLogin/channel/lsc',
                                 type: 'post',
@@ -420,7 +420,7 @@ function init_login() {
                                 }
                             }).then(function(res) {
                                 if (res.status === 1) {
-                                    console.log("登录成功")
+                                   window.console.log("登录成功")
                                     window.location.href = location.href;
                                 } else {
                                     alert("登录失败")
@@ -429,7 +429,7 @@ function init_login() {
                             })
                         })
                         $(".pop-bindTip").find(".deny").on("click", function() {
-                            console.log("生成游客账号");
+                           window.console.log("生成游客账号");
                             pop.close();
                         })
                     }
@@ -482,7 +482,7 @@ function init_login() {
                     data: { account: getSingleRsa(phone) },
                     dataType: "json",
                     success: function(data) {
-                        console.log(data);
+                       window.console.log(data);
                         // if(data.status === 1){
                         if (data.code && type != 1) {
                             parent.find('.pop-error').stop(true).fadeIn(200).text('该手机已被占用');
@@ -593,7 +593,7 @@ function init_login() {
             try {
                 data = data === "" ? {} : JSON.parse(data);
             } catch (err) {
-                console.log("data数据格式错误", err)
+               window.console.log("data数据格式错误", err)
                 data = {};
             }
         }
@@ -602,7 +602,7 @@ function init_login() {
 }
 
 function collectFunc(id) {
-    // console.log(id);
+    //window.console.log(id);
     $.ajax({
         url: '/mobile.php/count/count/game_id/100/channel/lsc',
         type: 'post',
@@ -612,7 +612,7 @@ function collectFunc(id) {
             channel: 'lsc'
         },
         success: function(data) {
-            console.log('统计成功', id);
+           window.console.log('统计成功', id);
         },
         error: function() {
 

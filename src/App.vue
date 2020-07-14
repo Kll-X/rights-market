@@ -12,10 +12,13 @@
     import QuickLogin from '@components/home/QuickLogin.vue';
     import messageBus from "@/utils/messageBus";
     import Popup from '@components/common/Popup'
-    import {getWxconfig} from '@/api/common';
+    import {getWxconfig,assertionQryUID} from '@/api/common';
     import {is_weixin,getQuery} from '@/utils/func'
     import {signLogin} from '@/api/login'
     import {myVip} from '@/api/vipbenefit';
+    import {actSignLogin} from '@/api/custompage.js';
+    import { NEWVIPGIFT } from '@/utils/constant'
+
 
 
     export default {
@@ -23,20 +26,22 @@
             return {
                 popupInfo: {
                     flag: false,
-                    loginTimer:null
-                }
+                    loginTimer:null,
+                },
+                st_login:true
             }
         },
         created(){
-            let that = this;
             let channelCode = getQuery('channelCode');
+            let selfChannelCode = getQuery('selfChannelCode');
             let locationCode = getQuery('location') || this.$route.query.location;
             channelCode && this.SET_CHANNEL(channelCode);
+            selfChannelCode && this.SET_SELFCHANNEL(selfChannelCode);
             locationCode && this.SET_SYSINFO({
                 locationCode: locationCode
             });
-            messageBus.$on('msg_checkLogin',(type)=>{
-                this.checkLogin(type)
+            messageBus.$on('msg_checkLogin',(type,noGetPhoneNum)=>{
+                this.checkLogin(type,noGetPhoneNum)
             });
             messageBus.$on('msg_showPopup',info=>{
                 this.popupInfo = info;
@@ -48,21 +53,16 @@
                 this.getVipInfo()
             });
             // 判断路由当前是首页则调起检测-弹窗登录
-            if(this.$route.name == 'home'){
-                messageBus.$emit('msg_checkLogin','quick')
-            }else{
-                // 其他页面只检测-自动取号
-                messageBus.$emit('msg_checkLogin')
-            }
+            this.checkRouteToLogin();
             //微信分享相关
             if (is_weixin()) {
                 getWxconfig({
                     url: location.href.split('#')[0]
                 }).then(res => {
-                    const debug = false;
+                    let debug = false;
                     if (res.data.resultCode === 0) {
                         res = res.data.data;
-                        console.log(res);
+                       window.console.log(res);
                         const jsApiList = [
                             'chooseImage',
                             'previewImage',
@@ -80,13 +80,13 @@
                             signature: res.signature, // 必填，签名，见附录1
                             jsApiList: jsApiList
                         });
-                        const shareData = {
-                            title: "中国移动权益超市来啦",
-                            desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
-                            link: location.origin + '/' + location.hash,
-                            imgUrl: location.origin + '/imgs/pro/share.png',
-                        }
-                        that.share(shareData);
+                        // const shareData = {
+                        //     title: "中国移动权益超市来啦",
+                        //     desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                        //     link: location.origin + '/' + location.hash,
+                        //     imgUrl: location.origin + '/imgs/pro/share.png',
+                        // }
+                        // that.share(shareData);
                     }
                 })
             }
@@ -107,7 +107,7 @@
         },
         watch:{
             '$store.state.userInfo.phone'(n){
-                n && n!='null' &&  this.getVipInfo()
+                n &&  this.getVipInfo()
             },
             '$route'(){
                 setTimeout(() => { //用setTimeout才有效
@@ -120,13 +120,43 @@
                 'SET_USERINFO',
                 'SET_SHOWQUICKLOGIN',
                 'SET_CHANNEL',
-                'SET_SYSINFO'
+                'SET_SYSINFO',
+                'SET_SELFCHANNEL'
             ]),
+            checkRouteToLogin(){
+                if(this.$route.name == 'home'){
+                    messageBus.$emit('msg_checkLogin','quick');
+                }else if(this.$route.name == 'vipBenefit'){
+                    // messageBus.$emit('msg_checkLogin','quick')
+                }else{
+                    // 其他页面只检测-自动取号
+                    messageBus.$emit('msg_checkLogin')
+                }
+            },
+            checkTypeLogin(type){
+                let that = this;
+                if(!that.userInfo.phone){// 要在没登录的情况下才执行下面逻辑
+                    if(type == 'quick'){
+                   window.console.log('唤起检测-弹窗登录');
+                    // 先判断是否30分钟内曾弹出过登录窗，若是，则不弹出
+                    if((!getCookie('ql') && that.$route.name == 'home') || that.$route.name == 'vipBenefit'){
+                        setCookie('ql','true',30);
+                        messageBus.$emit('msg_updatePlan');
+                        that.SET_SHOWQUICKLOGIN(true);
+                    }
+                    }else if(type == 'init'){
+                       window.console.log('唤起检测-页面登录');
+                        that.$router.replace({name: 'login'});
+                    }else{
+                       window.console.log('唤起检测-已尝试自动取号')
+                    }
+                }
+            },
             getVipInfo(){
                 let that = this;
                 myVip({
-                    proId:'6000692',
-                    salesId:'102125',
+                    proId:NEWVIPGIFT.proId,
+                    salesId:NEWVIPGIFT.salesId,
                     channelCode:that.sysInfo.channelCode,
                     phone:that.userInfo.phone,
                 }).then((res)=>{
@@ -138,26 +168,33 @@
                     }
                 })
             },
-            countDown(time){
+            countDown(time=4){
+               window.console.log(time)
                 let that = this;
                 let t = getCookie('t');
                 // 定时同步清空store用户信息
-                    let remainingTime = t?4*60*60*1000 - (Date.parse(new Date()) - t):4*60*60*1000;
+                    if(this.sysInfo.channel == 'st' && time != 0){
+                        time = 0.5
+                    }
+                    let remainingTime = t?time*60*60*1000 - (Date.parse(new Date()) - t):time*60*60*1000;
                     if(time == 0){
                         remainingTime = 0
                     }
-                    // console.log(remainingTime);
+                    //window.console.log(remainingTime);
                     that.loginTimer = setTimeout(() => {
                         // 缓存到期，用户数据初始化
                         delCookie('p');
                         delCookie('pm');
                         delCookie('t');
                         delCookie('pc');
+                        delCookie('pnsign');
+                        delCookie('uid');
                         if(time == 0){
                             delCookie('ql');
                         }
                         that.SET_USERINFO(
                             {
+                                id:'',
                                 avatar: require('@imgs/home/avatar@2x.png'),
                                 token: '',
                                 userInformation: '',
@@ -169,6 +206,7 @@
                                 provinceCode: null,
                                 iswhite:0,
                                 isVip:'',
+                                orderId:'',
                                 expireTime:'',
                                 cancelFlag:'',
                                 hasNewGift:'',
@@ -182,13 +220,110 @@
                                 effectDaysBefore:''
                             }
                         );
-                        console.log('转为未登录')
+                       window.console.log('转为未登录')
                     }, remainingTime);
             },
-            checkLogin(type){
+            checkLogin(type,noGetPhoneNum=false){
                 let that = this;
+                //检测是否登录状态
+                let p = getCookie('p')?decodeURIComponent(getCookie('p')):'';
+                let pm = getCookie('pm');
+                let t = getCookie('t');
+                let pc = getCookie('pc');
+                let pnsign = getCookie('pnsign');
+                let uid = getCookie('uid');
+                let iswhite = getCookie('iswhite');
                 let sign = that.$route.query.sign ? that.$route.query.sign : getQuery('sign');
-                if(sign){//单点登录(不管是否有“已登录”的状态缓存)
+                let actsign = that.$route.query.actSign ? that.$route.query.actSign : getQuery('actSign');
+                actsign = actsign?decodeURIComponent(actsign):actsign;
+                if(that.sysInfo.channel == 'st'){//是手厅就走一次单点登录，防止用户要换号码
+                    console.info('手厅',type);
+                    if(that.st_login){
+                        console.info('st_login',that.st_login);
+                        that.st_login = false;
+                        window.leadeon.getUserInfo({
+                            debug:false,
+                            success: function(res1) {
+                                console.info('getUserInfo_success',res1);
+                                let token = res1.token;
+                                // 获取明文uid 
+                                function getUid(token) { 
+                                    return token.match(/UID=\w+/g)[0]; 
+                                }
+                                if(!res1.phoneNumber) {
+                                    //没有手机，app没登录，删除页面存在的登录信息
+                                    console.info("没有手机，app没登录，删除页面存在的登录信息");
+                                    messageBus.$emit('msg_countDown',0);
+                                } else {
+                                    let uid;
+                                    if(token){
+                                        uid = getUid(token).slice(4);
+                                    } 
+                                    //有手机号，当前app处于登录状态，需要判断是否跟页面缓存手机号相等，同步信息
+                                    console.info("有手机号，当前app处于登录状态，需要同步信息")
+                                    //手机号不相等，则需要更改页面的登录信息，检测会话uid是否有效
+                                    console.info("需要更改页面的登录信息，检测会话uid是否有效")
+                                    window.leadeon.checkUID({
+                                        debug:false,
+                                        domain:window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: ''),
+                                        chanelId:"12111",
+                                        success:function(res1){//传给后端uid
+                                            console.info('checkUID_success');
+                                            assertionQryUID({
+                                                phone:that.userInfo.phone,
+                                                uid:res1.uid
+                                            }).then((res)=>{
+                                                if(res.data.resultCode == 0){//单点登录成功
+                                                    if(res.data.data){
+                                                        console.info('assertionQryUID_success');
+                                                        // 单点登录成功，更新用户信息
+                                                        that.SET_USERINFO(Object.assign({},res.data.data,{uid:uid,iswhite:iswhite}));
+                                                        // cookie缓存登录状态
+                                                        setCookie('p',encodeURIComponent(res.data.data.phone));
+                                                        setCookie('pm',res.data.data.phoneMask);
+                                                        setCookie('t',Date.parse(new Date()));
+                                                        setCookie('pc',res.data.data.provinceCode);
+                                                        setCookie('pnsign',res.data.data.pnsign);
+                                                        setCookie('uid',uid);
+                                                        messageBus.$emit('msg_countDown');
+                                                        messageBus.$emit('msg_resetBanner2');
+                                                        messageBus.$emit('msg_loginCheck');                                                    
+                                                    }
+                                                }else{//没单点登录成功
+                                                    console.info('assertionQryUID_fail');
+                                                    messageBus.$emit('msg_loginFail');
+                                                }
+                                            })
+                                        },
+                                        error: function(res) {
+                                            console.info('checkUID_error',JSON.stringify(res));
+                                            messageBus.$emit('msg_loginFail');
+                                        }
+                                    })
+                                }
+                            },
+                            error: function() {
+                                console.info('getUserInfo_error');
+                            }
+                        })
+                    }else{
+                        console.info('st_login',that.st_login);
+                        if(!(p && pm && t && pc)){// 没登录
+                            console.info('p && pm && t && pc == false,没登录');
+                            window.leadeon.showLogin({
+                                debug: false,
+                                urlType: '3' ,//1为本网地址；2为异网地址；3为同时支持本网和异网地址；（url有值时urlType必填）-5.3新加
+                                success: function(res) {
+                                    console.info('showLogin_success',res);
+                                },
+                                error: function(err) {
+                                    console.info('showLogin_err',err);
+                                    messageBus.$emit('msg_loginFail');
+                                }
+                            })
+                        }
+                    }
+                }else if(sign){//sign单点登录，防止用户要换号码(不管是否有“已登录”的状态缓存)
                     signLogin({
                         phone:that.userInfo.phone,
                         sign:sign,
@@ -204,19 +339,34 @@
                             setCookie('pc',res.data.data.provinceCode);
                             setCookie('pnsign',res.data.data.pnsign);
                             messageBus.$emit('msg_countDown');
-                            messageBus.$emit('msg_check_resetbannerData2');
+                            messageBus.$emit('msg_resetBanner2');
                             messageBus.$emit('msg_loginCheck');
                         }else {
                             messageBus.$emit('msg_loginFail');
                         }
                     });
+                }else if(actsign){
+                    actSignLogin({
+                        phone: that.userInfo.phone,
+                        actSign: actsign
+                    }).then(res=>{
+                        if(res.data.resultCode == 0){
+                            // 单点登录成功，更新用户信息
+                            that.SET_USERINFO(res.data.data);
+                            // cookie缓存登录状态
+                            setCookie('p',encodeURIComponent(res.data.data.phone));
+                            setCookie('pm',res.data.data.phoneMask);
+                            setCookie('t',Date.parse(new Date()));
+                            setCookie('pc',res.data.data.provinceCode);
+                            setCookie('pnsign',res.data.data.pnsign);
+                            messageBus.$emit('msg_countDown');
+                            messageBus.$emit('msg_resetBanner2');
+                            messageBus.$emit('msg_loginCheck');
+                        } else {
+                            messageBus.$emit('msg_loginFail');
+                        }
+                    })
                 }else{
-                    //检测是否登录状态
-                    let p = decodeURIComponent(getCookie('p'));
-                    let pm = getCookie('pm');
-                    let t = getCookie('t');
-                    let pc = getCookie('pc');
-                    let pnsign = getCookie('pnsign');
                     if (p && pm && t && pc) {//已登录状态
                         // 读取缓存，更新用户信息
                         that.SET_USERINFO({
@@ -224,32 +374,26 @@
                             phoneMask:pm,
                             timestamp:t,
                             provinceCode:pc,
-                            pnsign: pnsign
+                            pnsign: pnsign,
+                            uid: uid,
+                            iswhite:iswhite
                         });
                         messageBus.$emit('msg_countDown');
                     } else {//非登录状态,自动取号
-                        window.getPhoneNum(function(info) {//取号成功获得phone,phoneMask，等待用户点击一键登录时再触发真正的登录请求
-                            if (info) {
-                                let obj = {};
-                                obj.phoneShow = info.phone;
-                                obj.phoneMaskShow = info.phoneMask;
-                                that.SET_USERINFO(obj);
-                            }
-                            if(type == 'quick'){
-                                console.log('唤起检测-自动取号-弹窗登录');
-                                // 先判断是否30分钟内曾弹出过登录窗，若是，则不弹出
-                                if(!getCookie('ql') && (that.$route.name == 'home' || that.$route.name == 'vipBenefit')){
-                                    setCookie('ql','true',30);
-                                    messageBus.$emit('msg_updatePlan');
-                                    that.SET_SHOWQUICKLOGIN(true);
+                        if(noGetPhoneNum){
+                           window.console.log('唤起检测-不取号-登录');
+                            that.checkTypeLogin(type)
+                        }else{
+                            window.getPhoneNum(function(info) {//取号成功获得phone,phoneMask，等待用户点击一键登录时再触发真正的登录请求
+                                if (info) {
+                                    let obj = {};
+                                    obj.phoneShow = info.phone;
+                                    obj.phoneMaskShow = info.phoneMask;
+                                    that.SET_USERINFO(obj);
                                 }
-                            }else if(type == 'init'){
-                                console.log('唤起检测-自动取号-页面登录');
-                                that.$router.replace({name: 'login'});
-                            }else{
-                                console.log('唤起检测-自动取号')
-                            }
-                        });
+                                that.checkTypeLogin(type)
+                            });
+                        }
                     }
                 }
             },
@@ -276,7 +420,7 @@
                         imgUrl: data.imgUrl ? data.imgUrl : location.origin + '/imgs/pro/share.png', // 分享图标
                         success: function () {
                             // 用户确认分享后执行的回调函数
-                            console.log()
+                           window.console.log()
                         },
                         cancel: function () {
                             // 用户取消分享后执行的回调函数
@@ -291,10 +435,14 @@
             window.addEventListener('offline', ()=>{
                 // 网络由正常常到异常时触发
                 sessionStorage.locationUrl=window.location.href;
+               window.console.log('offline',sessionStorage.locationUrl)
                 this.$router.replace('/networkError')
             });
             window.addEventListener('online',()=>{
-                window.location.href=sessionStorage.locationUrl
+                if(sessionStorage.locationUrl){
+                   window.console.log('online',sessionStorage.locationUrl)
+                    window.location.href=sessionStorage.locationUrl;
+                }
             });
         },
         beforeDestroy: function () {

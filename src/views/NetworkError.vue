@@ -6,10 +6,11 @@
     </div>
 </template>
 <script>
+    import { pagelogMixin } from "@/mixins/log"
 
     export default {
         name: "networkError",
-
+        mixins: [pagelogMixin],
         data(){
             return {
             }

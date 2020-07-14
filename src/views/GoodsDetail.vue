@@ -15,21 +15,73 @@
             </div>
         </div>
         <!-- 单选框 -->
-        <div class="radio-wrap">
-            <RadioCard class="order-radio"
+        <div class="detail-module-title">权益选择</div>
+        <div v-show="!defaultFirstStyle" class="radio-wrap">
+            <SwipeRadio class="order-radio"
                 ref="radioOrder"
                 @change="changeRadio"
-                :radioObj="orderList"/>
-            <RadioCard class="pay-radio"
+                :radioObj="orderList"
+                :isVip="isVip"
+                :itemDetail.sync="paydetailList"/>
+            <!-- <RadioCard class="order-radio"
+                ref="radioOrder"
+                @change="changeRadio"
+                :radioObj="orderList"/> -->
+            <!-- <RadioCard class="pay-radio"
                 ref="radioPay"
                 @change="changeRadio"
-                :radioObj="payList"/>
+                :radioObj="payList"/> -->
+        </div>
+        <div v-show="defaultFirstStyle" class="radio-wrap-default">
+            <div class="radio-wrap-default-flex radio-wrap-default-seleced"></div>
+            <div class="radio-wrap-default-flex"></div>
+            <div class="radio-wrap-default-flex"></div>
+        </div>
+        <div class="detail-module-title">支付方式</div>
+        <div v-show="!defaultStyle" class="radio-wrap">
+            <PaymentType class="pay-radio"
+            ref="radioPay"
+            @change="changeRadio"
+            :radioObj="payList"/>
+        </div>
+        <div v-show="defaultStyle" class="pay-radio-default">
+            <van-cell>
+                <template #title>
+                    <span class="pay-radio-default-icon"></span>
+                    <span class="pay-radio-default-name"></span>
+                </template>
+                <template #right-icon>
+                    <van-radio checked-color="#FD7028" />
+                </template>
+            </van-cell>
         </div>
         <!-- 商品详情卡片 -->
-        <DetailCard class="detail-card" cardTitle="产品详情"
+        <div class="detail-module-title">权益说明</div>
+        <DetailCard v-show="!defaultStyle" class="detail-card" cardTitle="产品详情"
             :cardIntroduce="paydetailList"/>
+        <div v-show="defaultStyle" class="detail-card-default">
+            <span class="detail-card-default-con default-con1"></span>
+            <span class="detail-card-default-con default-con2"></span>
+            <span class="detail-card-default-con default-con3"></span>
+            <span class="detail-card-default-con default-con1"></span>
+            <span class="detail-card-default-con default-con3"></span>
+            <span class="detail-card-default-con default-con4"></span>
+            <span class="detail-card-default-con default-con5"></span>
+            <span class="detail-card-default-con default-con6"></span>
+            <span class="detail-card-default-con default-con2"></span>
+            <span class="detail-card-default-con default-con3"></span>
+            <span class="detail-card-default-con default-con1"></span>
+            <span class="detail-card-default-con default-con3"></span>
+            <span class="detail-card-default-con default-con4"></span>
+            <span class="detail-card-default-con default-con3"></span>
+            <span class="detail-card-default-con default-con5"></span>
+            <span class="detail-card-default-con default-con3"></span>
+            <span class="detail-card-default-con default-con6"></span>
+            <span class="detail-card-default-con default-con3"></span>
+            <span class="detail-card-default-con default-con4"></span>
+        </div>
         <!-- 底部付款框 -->
-        <div class="payment-wrap">
+        <!-- <div class="payment-wrap">
             <div class="payment-font" @click="showPopup">
                 <div class="payment-font-wrap">
                     <div class="payment-font-con">
@@ -52,6 +104,14 @@
                     <p v-show="isFivego && !isVip && phoneNumber" class="payment-button-con-buy">开通会员立享5折</p>
                     <p v-show="isFivego && isVip && !canBuyFivego" class="payment-button-con-buy">本月已享5折优惠</p>
                 </div>
+            </div>
+        </div> -->
+        <!-- 新版底部付款框 -->
+        <div class="payment-btn-wrap">
+            <div class="payment-btn-wrap-button" :class="{'payment-btn-wrap-button-gray': (isFivego && isVip && !canBuyFivego)}" @click="orderFunc">
+                <span v-show="!isFivego || (isFivego && canBuyFivego && isVip)">立即订购</span>
+                <span v-show="(isFivego && !isVip && phoneNumber) || (isFivego && !phoneNumber)">开通会员立享5折</span>
+                <span v-show="isFivego && isVip && !canBuyFivego">本月已享5折优惠</span>
             </div>
         </div>
         <!-- 弹出二次确认框 -->
@@ -119,7 +179,7 @@
             position="bottom">
             <img class="close-popup" @click="payShow = false"
                 src="@imgs/goodsdetail/close-popup.png" alt="">
-            <div class="popup-title">产品订购</div>
+            <div class="popup-title">{{paydetailList.name}}</div>
             <div class="popup-price">¥
                 <span>{{((paydetailList.price)/100).toFixed(2)}}</span>
             </div>
@@ -145,7 +205,7 @@
                     </van-field>
                 </div>
             </div>
-            <div class="popup-btn submit" @click="submitBtn">立即订购</div>
+            <div class="popup-btn submit" @click="submitBtn">确认支付</div>
         </van-popup>
         <BackHome/>
     </div>
@@ -154,11 +214,16 @@
 <script>
     import GoodsSwipe from '@/components/goodsdetail/GoodsSwipe.vue';
     import RadioCard from '@/components/goodsdetail/DetailRadio.vue';
+    import SwipeRadio from '@/components/goodsdetail/SwipeRadio.vue';
+    import PaymentType from '@/components/goodsdetail/PaymentType.vue';
     import DetailCard from '@/components/goodsdetail/DetailCard.vue';
     import OverlayBox from '@/components/goodsdetail/OverlayBox.vue';
     import BackHome from '@/components/common/BackHome.vue';
-    import {STATISTICS} from "@/utils/constant";
+    import {STATISTICS,NEWVIPGIFT} from "@/utils/constant";
+    import { getCategory } from "@/api/sort";
     import {customAnalysis} from "@/assets/js/analysis";
+    import {share} from "@/utils/func"
+    import { pagelog } from "@/api/common";
 
     // 接口调用
     import { mapState } from 'vuex';
@@ -166,12 +231,13 @@
     import { getFindMembersBymid, getFindMemberSales, sendSmsCode, placeOrder, payOrderByH5, findMemberTc, queryAcceptFivego } from "@/api/goodsdetail";
     import { Toast } from 'vant';
     import { myVip } from '@/api/vipbenefit';
+    import messageBus from '../utils/messageBus';
     // import { getFindMembers } from "@/api/sort"; // 获取商品列表
 
     export default {
         name: "goods-detail",
         components: {
-            GoodsSwipe,RadioCard,DetailCard,OverlayBox,BackHome
+            GoodsSwipe,RadioCard,SwipeRadio,PaymentType,DetailCard,OverlayBox,BackHome
         },
         computed:{
             ...mapState([
@@ -179,14 +245,22 @@
                 "sysInfo"
             ])
         },
+        created() {
+            this.menu();
+        },
         data() {
             return {
                 isFristLoad: true,
+                defaultStyle: true, // 默认样式
+                defaultFirstStyle: true, // 默认只在第一次出现的样式
 
                 // 会员参数
                 isVip: 0, // 0：非会员 1：会员
                 isFivego: 0, // 0: 不是五折产品 1：五折产品
                 canBuyFivego: 1, // 1:可以购买五折 2：不可以购买五折
+
+                // 分类对象
+                categoryObj: {},
 
                 // 浏览器参数
                 isAli: false,
@@ -211,7 +285,7 @@
                 coutdownTime: 60,
 
                 // 商品列表
-                goodsList: [],
+                goodsList: [{}],
                 goodsName: '',
 
                 //产品详情列表
@@ -247,13 +321,16 @@
                         {
                             label: ['话费支付', '单次点播'],
                             value: '1',
-                            disable: true,
+                            disable: false,
                             hidden: false,
-                        }, {
+                            name: '话费支付',
+                        }, 
+                        {
                             label: ['话费支付', '连续包月'],
                             value: '2',
                             disable: true,
                             hidden: false,
+                            name: '话费支付-连续包月',
                         }
                         // , {
                         //     label: ['支付宝支付', '单次点播'],
@@ -300,6 +377,7 @@
             };
         },
         mounted() {
+            let that = this;
             // 获取当前商品的详情
             let userAgent = navigator.userAgent.toLowerCase();
             if (userAgent.match(/Alipay/i)=="alipay") {
@@ -309,7 +387,7 @@
                 this.isWeixin = true;
             }
             this.mid = this.$route.params.mid;
-            this.isVip = this.userInfo.isVip;
+            if (this.userInfo.isVip !== '') this.isVip = +this.userInfo.isVip;
             this.initialize();
             if (this.userInfo.phone) {
                 this.phoneNumber = this.userInfo.phoneMask;
@@ -319,12 +397,20 @@
                 customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][1],this.mid)
             }
             customAnalysis(STATISTICS.activityId, STATISTICS.all[1], this.mid);
+            messageBus.$on('msg_loginCheck',()=> {
+                that.phoneNumber = that.userInfo.phoneMask;
+                that.orderObject.mobile = that.userInfo.phone;
+            });
         },
         methods: {
+            menu() {
+                window.scrollTo(0,0);
+            },
             // 初始化页面
             async initialize() {
                 await this.getIsVip();
                 await this.getMemberTc();
+                await this.getSort();
                 this.getList(this.mid);
             },
             async changeInitialize(mid) {
@@ -335,13 +421,14 @@
             getIsVip() {
                 return new Promise((reslove, reject) => {
                     if (this.userInfo.isVip == 1) {
+                        this.isVip = 1;
                         reslove();
                         return false;
                     }
-                    if (this.userInfo.phone) {
+                    if (this.userInfo.phone && this.userInfo.isVip === '') {
                         myVip({
-                            proId: '6000692',
-                            salesId: '102125',
+                            proId: NEWVIPGIFT.proId,
+                            salesId: NEWVIPGIFT.salesId,
                             channelCode: this.sysInfo.channelCode,
                             phone: this.userInfo.phone,
                         }).then((res)=>{
@@ -386,6 +473,26 @@
                     })
                 })
             },
+            // 获取所有分类列表
+            getSort() {
+                return new Promise((reslove, reject) => {
+                    getCategory().then((response) => {
+                        if (response.data.resultCode == 0) {
+                            let obj = {};
+                            for (let index = 0; index < response.data.data.length; index++) {
+                                const item = response.data.data[index];
+                                obj[item.cid] = item.cname;
+                            }
+                            this.categoryObj = obj;
+                            reslove();
+                        } else {
+                            reject();
+                        }
+                    }).catch(() => {
+                        reject();
+                    })
+                })
+            },
             // 获取商品列表
             getList(id) {
                 let that = this;
@@ -394,9 +501,14 @@
                         // 将所有商品赋值给goodsList列表
                         let data = response.data.data;
                         that.goodsList = data;
-                        if (data.length == 0 || data == null) {
-                            Toast.fail({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
+                        if (data == null || data.length == 0 ) {
+                            Toast({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
                             return false;
+                        }
+                        // 将分组名称存放到swipeList数组中
+                        for (let index = 0; index < that.goodsList.length; index++) {
+                            const goods = that.goodsList[index];
+                            goods.categoryName = this.categoryObj[goods.cid];
                         }
                         // 判断当前产品在列表的哪个位置
                         for (let index = 0; index < data.length; index++) {
@@ -408,6 +520,8 @@
                                 break;
                             }
                         }
+                    } else {
+                        Toast({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
                     }
                 })
             },
@@ -421,10 +535,15 @@
                 if (this.phoneNumber) data.isVip = this.isVip;
                 getFindMemberSales(data).then((response) => {
                     if (response.data.resultCode == 0){
-                        if (response.data.data.length == 0 || response.data.data == null) {
-                            Toast.fail({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
+                        this.defaultStyle = false;
+                        this.defaultFirstStyle = false;
+                        if (response.data.data == null || response.data.data.length == 0 ) {
+                            Toast({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
+                            return;
                         }
                         that.detailList = response.data.data;
+                        // 改变isFivego的状态
+                        if (response.data.data[0].fivego) this.isFivego = response.data.data[0].fivego;
                         let provinceFlag = false; // 所有数据是否包含的标志
                         if (this.$route.params.proid && this.$route.params.saleid){ // 如果路径有存在的参数
                             for (let index = 0; index < this.detailList.length; index++) {
@@ -466,13 +585,19 @@
                                     } else {
                                         this.isCantOrder = true;
                                         if (item.tc == 1 && item.paytype == 1) this.isFristChangeRadio = false;
-                                        Toast.fail('您好，本省号码暂未上架本产品，可看看其他商品哦~');
+                                        Toast('您好，本省号码暂未上架本产品，可看看其他商品哦~');
                                         // 选择第一个可选权益
                                         this.$refs.radioOrder.radio = item.tc;
                                         this.$refs.radioPay.radio = item.paytype;
                                         this.paydetailList = item;
                                         this.goodsName = item.name;
                                     }
+                                    break;
+                                } else {
+                                    this.$refs.radioOrder.radio = this.detailList[0].tc;
+                                    this.$refs.radioPay.radio = this.detailList[0].paytype;
+                                    this.paydetailList = this.detailList[0];
+                                    this.goodsName = this.detailList[0].name;
                                 }
                             }
                         } else { // 默认选择第一个策略 赋值
@@ -503,7 +628,7 @@
                                     }
                                 }
                                 if (!provinceFlag) { // 数组中不存在任何一个与当前手机号所在区域的策略
-                                    Toast.fail('您好，本省号码暂未上架本产品，可看看其他商品哦~');
+                                    Toast('您好，本省号码暂未上架本产品，可看看其他商品哦~');
                                 }
                             }
                         }
@@ -516,10 +641,28 @@
                                     const item = this.detailList[index];
                                     if (radio.value == item.tc && (item.mbusercode !== null && item.mbusercode !== '')) {
                                         radio.vip = true;
+                                        return false;
+                                    } else {
+                                        radio.vip = false;
                                     }
                                 }
                             }
                         }
+                        // 初始化价格处理
+                        // let time1 = setInterval(()=> {
+                        //     if (this.$refs.radioOrder.$refs.price1) {
+                        //         for (let index = 0; index < this.$refs.radioOrder.$refs.price1.length; index++) {
+                        //             const item = this.$refs.radioOrder.$refs.price1[index];
+                        //             item.innerHTML = '';
+                        //             item.innerHTML = this.paydetailList.price/100;
+                        //         }
+                        //         for (let index = 0; index < this.$refs.radioOrder.$refs.price2.length; index++) {
+                        //             const item = this.$refs.radioOrder.$refs.price2[index];
+                        //             item.innerHTML = this.paydetailList.price2/100;
+                        //         }
+                        //         clearInterval(time1);
+                        //     }
+                        // }, 100);
                         // 五折会员产品的处理
                         if (this.paydetailList.fivego == 1) {
                             this.isFivego = 1;
@@ -535,9 +678,31 @@
                             // 查询当前五折是否可用接口
                             if (this.phoneNumber) this.checkFivego();
                         }
+
+                        //分享及统计
+                        let sharename = this.paydetailList.name || '会员';
+                        let shareImg = this.paydetailList.iconurl?'https:'+ this.Common.getImgUrl(this.paydetailList.iconurl):location.origin + '/imgs/pro/share.png';
+                        share({
+                            title: "买"+sharename+",上中国移动权益超市",
+                            desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                            link: location.href,
+                            imgUrl: shareImg
+                        })
+                        pagelog({
+                            phone: this.userInfo.phone
+                        },{
+                            "isvip":this.userInfo.isVip,//是否会员
+                            "chanelcode":this.sysInfo.selfChannelCode,//超市渠道号
+                            "chanelcode3":this.sysInfo.channelCode,//三级渠道号
+                            "cur_url":location.href,//当前页面url
+                            "up_url":location.origin+'/'+location.search+'#'+window.preRoute.path,//上个页面url
+                            "mid": this.paydetailList.mid,//权益会员id
+                            "mname":this.paydetailList.name// 权益会员名称
+                        });
                     }
-                }).catch(() => {
-                    Toast.fail({message: '服务器出了点小问题！', duration: 4000});
+                }).catch(e => {
+                   window.console.log(e)
+                    Toast({message: '服务器出了点小问题！', duration: 4000});
                 })
             },
             // 循环判断是否有按钮需要置灰方法
@@ -588,6 +753,19 @@
                         if (!orderFlag) order.disable = true;
                     }
                 }
+                // 将价格数据存放到各个权益选择中
+                for (let index = 0; index < this.orderList.list.length; index++) {
+                    const item = this.orderList.list[index];
+                    for (let index = 0; index < this.detailList.length; index++) {
+                        const detail = this.detailList[index];
+                        if (item.value == detail.tc) {
+                            item.price = detail.price;
+                            item.price2 = detail.price2;
+                            item.fivego = detail.fivego;
+                            break;
+                        }
+                    }
+                }
                 this.judgeRadio();
             },
             // 查询当前五折是否可用
@@ -601,15 +779,16 @@
                     if (response.data.resultCode == 0) {
                         this.canBuyFivego = response.data.data;
                     } else if (response.data.resultCode == -119) {
-                        Toast.fail({message: '该产品为非五折产品', duration: 4000});
+                        Toast({message: '该产品为非五折产品', duration: 4000});
                     } else if (response.data.resultCode == -133) {
-                        Toast.fail({message: '该五折商品一月只能订购一次哦', duration: 4000});
+                        Toast({message: '该五折商品一月只能订购一次哦', duration: 4000});
                     }
                 })
             },
 
             // 返回改变swipe的index
             changeSwipe(index) {
+                if (!this.isFristLoad) this.defaultStyle = true;
                 this.mid = this.goodsList[index].mid;
                 // 复原支付方式和五折产品参数
                 this.isFivego = 0;
@@ -618,13 +797,16 @@
                     {
                         label: ['话费支付', '单次点播'],
                         value: '1',
-                        disable: true,
+                        disable: false,
                         hidden: false,
-                    }, {
+                        name: '话费支付',
+                    }, 
+                    {
                         label: ['话费支付', '连续包月'],
                         value: '2',
-                        disable: true,
+                        disable: false,
                         hidden: false,
+                        name: '话费支付-连续包月',
                     }
                     // , {
                     //     label: ['支付宝支付', '单次点播'],
@@ -638,11 +820,28 @@
                     //     hidden: false,
                     // }
                 ];
+                // 白名单的处理
+                // if (this.userInfo.iswhite) {
+                //     for (let index = 0; index < this.payList.list.length; index++) {
+                //         const item = this.payList.list[index];
+                //         if (item.value == '2') {
+                //             item.disable = false;
+                //         }
+                //     }
+                // }
                 if (!this.isFristLoad) {
                     this.$router.replace({name: 'goodsDetail', params: {mid: this.mid}});
                     this.changeInitialize(this.goodsList[index].mid);
                 }
                 this.isFristLoad = false;
+                let sharename = this.paydetailList.name || '会员';
+                let shareImg = this.paydetailList.iconurl?'https:'+ this.Common.getImgUrl(this.paydetailList.iconurl):location.origin + '/imgs/pro/share.png';
+                share({
+                    title: "买"+sharename+",上中国移动权益超市",
+                    desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                    link: location.href,
+                    imgUrl: shareImg
+                })
             },
             // 返回对应子组件的radio值
             changeRadio(value, radioObj) {
@@ -666,6 +865,26 @@
                         this.goodsName = item.name;
                     }
                 }
+                // 修改swipeRadio中的数据
+                // if (this.$refs.radioOrder.$refs.price1) {
+                //     for (let index = 0; index < this.$refs.radioOrder.$refs.price1.length; index++) {
+                //         const item = this.$refs.radioOrder.$refs.price1[index];
+                //         item.innerHTML = '';
+                //         item.innerHTML = this.paydetailList.price/100;
+                //     }
+                //     for (let index = 0; index < this.$refs.radioOrder.$refs.price2.length; index++) {
+                //         const item = this.$refs.radioOrder.$refs.price2[index];
+                //         item.innerHTML = this.paydetailList.price2/100;
+                //     }
+                // }
+                let sharename = this.paydetailList.name || '会员';
+                let shareImg = this.paydetailList.iconurl?'https:'+ this.Common.getImgUrl(this.paydetailList.iconurl):location.origin + '/imgs/pro/share.png';
+                share({
+                    title: "买"+sharename+",上中国移动权益超市",
+                    desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                    link: location.href,
+                    imgUrl: shareImg
+                })
             },
             // 更改一级套餐选择时，列出对应的支付方式组
             judgeRadio() {
@@ -690,6 +909,13 @@
                         for (let k = 0; k < this.payList.list.length; k++) {
                             let pay = this.payList.list[k];
                             if (item.paytype == pay.value) {
+                                // 现网环境下暂时屏蔽掉连续包月
+                                // if (pay.value == '2' && item.provincecode == '1') {
+                                //     continue;
+                                // }
+                                // if (pay.value == '2' && process.env.NODE_ENV == 'production' && !this.userInfo.iswhite) {
+                                //     continue;
+                                // }
                                 if (this.userInfo.provinceCode == null) {
                                     pay.disable = false;
                                 } else {
@@ -726,6 +952,25 @@
                         }
                     }
                 }
+                // 屏蔽所有游客可见包月
+                // if (!this.phoneNumber) {
+                    // for (let index = 0; index < this.payList.list.length; index++) {
+                    //     const item = this.payList.list[index];
+                    //     if (item.value == '2'){
+                            // item.disable = true;
+                    //         this.$set(item,'disable',true)
+                    //     }
+                    // }
+                // }
+                // 现网环境下暂时屏蔽掉连续包月
+                // if (process.env.NODE_ENV == 'production' && !this.userInfo.iswhite) {
+                //     for (let index = 0; index < this.payList.list.length; index++) {
+                //         const item = this.payList.list[index];
+                //         if (item.value == '2'){
+                //             item.disable = true;
+                //         }
+                //     }
+                // }
                 // let isFlag = false; // 判断是否有相同的情况 true:有相同的情况 false:没有相同的情况
                 // for (let index = 0; index < this.detailList.length; index++) {
                 //     const item = this.detailList[index];
@@ -786,8 +1031,8 @@
             // 立即订购
             orderFunc() {
                 // 如果为空
-                if (this.detailList.length == 0 || this.detailList == null) {
-                    Toast.fail({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
+                if (this.detailList == null || this.detailList.length == 0 ) {
+                    Toast({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
                 }
                 // 五折登录非会员的处理
                 if (this.isFivego && !this.isVip && this.phoneNumber) {
@@ -799,7 +1044,7 @@
                     return false;
                 }
                 if (this.isCantOrder) {
-                    Toast.fail('您好，本省号码暂未上架本产品，可看看其他商品哦~');
+                    Toast('您好，本省号码暂未上架本产品，可看看其他商品哦~');
                     return false;
                 }
                 // 判断是否登录
@@ -808,14 +1053,19 @@
                         this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
                     }
                     let backUrl = encodeURIComponent(this.$route.fullPath + '?autobuy=true');
-                    this.$router.push({name: 'login', query: {'backUrl': backUrl}});
+                    if(this.sysInfo.channel == 'st'){
+                        messageBus.$emit('msg_checkLogin','init');
+                    }else{
+                        this.$router.push({name: 'login', query: {'backUrl': backUrl}});
+                    }
                 } else {
                     if (this.payList.value < '3') {
                         // 弹出二次确认框
                         // this.overlay = true;
                         this.payShow = true;
                     } else { // 第三方支付
-                        const toast = Toast.loading({
+                        this.payShow = false;
+                        const toast = Toast({
                             message: '订购中,请稍等…',
                             forbidClick: true,
                             duration: 0,
@@ -828,6 +1078,7 @@
                             salesId: this.paydetailList.saleid,
                             mobile: this.orderObject.mobile,
                             channelCode: this.sysInfo.channelCode,
+                            selfChannelCode: this.sysInfo.selfChannelCode,
                             returnUrl: window.location.origin + '/transfer.html'+ channelCode,
                             paymentType: this.paymentTypeList[this.payList.value],
                         }
@@ -836,7 +1087,7 @@
                             if (response.data.code == 0) {
                                 window.location.href = response.data.data;
                             } else {
-                                Toast.fail({message: '订购失败，请稍后重试哦！', duration: 4000});
+                                Toast({message: '订购失败，请稍后重试哦！', duration: 4000});
                             }
                         }).catch(() => {
                             toast.clear();
@@ -853,7 +1104,7 @@
                         that.coutdownShow = true;
                         that.coutdownFunc();
                     } else {
-                        Toast.fail('验证码跑丢了，稍后再试哦！');
+                        Toast('验证码跑丢了，稍后再试哦！');
                         // 去掉获取验证码失败跳转逻辑
                         // this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
                         // let backUrl = encodeURIComponent(this.$route.fullPath + '?autobuy=true');
@@ -882,22 +1133,26 @@
                 let that = this;
                 // 短信码不能为空
                 if (this.orderObject.smsCode == ''){
-                    Toast.fail('请输入验证码');
+                    Toast('请输入验证码');
                     return false;
                 }
                 // 短信码六位数校验
                 if (this.orderObject.smsCode.length != 6){
-                    Toast.fail('请输入六位验证码');
+                    Toast('请输入六位验证码');
                     return false;
                 }
                 // 如果手机号为空，则跳转到登录页
                 if (this.orderObject.mobile == '') {
                     this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
                     let backUrl = encodeURIComponent(this.$route.fullPath + '?autobuy=true');
-                    this.$router.replace({name: 'login', query: {'backUrl': backUrl}});
+                    if(this.sysInfo.channel == 'st'){
+                        messageBus.$emit('msg_checkLogin','init');
+                    }else{
+                        this.$router.push({name: 'login', query: {'backUrl': backUrl}});
+                    }
                     return false;
                 }
-                const toast = Toast.loading({
+                const toast = Toast({
                     message: '订购中,请稍等…',
                     forbidClick: true,
                     duration: 0,
@@ -924,17 +1179,17 @@
                 //             if (r.data.resultCode == 0) {
                 //                 that.$router.push({name: 'myOrder', params: {type:'all'}});
                 //             } else {
-                //                 Toast.fail(r.data.msg);
+                //                 Toast(r.data.msg);
                 //             }
                 //         }).catch(() => {
                 //             toast.clear();
                 //         })
                 //     } else if (response.data.code == -1){
                 //         toast.clear();
-                //         Toast.fail('验证码不正确，请重新输入。');
+                //         Toast('验证码不正确，请重新输入。');
                 //     } else {
                 //         toast.clear();
-                //         Toast.fail(response.data.msg);
+                //         Toast(response.data.msg);
                 //     }
                 // }).catch(() => {
                 //     toast.clear();
@@ -945,6 +1200,7 @@
                     name: this.paydetailList.name,
                     salesId: this.paydetailList.saleid,
                     channelCode: this.sysInfo.channelCode ,
+                    selfChannelCode: this.sysInfo.selfChannelCode,
                     dealType: 0,
                     isPay: 1,
                     payType: 10,
@@ -955,31 +1211,53 @@
                 placeOrder(data, headers).then((r) => {
                     toast.clear();
                     if (r.data.resultCode == 0) {
-                        Toast.success({message: '订购成功啦,快去体验吧！', duration: 4000});
+                        Toast({message: '订购成功啦,快去体验吧！', duration: 4000});
                         that.$router.push({name: 'myOrder', params: {type:'all'}});
                     } else if(r.data.resultCode == -1 && r.data.data.code == -1) {
-                        Toast.fail({message: '请输入正确的验证码哦', duration: 4000});
+                        Toast({message: '请输入正确的验证码哦', duration: 4000});
                     } else if(r.data.resultCode == -102) {
-                        Toast.fail({message: '订购异常,请稍后重试!', duration: 4000});
+                        Toast({message: '订购异常,请稍后重试!', duration: 4000});
                     } else if(r.data.resultCode == -117) {
-                        Toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                        Toast({message: '退订异常,请稍后重试！', duration: 4000});
                     } else if(r.data.resultCode == -116) {
-                        Toast.fail({message: '退订异常,请稍后重试！', duration: 4000});
+                        Toast({message: '退订异常,请稍后重试！', duration: 4000});
                     } else if(r.data.resultCode == -113) {
-                        Toast.fail({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                        Toast({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
                     } else if(r.data.resultCode == -118) {
-                        Toast.fail({message: r.data.msg, duration: 4000});
+                        Toast({message: r.data.msg, duration: 4000});
                     } else if(r.data.resultCode == -112) {
-                        Toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                        Toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                     } else if(r.data.resultCode == 4) {
-                        Toast.fail({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                        Toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
                     } else {
-                        Toast.fail({message: r.data.msg, duration: 4000});
+                        Toast({message: r.data.msg, duration: 4000});
                     }
                 }).catch(() => {
                     toast.clear();
                 })
             },
+        },
+        watch:{
+            '$store.state.userInfo.isVip'(n){
+                this.isVip = n;
+                this.changeInitialize(this.mid);
+            },
+            'paydetailList': {
+                deep: true,
+                handler: function (value) {
+                    if (this.$refs.radioOrder.$refs.price1) {
+                        for (let index = 0; index < this.$refs.radioOrder.$refs.price1.length; index++) {
+                            const item = this.$refs.radioOrder.$refs.price1[index];
+                            item.innerHTML = '';
+                            item.innerHTML = value.price/100;
+                        }
+                        for (let index = 0; index < this.$refs.radioOrder.$refs.price2.length; index++) {
+                            const item = this.$refs.radioOrder.$refs.price2[index];
+                            item.innerHTML = value.price2/100;
+                        }
+                    }
+                },
+            }
         },
     }
 </script>
@@ -989,45 +1267,139 @@
         font-family:Source Han Sans CN;
         color: #383A3F;
         min-height: calc(~"100vh - 1.59rem");
-        background: #F5F7FA;
-        padding-bottom: 1.59rem;
+        // background: #F5F7FA;
+        background: #FFF;
+        padding-bottom: 1.58rem;
         .goods-swiper-wrap{
-            padding: .2rem 0;
+            padding-top: .22rem;
             background: #FFF;
         }
         .goods-vip-wrap{
             background: #fff;
+            min-height: .5rem;
             .goods-vip-icon{
                 width: 6.19rem;
-                height: 1.11rem;
+                height: 1.4rem;
                 margin: 0 auto;
-                background-image: url('../assets/imgs/goodsdetail/vipBtn.png');
+                background: url('../assets/imgs/goodsdetail/vipBtn.png');
+                background-repeat: no-repeat;
+                background-position: center;
                 background-size: 6.19rem 1.11rem;
                 position: relative;
                 .goods-vip-button{
                     position: absolute;
-                    width: 1.35rem;
-                    height: .55rem;
-                    top: .32rem;
-                    right: .2rem;
+                    width: 6.19rem;
+                    height: 1.11rem;
+                    top: .17rem;
+                    left: 0;
                 }
             }
         }
-        .radio-wrap{
+        .detail-module-title{
+            font-size: .34rem;
+            color: #333;
+            font-weight: bold;
+            text-align: left;
             background: #FFF;
             padding: 0 .35rem;
-            padding-right: 0;
+        }
+        .radio-wrap{
+            background: #FFF;
+            // padding-right: 0;
             .order-radio{
+                padding-top: .3rem;
+                // padding: .3rem 0 0 .33rem;
                 // padding-bottom: .26rem;
-                border-bottom: .01rem solid #d7d9db;
+                // border-bottom: .01rem solid #d7d9db;
             }
             .pay-radio{
-                padding: .26rem 0 .36rem;
+                padding: 0 .35rem;
+                padding-bottom: .35rem;
+                // padding: .26rem 0 .36rem;
             }
         }
         .detail-card{
             background: #FFF;
-            margin-top: .16rem;
+            padding-top: .4rem;
+        }
+        .radio-wrap-default{
+            padding: .3rem .35rem 0;
+            display: flex;
+            background: #FFF;
+            .radio-wrap-default-flex{
+                flex: 1;
+                height: 2.56rem;
+                border: .02rem solid #D8D8D8;
+                border-radius: .1rem;
+                margin-right: .16rem;
+                box-shadow: 0 .02rem .04rem 0 rgba(0, 0, 0, 0.15);
+                margin-bottom: .32rem;
+                &:last-child{
+                    margin-right: 0;
+                }
+            }
+            .radio-wrap-default-seleced{
+                background: #FCEDE6;
+                border-color: #FD7028;
+            }
+        }
+        .pay-radio-default{
+            text-align: left;
+            padding: 0 .35rem;
+            padding-bottom: .38rem;
+            background: #FFF;
+            .van-cell{
+                padding: .35rem 0;
+            }
+            .pay-radio-default-icon{
+                display: inline-block;
+                width: .46rem;
+                height: .46rem;
+                background: #F0F0F0;
+                border-radius: .11rem;
+                vertical-align: top;
+                margin-right: .17rem;
+            }
+            .pay-radio-default-name{
+                display: inline-block;
+                width: 2.8rem;
+                height: .3rem;
+                background: #F0F0F0;
+                border-radius: .05rem;
+                vertical-align: top;
+                margin-top: .08rem;
+            }
+        }
+        .detail-card-default{
+            background: #FFF;
+            padding: .4rem .35rem .15rem .35rem;
+            text-align: left;
+            .detail-card-default-con{
+                display: block;
+                height: .3rem;
+                background: #F0F0F0;
+                margin-bottom: .15rem;
+                border-radius: .05rem;
+            }
+            .default-con1{
+                width: 3rem;
+            }
+            .default-con2{
+                width: 2rem;
+            }
+            .default-con3{
+                margin-left: .2rem;
+                width: calc(~"100% - .2rem");
+            }
+            .default-con4{
+                width: 90%;
+            }
+            .default-con5{
+                width: 60%;
+            }
+            .default-con6{
+                width: 65%;
+            }
         }
         .payment-wrap{
             position: fixed;
@@ -1110,6 +1482,31 @@
                 }
             }
         }
+        .payment-btn-wrap{
+            position: fixed;
+            width: 100%;
+            height: 1.58rem;
+            background: #FFF;
+            box-shadow: 0px -.03rem .06px 0px rgba(222,228,236,0.5);
+            bottom: 0;
+            font-size: 0;
+            z-index: 1;
+            .payment-btn-wrap-button{
+                width: 6rem;
+                height: .88rem;
+                margin: 0 auto;
+                margin-top: .21rem;
+                background: #FD7028;
+                border-radius: .44rem;
+                font-size: .36rem;
+                color: #FFF;
+                line-height: .88rem;
+                text-align: center;
+            }
+            .payment-btn-wrap-button-gray{
+                background: #CCC;
+            }
+        }
         .overlay-box{
             .overlay-input-wrap{
                 padding: 0 .6rem .4rem;
@@ -1153,14 +1550,20 @@
             font-size: 0;
             .close-popup{
                 position: absolute;
-                right: .35rem;
+                top: .3rem;
+                right: .3rem;
                 width: .5rem;
                 height: .5rem;
                 z-index: 9999;
             }
             .popup-title{
+                width: 5.3rem;
+                margin: 0 auto;
                 font-size: .36rem;
-                text-align: left;
+                text-align: center;
+                overflow: hidden;
+                text-overflow:ellipsis;
+                white-space: nowrap;
             }
             .popup-price{
                 margin: .4rem 0 .3rem;
@@ -1234,7 +1637,7 @@
                                 margin-right: 0.27rem;
                                 border: 0;
                                 font-size: .28rem;
-                                color: #6696FF;
+                                color: #FD7028;
                             }
                         }
                     }
@@ -1246,7 +1649,7 @@
                 line-height: .88rem;
                 font-size: .36rem;
                 color: #FFF;
-                background: #FE8668;
+                background: #FD7028;
                 text-align: center;
                 border-radius: 2rem;
                 margin: 0 auto;
@@ -1256,7 +1659,7 @@
                 }
             }
             .submit{
-                background: #6696FF;
+                background: #FD7028;
                 color: #FFF;
             }
         }

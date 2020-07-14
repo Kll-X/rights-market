@@ -47,15 +47,15 @@
 
 <script>
     import Menu from '@/components/common/Menu.vue';
-    import {customAnalysis} from "@/assets/js/analysis";
-    import {STATISTICS} from "@/utils/constant";
     import { mapState } from 'vuex';
     // 接口调用
     import { getCategory } from "@/api/sort";
     import { getFindMembers } from "@/api/sort";
+    import { pagelogMixin,blocklogMixin } from "@/mixins/log"
 
     export default {
         name: "sort",
+        mixins: [pagelogMixin,blocklogMixin],
         components: {
             Menu
         },
@@ -70,12 +70,13 @@
                 sortList: ['视频会员','音乐会员','阅读学习','生活服务','移动会员'],
             };
         },
+        created() {
+            //曝光统计：搜索
+            this.blocklogHandler("搜索入口",'0003','')
+        },
         mounted() {
             // 获取列表
             this.getList();
-            if (this.sysInfo.channel == 'st'){
-                customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][0])
-            }
         },
         methods: {
             // 获取tabs内容
@@ -160,7 +161,8 @@
         },
         computed:{
             ...mapState([
-                "sysInfo"
+                "sysInfo",
+                "userInfo"
             ])
         },
     }

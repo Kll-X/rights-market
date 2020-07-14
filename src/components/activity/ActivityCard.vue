@@ -15,7 +15,7 @@
         methods:{
             jump(link){
                 if(!navigator.onLine){
-                    this.$toast.fail('网络异常,请连接后重试！');
+                    this.$toast('网络异常,请连接后重试！');
                     return;
                 }
                 window.location.href = link;
@@ -59,12 +59,14 @@
         display: flex;
         text-align: left;
         flex-direction: column;
-        background-image: url("../../assets/imgs/activity/pic-shadow.png");
+        background: url("../../assets/imgs/activity/pic-shadow.png") center/100% no-repeat;
         width: 6.8rem;
         height: 1rem;
         position: absolute;
         bottom: 0;
         color: #ffffff;
+        border-bottom-left-radius: .16rem;
+        border-bottom-right-radius: .16rem;
     }
     .act-name{
         float: left;

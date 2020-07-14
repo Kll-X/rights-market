@@ -13,17 +13,22 @@
             :offset="10">
             <app-card1 class="vip-wrap" v-for="item in itemList" :key="item.id" :info="item" :vip="true"/>
         </van-list>
+        <BackHome/>
     </div>
 </template>
 
 <script>
     import AppCard1 from '@/components/home/AppCard1.vue'
     import { getData } from "@/api/vippreferential";
+    import BackHome from '@/components/common/BackHome.vue';
+    import { pagelogMixin } from "@/mixins/log"
+
     export default {
         name: "vippreferential",
         components: {
-            AppCard1,
+            AppCard1, BackHome
         },
+        mixins: [pagelogMixin],
         data() {
             return {
                 loading: false,

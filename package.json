@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "serve:testapi": "vue-cli-service serve --mode testapi",
-    "serve:prodapi": "vue-cli-service serve --mode prodapi",
-    "serve:devapi": "vue-cli-service serve --mode devapi",
+    "serve:testapi": "set VUE_APP_BASE_API=/testApi&&vue-cli-service serve",
+    "serve:prodapi": "set VUE_APP_BASE_API=/prodApi&&vue-cli-service serve --mode greybuild",
+    "serve:devapi": "set VUE_APP_BASE_API=/devApi&&vue-cli-service serve",
+    "serve:greyapi": "set VUE_APP_BASE_API=/greyApi&&vue-cli-service serve --mode greybuild",
     "testbuild": "vue-cli-service build --mode testbuild",
+    "greybuild": "vue-cli-service build --mode greybuild",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
@@ -15,8 +17,10 @@
     "axios": "^0.19.2",
     "core-js": "^2.6.5",
     "crypto-js": "^4.0.0",
+    "swiper": "^5.4.2",
     "vant": "^2.5.3",
     "vue": "^2.6.10",
+    "vue-awesome-swiper": "^4.1.1",
     "vue-router": "^3.0.3",
     "vuex": "^3.0.1"
   },

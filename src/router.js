@@ -5,6 +5,10 @@ import GoodsDetail from './views/GoodsDetail.vue'
 import MyOrder from './views/MyOrder.vue'
 import Mine from './views/Mine.vue'
 import Custompage from './views/CustomPage.vue'
+import VipBenefit from './views/VipBenefit.vue'
+import Sort from './views/Sort.vue'
+import HalfPrice from './views/HalfPrice.vue'
+import VipPreferential from './views/VipPreferential.vue'
 
 Vue.use(Router)
 
@@ -17,38 +21,55 @@ export default new Router({
         {
             path: '/home',
             name: 'home',
-            component: Home
+            component: Home,
+            meta: {
+                title: '中国移动权益超市'
+            }
         },
         {
             path: '/sort/:type?',
             name: 'sort',
-            component: () =>
-                import ( /* webpackChunkName: "sort" */ './views/Sort.vue')
+            component: Sort,
+            meta: {
+                title: '中国移动权益超市'
+            }
         },
         {
             path: '/activities',
             name: 'activities',
             component: () =>
-                import ( /* webpackChunkName: "activities" */ './views/Activities.vue')
+                import ( /* webpackChunkName: "activities" */ './views/Activities.vue'),
+            meta: {
+                title: '中国移动权益超市'
+            }
         },
         {
             path: '/mine',
             name: 'mine',
-            component: Mine
+            component: Mine,
+            meta: {
+                title: '中国移动权益超市'
+            }
             // component: () =>
             //     import ( /* webpackChunkName: "mine" */ './views/Mine.vue')
         },
         {
             path: '/myOrder/:type',
             name: 'myOrder',
-            component: MyOrder
+            component: MyOrder,
+            meta: {
+                title: '中国移动权益超市'
+            }
             // component: () =>
             //     import ( /* webpackChunkName: "myOrder" */ './views/MyOrder.vue')
         },
         {
             path: '/goodsDetail/:mid/:proid?/:saleid?',
             name: 'goodsDetail',
-            component: GoodsDetail
+            component: GoodsDetail,
+            meta: {
+                title: '中国移动权益超市'
+            }
             // component: () =>
                 // import ( /* webpackChunkName: "goodsDetail" */ './views/GoodsDetail.vue')
         },
@@ -56,7 +77,10 @@ export default new Router({
             path: '/search',
             name: 'search',
             component: () =>
-                import ( /* webpackChunkName: "search" */ './views/Search.vue')
+                import ( /* webpackChunkName: "search" */ './views/Search.vue'),
+            meta: {
+                title: '中国移动权益超市'
+            }
         },
         {
             path: '/login',
@@ -71,6 +95,9 @@ export default new Router({
             path: '/custompage/:customId',
             name: 'custompage',
             component: Custompage,
+            meta: {
+                title: '中国移动权益超市'
+            }
         },
         {
             path: '/getRights',
@@ -84,8 +111,7 @@ export default new Router({
         {
             path: '/vipBenefit',
             name: 'vipBenefit',
-            component: () =>
-                import ( /* webpackChunkName: "vipBenefit" */ './views/VipBenefit.vue'),
+            component: VipBenefit,
             meta: {
                 title: '中国移动权益超市'
             }
@@ -93,8 +119,7 @@ export default new Router({
         {
             path: '/vipPreferential',
             name: 'vipPreferential',
-            component: () =>
-                import( /* webpackChunkName: "vipPreferential" */ './views/VipPreferential.vue'),
+            component: VipPreferential,
             meta: {
                 title: '中国移动权益超市'
             }
@@ -102,8 +127,7 @@ export default new Router({
         {
             path: '/halfPrice',
             name: 'halfPrice',
-            component: () =>
-                import( /* webpackChunkName: "halfPrice" */ './views/HalfPrice.vue'),
+            component: HalfPrice,
             meta: {
                 title: '中国移动权益超市'
             }
@@ -122,6 +146,15 @@ export default new Router({
             name: 'customerService',
             component: () =>
                 import( /* webpackChunkName: "customerService" */ './views/CustomerService.vue'),
+            meta: {
+                title: '中国移动权益超市'
+            }
+        },
+        {
+            path: '/faq',
+            name: 'faq',
+            component: () =>
+                import( /* webpackChunkName: "newGuest" */ './views/Faq.vue'),
             meta: {
                 title: '中国移动权益超市'
             }
