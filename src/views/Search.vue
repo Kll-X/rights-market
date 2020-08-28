@@ -3,7 +3,7 @@
         <div class="input-search">
             <div style="display:flex;">
                 <img :src="require('@imgs/search/search-icon.png')" class="search-icon">
-                <input placeholder="请输入商品名称" class="input-frame" v-model="value" @input="inputFunc">
+                <input @focus="blocklogHandler('搜索功能','0017', '0001')" placeholder="请输入商品名称" class="input-frame" v-model="value" @input="inputFunc">
                 <img :src="require('@imgs/search/del.png')" class="input-del" v-if="value" @click="clearInput">
                 <span class="cancel-input" @click="onCancel">取消</span>
             </div>           
@@ -12,7 +12,7 @@
             <div class="hot-search-title" v-if="havHotResult">热门搜索</div>
             <div>
                 <ul class="hot-search-content">
-                    <li v-for="val in searchContents" :key="val.id" @click="getValue(val.hotkeyword)">
+                    <li v-for="(val, index) in searchContents" :key="val.id" @click="getValue(val.hotkeyword, index, 'hot')">
                         {{val.hotkeyword}}
                     </li>
                 </ul>
@@ -37,8 +37,8 @@
                 </div>
                 <div v-else>
                     <ul class="hot-search-result">
-                        <li v-for="val in searchResult" :key="val.id">
-                            <router-link :to="{name:'goodsDetail',params:{mid:val.mid}}" class="result-link" @click.native="saveWord(val.name)">
+                        <li v-for="(val, index) in searchResult" :key="val.id">
+                            <router-link :to="{name:'goodsDetail',params:{mid:val.mid}}" class="result-link" @click.native="saveWord(val.name, val, index)">
                                 <img :src="val.iconUrl" class="result-icon">
                                 <div class="search-result-detail">
                                     <span class="result-item">{{val.name}}</span>
@@ -50,7 +50,7 @@
                 </div>
             </div>            
         </div>
-        <BackHome/>
+        <BackHome :stShow="true"></BackHome>
     </div>
 </template>
 
@@ -107,9 +107,14 @@
         },
         methods:{
             onCancel(){                
+                this.blocklogHandler('搜索功能','0017', '0000')
                 window.history.go(-1);
             },
-            getValue(t){
+            getValue(t, index, type){
+                if (type == 'hot') {
+                    let pId = 1000 + index + 1;
+                    this.blocklogHandler('搜索功能','0017', pId.toString())
+                }
                 this.value = t;
                 if(t == false){
                     return;
@@ -117,6 +122,7 @@
                 this.getResultMethod();
             },
             clearInput(){
+                this.blocklogHandler('搜索功能','0017', '0002')
                 this.value = '';
                 this.isShowReasultTitle = false;
                 var storage = window.localStorage;
@@ -197,7 +203,10 @@
                  storage.setItem('this.searchWord',JSON.stringify(this.historyList));
                window.console.log(this.historyList)               
             },
-            saveWord(name){
+            saveWord(name, val, index){
+                let str = '00000' + (index + 1);
+                str = str.substring(str.length - 5);
+                this.blocklogHandler('搜索功能','0017', str, '', val.mid, val.name)
                 this.saveHistory(name);
             },
             delHistory(){

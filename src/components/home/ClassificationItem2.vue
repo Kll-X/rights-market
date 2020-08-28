@@ -2,9 +2,12 @@
     <div class="classification-item2" @click.stop="jump">
         <div class="inner">
             <div class="img-wrapper">
-            <img :src="item.img" alt="" :style="{height:item.h?item.h:'auto'}">
+                <img :src="item.img" alt="" :style="{height:item.h?item.h:'auto'}">
             </div>
             <div class="title">{{item.title}}</div>
+            <!-- <img :src="Common.getImgUrl(item.icon)" alt="" :style="{height:item.h?item.h:'auto'}">
+            </div>
+            <div class="title">{{item.name}}</div> -->
         </div>
     </div>
 </template>

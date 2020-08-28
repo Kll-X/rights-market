@@ -1,7 +1,11 @@
 <template>
     <div id="app">
+        <!-- <keep-alive>
+            <router-view v-if="$route.meta.keepAlive"></router-view>
+        </keep-alive>
+        <router-view v-if="!$route.meta.keepAlive"></router-view> -->
         <router-view/>
-        <quick-login v-show="showQuickLogin"></quick-login>
+        <quick-login v-if="showQuickLogin"></quick-login>
         <Popup v-show="popupInfo.flag" v-bind="popupInfo"></Popup>
     </div>
 </template>
@@ -12,9 +16,10 @@
     import QuickLogin from '@components/home/QuickLogin.vue';
     import messageBus from "@/utils/messageBus";
     import Popup from '@components/common/Popup'
-    import {getWxconfig,assertionQryUID} from '@/api/common';
+    import {getWxconfig,assertionQryUID,getTime} from '@/api/common';
     import {is_weixin,getQuery} from '@/utils/func'
     import {signLogin} from '@/api/login'
+    import {getPageType} from '@/api/common'
     import {myVip} from '@/api/vipbenefit';
     import {actSignLogin} from '@/api/custompage.js';
     import { NEWVIPGIFT } from '@/utils/constant'
@@ -32,14 +37,26 @@
             }
         },
         created(){
+            let that = this;
             let channelCode = getQuery('channelCode');
             let selfChannelCode = getQuery('selfChannelCode');
             let locationCode = getQuery('location') || this.$route.query.location;
-            channelCode && this.SET_CHANNEL(channelCode);
+            // 当channel为67054时，设置selfChannelCode为00010017
             selfChannelCode && this.SET_SELFCHANNEL(selfChannelCode);
+            channelCode && this.SET_CHANNELCODE(channelCode);
             locationCode && this.SET_SYSINFO({
                 locationCode: locationCode
             });
+            //获取页面类型并根据后台code设置selfChannelCode
+            getPageType({
+                fullCode: this.sysInfo.selfChannelCode
+            },res => {
+                if (res.resultCode == 0) {
+                    that.SET_SELFCHANNEL(res.data.fullCode);
+                    that.SET_CHANNEL(res.data.pageVersion);
+                }
+            })
+            // 判断路由当前是首页则调起检测-弹窗登录
             messageBus.$on('msg_checkLogin',(type,noGetPhoneNum)=>{
                 this.checkLogin(type,noGetPhoneNum)
             });
@@ -52,8 +69,7 @@
             messageBus.$on('msg_getVipInfo',()=>{
                 this.getVipInfo()
             });
-            // 判断路由当前是首页则调起检测-弹窗登录
-            this.checkRouteToLogin();
+            that.checkRouteToLogin();
             //微信分享相关
             if (is_weixin()) {
                 getWxconfig({
@@ -90,6 +106,13 @@
                     }
                 })
             }
+            getTime().then(res=>{
+                if (res.data.resultCode === 0) {
+                    this.SET_SYSINFO({
+                        interval: res.data.data - new Date().getTime()
+                    })
+                }
+            })
         },
         components:{
             QuickLogin,
@@ -119,9 +142,10 @@
             ...mapMutations([
                 'SET_USERINFO',
                 'SET_SHOWQUICKLOGIN',
-                'SET_CHANNEL',
+                'SET_CHANNELCODE',
                 'SET_SYSINFO',
-                'SET_SELFCHANNEL'
+                'SET_SELFCHANNEL',
+                'SET_CHANNEL'
             ]),
             checkRouteToLogin(){
                 if(this.$route.name == 'home'){
@@ -137,13 +161,13 @@
                 let that = this;
                 if(!that.userInfo.phone){// 要在没登录的情况下才执行下面逻辑
                     if(type == 'quick'){
-                   window.console.log('唤起检测-弹窗登录');
-                    // 先判断是否30分钟内曾弹出过登录窗，若是，则不弹出
-                    if((!getCookie('ql') && that.$route.name == 'home') || that.$route.name == 'vipBenefit'){
-                        setCookie('ql','true',30);
-                        messageBus.$emit('msg_updatePlan');
-                        that.SET_SHOWQUICKLOGIN(true);
-                    }
+                       window.console.log('唤起检测-弹窗登录');
+                        // 先判断是否30分钟内曾弹出过登录窗，若是，则不弹出
+                        if((!getCookie('ql') && that.$route.name == 'home') || that.$route.name == 'vipBenefit' || that.$route.name == 'newGuest'){
+                            setCookie('ql','true',30);
+                            messageBus.$emit('msg_updatePlan');
+                            that.SET_SHOWQUICKLOGIN(true);
+                        }
                     }else if(type == 'init'){
                        window.console.log('唤起检测-页面登录');
                         that.$router.replace({name: 'login'});
@@ -161,10 +185,29 @@
                     phone:that.userInfo.phone,
                 }).then((res)=>{
                     if(res.data.resultCode == 0){ //获得vip信息
-                        res.data.data.isVip = 1;
-                        that.SET_USERINFO(res.data.data);
+                        let vipInfo,newStarVipInfo;
+                        for(let info of res.data.data){
+                            if(info.vipLevel == 4) {
+                                newStarVipInfo = Object.assign({},info);
+                            }
+                            if(info.vipLevel != 4) {
+                                vipInfo = Object.assign({},{
+                                    vipTypeTag:['全网会员','5G高级会员'],
+                                    vipLevelTag:['普通','黄金','铂金'],
+                                },info);
+                            }
+                        }
+                        that.SET_USERINFO({
+                            vipInfo:vipInfo,
+                            newStarVipInfo: newStarVipInfo
+                        })
+                        // res.data.data.isVip = 1;
+                        // that.SET_USERINFO(res.data.data);
                     }else{
-                        that.SET_USERINFO({isVip:0});
+                        that.SET_USERINFO({
+                            vipInfo:null,
+                            newStarVipInfo: null
+                        });
                     }
                 })
             },
@@ -205,25 +248,28 @@
                                 timestamp: '',
                                 provinceCode: null,
                                 iswhite:0,
-                                isVip:'',
-                                orderId:'',
-                                expireTime:'',
-                                cancelFlag:'',
-                                hasNewGift:'',
-                                vipTypeTag:['全网会员','5G高级会员'],
-                                vipLevelTag:['普通','黄金','铂金'],
-                                vipType:'',
-                                vipLevel:'',
-                                effectTime:'',
-                                returnOrderId:'',
-                                effect:'',
-                                effectDaysBefore:''
+                                vipInfo:'',
+                                newStarVipInfo:'',
+                                // isVip:'',
+                                // orderId:'',
+                                // expireTime:'',
+                                // cancelFlag:'',
+                                // hasNewGift:'',
+                                // vipTypeTag:['全网会员','5G高级会员'],
+                                // vipLevelTag:['普通','黄金','铂金'],
+                                // vipType:'',
+                                // vipLevel:'',
+                                // effectTime:'',
+                                // returnOrderId:'',
+                                // effect:'',
+                                // effectDaysBefore:''
                             }
                         );
                        window.console.log('转为未登录')
                     }, remainingTime);
             },
             checkLogin(type,noGetPhoneNum=false){
+                console.log('checklogin')
                 let that = this;
                 //检测是否登录状态
                 let p = getCookie('p')?decodeURIComponent(getCookie('p')):'';
@@ -392,6 +438,7 @@
                                     that.SET_USERINFO(obj);
                                 }
                                 that.checkTypeLogin(type)
+                                messageBus.$emit('getPhoneNumDone');
                             });
                         }
                     }

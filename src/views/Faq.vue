@@ -3,7 +3,7 @@
         <div class="faq-title">常见问题</div>
         <van-collapse class="faq-content" v-model="activeNames">
             <van-collapse-item v-for="(item, index) in faqList" :key="index"
-                :name="item.id">
+                :name="item.id" @click.native="blocklogHandler('常见问题列表','0035','000'+(index+1));">
                 <template #title>
                     <div class="faq-content-title">
                         <div class="faq-content-icon">0{{ item.id }}</div>
@@ -17,10 +17,10 @@
 </template>
 
 <script>
-    import { pagelogMixin } from "@/mixins/log"
+    import { pagelogMixin,blocklogMixin } from "@/mixins/log"
     export default {
         name: "faq",
-        mixins: [pagelogMixin],
+        mixins: [pagelogMixin,blocklogMixin],
         data(){
             return{
                 faqList: [{
@@ -30,7 +30,7 @@
                 }, {
                     id: 2,
                     title: '权益购买后如何使用？',
-                    content: '答：扣费成功后，权益会自动发放至本机号码所绑定的权益方账号；对于连续订购的权益，次月初扣费后自动下发；下发完成后具体使用规则以权益方官方说明为准；',
+                    content: '答：扣费成功后，权益会自动发放至本机号码所绑定的权益方账号；对于连续订购的权益，次月初扣费后自动下发；下发完成后具体使用规则以权益方官方说明为准。',
                 }, {
                     id: 3,
                     title: '连续订购规则是什么？',
@@ -43,7 +43,7 @@
                     id: 5,
                     title: '为什么会出现无法订购的情况？',
                     content: '答：以下情况会出现无法订购的情况：<br>' + 
-                            '（1）手机号码处于欠费状态，将无法自动完成权益下发；若连续订购号码次月1日到5日处于欠费状态，将不再自动扣费并发放权益。<br>' + 
+                            '（1）手机号码处于欠费状态，将无法自动完成权益下发；若连续订购号码次月1日到5日处于欠费状态，本月将不再自动发放权益。<br>' + 
                             '（2）欠费用户充值复机后，次日凌晨会自动重新给用户发放权益；请保持手机号码不欠费哦。',
                 }, {
                     id: 6,
@@ -61,6 +61,7 @@
         computed:{
         },
         mounted() {
+            this.blocklogHandler('常见问题列表','0035','');
         },
     }
 </script>

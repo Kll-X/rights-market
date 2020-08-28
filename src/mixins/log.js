@@ -13,7 +13,7 @@ export const pagelogMixin = {
         pagelog({
             phone: this.userInfo.phone
         },{
-            "isvip":this.userInfo.isVip,//是否会员
+            "isvip":this.userInfo.vipInfo?1:0,//是否会员
             "chanelcode":this.sysInfo.selfChannelCode,//超市渠道号
             "chanelcode3":this.sysInfo.channelCode,//三级渠道号
             "cur_url":location.href,//当前页面url
@@ -34,11 +34,10 @@ export const blocklogMixin = {
     methods: {
         //统计模块数据,positionid不传时为统计曝光，一般情况下曝光埋点埋在本组件或者父组件的created中
         blocklogHandler(blockname,blockid,positionid='',jumpurl='',mid,mname){
-            console.log(arguments)
             blocklog({
                 phone: this.userInfo.phone
             },{
-                "isvip": this.userInfo.isVip,
+                "isvip": this.userInfo.vipInfo?1:0,
                 "chanelcode":this.sysInfo.selfChannelCode,//超市渠道号
                 "chanelcode3":this.sysInfo.channelCode,//三级渠道号
                 "cur_url":location.href,//当前页面url

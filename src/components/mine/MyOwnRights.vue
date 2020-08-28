@@ -2,7 +2,7 @@
     <div class="my-own-rights">
         <GuideHeadline :info="name"></GuideHeadline>
         <div class="rights">
-            <div class="item" v-for="(item,index) in list" :key="index" @click="$router.push(item.path)">
+            <div class="item" v-for="(item,index) in list" :key="index" @click="blocklogHandler('专属权益入口','0026','000'+(index+1));$router.push(item.path)">
                 <img :src="item.icon" alt="">
                 <span class="title">{{item.title}}</span>
                 <span class="tips">{{item.tips}}</span>
@@ -13,11 +13,14 @@
 <script>
     import { mapState } from 'vuex';
     import GuideHeadline from '@/components/home/GuideHeadline.vue';
+    import { blocklogMixin } from "@/mixins/log"
+
     export default {
         name: "my-own-rights",
         props:{
             isVip: Boolean
         },
+        mixins:[blocklogMixin],
         data(){
             return{
             }
@@ -75,7 +78,7 @@
                 ]
             },
             name(){
-                return +this.userInfo.vipLevel?{name:'我的专属权益',id:'1',moreDesc:'查看详情',path:{name: 'vipBenefit'}}:{name:'会员专属权益',id:'1',moreDesc:'查看详情',path:{name: 'vipBenefit'}}
+                return +this.userInfo.vipLevel?{name:'我的专属权益',id:'1',moreDesc:'查看详情',path:{name: 'vipBenefit'},blockId:'0026',positionId:'9999',blockName:'专属权益入口'}:{name:'会员专属权益',id:'1',moreDesc:'查看详情',path:{name: 'vipBenefit'},blockId:'0026',positionId:'9999',blockName:'专属权益入口'}
             }
         },
         components:{

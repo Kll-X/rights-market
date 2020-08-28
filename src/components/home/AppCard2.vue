@@ -93,7 +93,7 @@
                 }
                 .symbol{
                     height:0.25rem;
-                    padding-top: 0.02rem;
+                    margin-top: 0.05rem;
                 }
             }
             .pay{

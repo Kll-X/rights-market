@@ -52,9 +52,9 @@
     import {queryOrderList,queryOrderStatus} from '@/api/myOrder'
     import { mapState } from 'vuex'
     import {customAnalysis} from "@/assets/js/analysis";
-    import {STATISTICS,APPLIST_CHAODIGOU,APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE} from "@/utils/constant";
+    import {STATISTICS,APPLIST_CUSTOMPAGE,APPLIST_CHAODIGOU} from "@/utils/constant";
     import messageBus from "../utils/messageBus";
-    import { pagelogMixin } from "@/mixins/log"
+    import { pagelogMixin,blocklogMixin } from "@/mixins/log"
 
     export default {
         name: "my-order",
@@ -62,7 +62,7 @@
             OrderItem,
             BackHome
         },
-        mixins: [pagelogMixin],
+        mixins: [pagelogMixin,blocklogMixin],
         computed:{
             ...mapState([
                 "userInfo",
@@ -358,14 +358,27 @@
                 ],
             }
         },
+        watch:{
+            'type'(n){
+                let num = '';
+                switch (n) {
+                    case 'all': num = 1;break;
+                    case 'trading': num = 2;break;
+                    case 'success': num = 3;break;
+                    case 'close': num = 4;break;
+                }
+                this.blocklogHandler('订单列表', '0036', '000'+num);
+            }
+        },
         created() {
             let that = this;
             this.type = this.$route.params.type;
+            that.blocklogHandler('订单列表', '0036', '');
             if (this.userInfo.phone) {
                 this.getOrderList(this.type)
             } else {
-                // 有单点登录的情况下，等待单点登录结果再刷新订单列表
-                if (that.$route.query.sign) {
+                // 有单点（异步）登录的情况下，等待单点登录结果再刷新订单列表
+                if (that.$route.query.sign || that.$route.query.actSign || that.sysInfo.channel == 'st') {
                     messageBus.$on('msg_loginCheck', () => {
                         that.getOrderList(that.type)
                     })
@@ -518,26 +531,17 @@
                 for (let item of APPLIST_CHAODIGOU) {
                     if(+item.salesid == +order.salesId) {
                         order.price = item.currentPrice;
-                        order.iconUrl = item.icon;
+                        order.iconUrl = item.icon.search('http')>-1?item.icon:location.origin+'/'+item.icon;
                         order.name = item.title;
                         order.payType = 1;
                         break;
                     }
                 }
-                //针对618活动订单的fix
-                for (let item of APPLIST_VIPOPENING) {
+                //针对活动订单（618、717）的fix
+                for (let item of APPLIST_CUSTOMPAGE) {
                     if(+item.saleid == +order.salesId) {
                         order.price = item.price;
-                        order.iconUrl = item.icon;
-                        order.name = item.name;
-                        order.payType = 1;
-                        break;
-                    }
-                }
-                for (let item of APPLIST_VIPOPENING_NINE) {
-                    if(+item.saleid == +order.salesId) {
-                        order.price = item.price;
-                        order.iconUrl = item.icon;
+                        order.iconUrl = item.icon.search('http')>-1?item.icon:location.origin+'/'+item.icon;
                         order.name = item.name;
                         order.payType = 1;
                         break;

@@ -1,5 +1,5 @@
 <template>
-    <div class="order-list-item" @click="gotoMyorder">
+    <div class="order-list-item" @click="gotoMyorder(info.idx)">
         <div class="icon" :style="bgImg"></div>
         <div class="txt">{{info.txt}}</div>
         <div class="num">{{info.num }}</div>
@@ -8,10 +8,12 @@
 
 <script>
     import { mapState } from 'vuex';
+    import { blocklogMixin } from "@/mixins/log"
     import messageBus from "@/utils/messageBus";
 
     export default {
         name: "order-list-item",
+        mixins:[blocklogMixin],
         data(){
             return {
                 bgImg: 'background-image: url("'+ this.info.icon+'")'
@@ -29,7 +31,8 @@
             ])
         },
         methods:{
-            gotoMyorder(){
+            gotoMyorder(idx){
+                this.blocklogHandler('我的订单','0027','000'+(idx+1));
                 if(this.userInfo.phone){
                     this.$router.push({path: this.info.path})
                 }else{

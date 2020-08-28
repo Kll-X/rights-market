@@ -85,8 +85,8 @@
                 'SET_SHOWQUICKLOGIN'
             ]),
             readAgreement(){
+                this.blocklogHandler('登录弹窗','0000','0009');
                 delCookie('ql');
-                this.blocklogHandler('登录弹窗','0000','0008');
                 location.href = 'https://wap.cmpassport.com/resources/html/contract.html'
             },
             maskTouchmove(e){
@@ -99,7 +99,7 @@
             allow(i){
                 this['allowChecked'+i] = !this['allowChecked'+i] ;
                 if (this['allowChecked'+i]){
-                    this.blocklogHandler('登录弹窗','0000','0007');
+                    this.blocklogHandler('登录弹窗','0000','0008');
                 }
             },
             automaticLogin(){
@@ -235,7 +235,6 @@
             },
             manualLogin(){
                 let that = this;
-                this.blocklogHandler('登录弹窗','0000','0006'); 
                 // 号码检测
                 if(!that.checkTel()){
                     return
@@ -261,6 +260,7 @@
                 }).then((res)=>{
                     that.$toast.clear();
                     if(res.data.resultCode == 0){
+                        this.blocklogHandler('登录弹窗','0000','0007'); 
                         // 短信校验成功（登录成功），更新用户信息
                         that.SET_USERINFO(res.data.data);
                         // cookie缓存登录状态
@@ -275,6 +275,7 @@
                         // 关闭弹窗
                         that.SET_SHOWQUICKLOGIN(false)
                     }else{
+                        this.blocklogHandler('登录弹窗','0000','0006'); 
                         if(res.data.data.msg){
                             this.$toast('异常了，请稍后再试哦！');
                         }else{

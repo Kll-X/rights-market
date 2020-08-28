@@ -8,11 +8,14 @@
                         :name="item.value">
                         <div class="radio-font" v-for="label in item.label" :key="label.index">
                             <!-- 标识 -->
-                            <div v-show="isVip && item.price2" class="radio-font-icon">
-                                <span v-show="!item.fivego">黄金会员</span>
+                            <div v-show="(isVip || isStarVip) && itemDetail.price2 && itemDetail.tc == item.value" class="radio-font-icon">
+                                <span v-show="!item.fivego">优惠购</span>
                             </div>
                             <div v-show="item.fivego" class="radio-font-icon">
-                                <span>会员专享</span>
+                                <span>5折购</span>
+                            </div>
+                            <div v-show="itemDetail.aid !='0'" class="radio-font-icon radio-font-icon-seckill">
+                                <span>1元秒杀</span>
                             </div>
                             <div class="radio-font-title">
                                 <div class="radio-font-title-con"><span>{{label}}</span></div>
@@ -20,23 +23,23 @@
                             <div class="swipe-price" v-show="itemDetail.tc == item.value">
                                 <div class="swipe-price-fee">¥<span ref="price1"></span></div>
                                 <!-- 是会员，并且有price2的情况 -->
-                                <div v-show="(isVip && nowPrice2) || item.fivego" class="swipe-price-origin swipe-price-delete">
+                                <div v-show="((isVip || isStarVip) && nowPrice2) || item.fivego || (nowPrice2 && nowPrice2!= '0' && itemDetail.aid != '0')" class="swipe-price-origin swipe-price-delete">
                                     ¥<span ref="price2"></span>
                                 </div>
                                 <!-- 未登录非会员的样式 -->
-                                <div v-show="!isVip && nowPrice2 && !item.fivego" class="swipe-price-origin swipe-price-vip">
-                                    <span class="swipe-price-vip-con">黄金会员价¥<span ref="price2"></span></span>
+                                <div v-show="(!isVip && !isStarVip) && nowPrice2 && !item.fivego && itemDetail.aid == '0'" class="swipe-price-origin swipe-price-vip">
+                                    <span class="swipe-price-vip-con">会员价¥<span ref="price2"></span></span>
                                 </div>
                             </div>
                             <div class="swipe-price" v-show="itemDetail.tc != item.value">
                                 <div class="swipe-price-fee">¥<span>{{(item.price/100)}}</span></div>
                                 <!-- 是会员，并且有price2的情况 -->
-                                <div v-show="isVip && item.price2 || item.fivego" class="swipe-price-origin swipe-price-delete">
+                                <div v-show="(isVip || isStarVip) && item.price2 || item.fivego" class="swipe-price-origin swipe-price-delete">
                                     ¥<span>{{(item.price2/100)}}</span>
                                 </div>
                                 <!-- 未登录非会员的样式 -->
-                                <div v-show="!isVip && item.price2 && !item.fivego" class="swipe-price-origin swipe-price-vip">
-                                    <span class="swipe-price-vip-con">黄金会员价¥{{(item.price2/100)}}</span>
+                                <div v-show="(!isVip && !isStarVip) && item.price2 && !item.fivego" class="swipe-price-origin swipe-price-vip">
+                                    <span class="swipe-price-vip-con">会员价¥{{(item.price2/100)}}</span>
                                 </div>
                             </div>
                         </div>
@@ -70,6 +73,7 @@
             radioObj: Object,
             itemDetail: Object,
             isVip: Number,
+            isStarVip:Number,
         },
         computed: {
             // 定义swiper，在下面就可以引用这个swiper了；
@@ -170,6 +174,10 @@
                 border-radius: .1rem 0 .16rem 0rem;
                 font-size: .22rem;
                 color: #462F12;
+            }
+            .radio-font-icon-seckill{
+                background:linear-gradient(135deg,rgba(245,95,95,1),rgba(245,95,95,1));
+                color: #FFF;
             }
             .radio-font-title{
                 box-sizing: border-box;

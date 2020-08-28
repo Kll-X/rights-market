@@ -8,6 +8,102 @@ const CHANNELCODE = {
     banner: 67059
 }
 
+//暂时没用， 都改为由后台判断
+const SELFCHANNELCODE = [
+    '00010002',
+    '00010001',
+    '00010003',
+    '00010004',
+    '00010005',
+    '00010006',
+    '00010007',
+    '00010008',
+    '00010009',
+    '00010010',
+    '00010011',
+    '00010012',
+    '00010013',
+    '00010014',
+    '00010015',
+    '00010016',
+    '00010017',
+    '00010018',
+    '00010019',
+    '00020001',
+    '00020002',
+    '00020003',
+    '00020004',
+    '00020005',
+    '00020006',
+    '00020007',
+    '00020008',
+    '00020009',
+    '00020010',
+    '00020011',
+    '00030001',
+    '00030002',
+    '00040001',
+    '00040002',
+    '00050001',
+    '00050002',
+    '00060001',
+    '00060002',
+    '00070001',
+    '00070002',
+    '00080001',
+    '00080002',
+    '00090001',
+    '00090002',
+    '00100001',
+    '00100002',
+    '00110001',
+    '00110002',
+    '00120001',
+    '00120002',
+    '00130001',
+    '00130002',
+    '00140001',
+    '00140002',
+    '00150001',
+    '00150002',
+    '00160001',
+    '00160002',
+    '00170001',
+    '00170002',
+    '00180001',
+    '00180002',
+    '00190001',
+    '00190002',
+    '00200001',
+    '00200002',
+    '00210001',
+    '00210002',
+    '00220001',
+    '00220002',
+    '00230001',
+    '00230002',
+    '00240001',
+    '00240002',
+    '00250001',
+    '00250002',
+    '00260001',
+    '00260002',
+    '00270001',
+    '00270002',
+    '00280001',
+    '00280002',
+    '00290001',
+    '00290002',
+    '00300001',
+    '00300002',
+    '00310001',
+    '00310002',
+    '00320001',
+    '00320002',
+    '00330001',
+    '00330002',
+]
+
 // 统计key
 const STATISTICS = process.env.VUE_APP_BUILD === 'production' ?{
     activityId: '9900045',
@@ -184,18 +280,20 @@ const AID_VIPOPENING = '20200618001';
 
 // 618会员开幕活动年卡产品
 const APPLIST_VIPOPENING = [
+    // {
+    //     name:'爱奇艺黄金VIP会员年卡',
+    //     showname: '爱奇艺黄金会员年卡',
+    //     price:'9900',
+    //     originprice:'19800',
+    //     date:'6月18日-6月20日',
+    //     startdate: '2020/6/10',
+    //     expiredate: '2020/6/21',
+    //     icon: require("@/assets/imgs/custompage/2/icon_iqy.png"),
+    //     saleid: '103017',
+    //     proid: '6001729',
+    //     detailLinkPath:{path: '/custompage/2'}
+    // },
     {
-        name:'爱奇艺黄金VIP会员年卡',
-        showname: '爱奇艺黄金会员年卡',
-        price:'9900',
-        originprice:'19800',
-        date:'6月18日-6月20日',
-        startdate: '2020/6/10',
-        expiredate: '2020/6/21',
-        icon: require("@/assets/imgs/custompage/2/icon_iqy.png"),
-        saleid: '103017',
-        proid: '6001729'
-    },{
         name:'芒果TVVIP会员年卡',
         showname:'芒果TV会员年卡',
         price:'9900',
@@ -205,7 +303,8 @@ const APPLIST_VIPOPENING = [
         expiredate: '2020/6/22',
         icon: require("@/assets/imgs/custompage/2/icon_mtv.png"),
         saleid: '103021',
-        proid: '6001733'
+        proid: '6001733',
+        detailLinkPath:{path: '/custompage/2'}
     },{
         name:'优酷视频VIP会员年卡',
         showname:'优酷会员年卡',
@@ -216,7 +315,8 @@ const APPLIST_VIPOPENING = [
         expiredate: '2020/6/23',
         icon: require("@/assets/imgs/custompage/2/icon_youku.png"),
         saleid: '103019',
-        proid: '6001731'
+        proid: '6001731',
+        detailLinkPath:{path: '/custompage/2'}
     }
 ]
 // 618会员开幕活动产品9元购
@@ -227,59 +327,105 @@ const APPLIST_VIPOPENING_NINE = [
         originprice:'2500',
         icon: require("@/assets/imgs/custompage/2/icon_xmly.png"),
         saleid: '103031',
-        proid: '6001743'
+        proid: '6001743',
+        detailLinkPath:{path: '/custompage/2'}
     },{
         name:'咪咕视频钻石会员月卡',
         price:'900',
         originprice:'2500',
         icon: require("@/assets/imgs/custompage/2/icon_migu.png"),
         saleid: '103023',
-        proid: '6001735'
+        proid: '6001735',
+        detailLinkPath:{path: '/custompage/2'}
     },{
         name:'酷我音乐豪华VIP会员月卡',
         price:'900',
         originprice:'1800',
         icon: require("@/assets/imgs/custompage/2/icon_kuwo.png"),
         saleid: '103025',
-        proid: '6001737'
+        proid: '6001737',
+        detailLinkPath:{path: '/custompage/2'}
     },{
         name:'饿了么超级会员月卡',
         price:'900',
         originprice:'1500',
         icon: require("@/assets/imgs/custompage/2/icon_elm.png"),
         saleid: '102869',
-        proid: '6001573'
+        proid: '6001573',
+        detailLinkPath:{path: '/custompage/2'}
     },{
         name:'掌阅VIP会员包月卡',
         price:'900',
         originprice:'1800',
         icon: require("@/assets/imgs/custompage/2/icon_zhangyue.png"),
         saleid: '103029',
-        proid: '6001741'
+        proid: '6001741',
+        detailLinkPath:{path: '/custompage/2'}
     },{
         name:'QQ阅读会员月卡',
         price:'900',
         originprice:'1800',
         icon: require("@/assets/imgs/custompage/2/icon_qqread.png"),
         saleid: '103027',
-        proid: '6001739'
+        proid: '6001739',
+        detailLinkPath:{path: '/custompage/2'}
     },{
         name:'蜻蜓FM超级会员月卡',
         price:'900',
         originprice:'3000',
         icon: require("@/assets/imgs/custompage/2/icon_qingting.png"),
         saleid: '103033',
-        proid: '6001745'
+        proid: '6001745',
+        detailLinkPath:{path: '/custompage/2'}
     },{
         name:'书旗小说会员月卡',
         price:'900',
         originprice:'1500',
         icon: require("@/assets/imgs/custompage/2/icon_shuqi.png"),
         saleid: '103037',
-        proid: '6001749'
+        proid: '6001749',
+        detailLinkPath:{path: '/custompage/2'}
     }
 ]
 
+// 717活动产品
+const APPLIST_717 = [
+    {
+        name:'爱奇艺黄金VIP会员季卡',
+        price:'2900',
+        originprice:'5800',
+        icon: require("@/assets/imgs/custompage/3/icon_season.png"),
+        saleid: '103173',
+        proid: '6001885',
+        detailLinkPath:{path: '/custompage/3'},
+        expiredate: '2020/7/20',
+    },{
+        name:'爱奇艺黄金VIP会员半年卡',
+        price:'5400',
+        originprice:'10800',
+        icon: require("@/assets/imgs/custompage/3/icon_semester.png"),
+        saleid: '103175',
+        proid: '6001887',
+        detailLinkPath:{path: '/custompage/3'},
+        expiredate:'2020/7/20',
+    },{
+        name:'爱奇艺黄金VIP会员年卡',
+        price:'9900',
+        originprice:'19800',
+        icon: require("@/assets/imgs/custompage/3/icon_year.png"),
+        saleid: '103017',
+        proid: '6001729',
+        detailLinkPath:{path: '/custompage/3'},
+        expiredate:'2020/7/20',
+    }
+]
+
+// 所有没有在后台配置的活动商品，在订单列表中需要特殊处理
+const APPLIST_CUSTOMPAGE = [
+    ...APPLIST_VIPOPENING,
+    ...APPLIST_VIPOPENING_NINE,
+    ...APPLIST_717
+]
 
 // 订购会员、退订会员订单参数信息
 const VIPORDER = {
@@ -307,5 +453,7 @@ const NEWVIPGIFT = {
     orderWay: 0,
     smsCode: '',
 }
+//会员限时秒杀aid
+const AID_SECKILL = '20200803001';
+export {STATISTICS,CHANNELCODE,SELFCHANNELCODE,APPLIST_CHAODIGOU,STATISTICS_PROVINCE,STATISTICS_ACTIVITY,VIPORDER,NEWVIPGIFT,APPLIST_CUSTOMPAGE,APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE,AID_VIPOPENING,APPLIST_717,AID_SECKILL}
 
-export {STATISTICS,CHANNELCODE,APPLIST_CHAODIGOU,STATISTICS_PROVINCE,STATISTICS_ACTIVITY,VIPORDER,NEWVIPGIFT,APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE,AID_VIPOPENING}

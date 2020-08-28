@@ -3,20 +3,21 @@
         <div class="header0" v-show="type === 0">
             <div class="top">
                 <span class="my-benefit">
-                    {{userInfo.vipLevel && userInfo.vipLevel >= 2?userInfo.vipLevelTag[+userInfo.vipLevel - 1]:'黄金'}}会员权益
+                    {{userInfo.vipInfo && userInfo.vipInfo.vipLevel && userInfo.vipInfo.vipLevel >= 2?userInfo.vipInfo.vipLevelTag[+userInfo.vipInfo.vipLevel - 1]:'黄金'}}会员权益
                 </span>
-                <span class="must-know"  @click.stop="showPopup(must_know)">会员须知</span>
+                <span class="must-know"  @click.stop="blocklogHandler('黄金会员权益', '0031', '0001');showPopup(must_know)">会员须知</span>
             </div>
             <div class="info">
                 <div class="wrap">
                     <span class="level">
                         <img class="diamond" alt="" src="@imgs/vipbenefit/diamond.png">
                         &nbsp;
-                        <span class="title">{{userInfo.vipLevel && userInfo.vipLevel >= 2?userInfo.vipLevelTag[+userInfo.vipLevel - 1]:'黄金'}}会员</span>
+                        <!-- <span class="title">{{userInfo.vipInfo && userInfo.vipInfo.vipLevel && userInfo.vipInfo.vipLevel >= 2?userInfo.vipInfo.vipLevelTag[+userInfo.vipInfo.vipLevel - 1]:'黄金'}}会员</span> -->
+                        <span class="title-icon"></span>
                     </span>
                     <span class="status">
-                        <span style="fontSize:0.22rem;fontWeight:bold">¥ </span>
-                        <span style="fontSize:0.42rem;fontWeight:bold">5.0</span>
+                        <span style="fontSize:0.32rem;fontWeight:bold">¥ </span>
+                        <span style="fontSize:0.54rem;fontWeight:bold">5</span>
                         /月
                     </span>
                 </div>
@@ -34,31 +35,55 @@
                 <span class="my-benefit">
                     我的会员权益
                 </span>
-                <span class="must-know"   @click.stop="showPopup(must_know)">会员须知</span>
+                <span class="must-know"   @click.stop="blocklogHandler('黄金会员权益', '0031', '0001');showPopup(must_know)">会员须知</span>
             </div>
             <div class="info">
                 <span class="level">
                     <img class="diamond" alt="" src="@imgs/vipbenefit/diamond.png">
                     &nbsp;
-                    <span class="title">{{userInfo.vipLevel && userInfo.vipLevel >= 2?userInfo.vipLevelTag[+userInfo.vipLevel - 1]:'黄金'}}会员</span>
+                    <!-- <span class="title">{{userInfo.vipInfo && userInfo.vipInfo.vipLevel && userInfo.vipInfo.vipLevel >= 2?userInfo.vipInfo.vipLevelTag[+userInfo.vipInfo.vipLevel - 1]:'黄金'}}会员</span> -->
+                    <span class="title-icon"></span>
                 </span>
                 <span class="status">
-                    {{type === 1?'连续包月中':type === 2 && userInfo.expireTime ?'有效期至' + userInfo.expireTime.substring(0,4)+'.'+ userInfo.expireTime.substring(4,6)+'.'+ userInfo.expireTime.substring(6,8):''}}
+                    {{type === 1?'连续包月中':type === 2 && userInfo.vipInfo && userInfo.vipInfo.expireTime ?'有效期至' + userInfo.vipInfo.expireTime.substring(0,4)+'.'+ userInfo.vipInfo.expireTime.substring(4,6)+'.'+ userInfo.vipInfo.expireTime.substring(6,8):''}}
                 </span>
+            </div>
+        </div>
+        <!-- 新星会员样式 -->
+        <div class="header2" v-show="type === 4">
+            <div class="top">
+                <span class="my-benefit">
+                    我的会员权益
+                </span>
+                <span class="must-know"  @click.stop="blocklogHandler('黄金会员权益', '0031', '0001');showPopup(must_know_newstar)">会员须知</span>
+            </div>
+            <div class="info">
+                <span class="level">
+                    <!-- <img class="diamond" alt="" src="@imgs/vipbenefit/diamond.png">
+                    &nbsp;
+                    <span class="title">新星会员</span> -->
+                    <span class="status">
+                        {{type === 4?'连续包月中':type === 2 && userInfo.newStarVipInfo.expireTime ?'有效期至' + userInfo.newStarVipInfo.expireTime.substring(0,4)+'.'+ userInfo.newStarVipInfo.expireTime.substring(4,6)+'.'+ userInfo.newStarVipInfo.expireTime.substring(6,8):''}}
+                    </span>
+                </span>
+                <span v-show="!userInfo.vipInfo || userInfo.vipInfo == ''" class="upgrade" @click.stop="subscribe"></span>
             </div>
         </div>
         <div class="nav1" v-show="type === 1 || type === 2">
             <img v-for="(item, index) in nav" :key="index" :src="current == index ? item.active:item.normal" alt="" @click.stop="changeslide(index)">
         </div>
+        <div class="nav1" v-show="type === 4">
+            <img v-for="(item, index) in navStar" :key="index" :src="current == index ? item.active:item.normal" alt="" @click.stop="changeslide(index)">
+        </div>
         <!-- 轮播图 -->
-        <van-swipe v-if="type === 0 ||type === 1 || type === 2" :loop="false" ref="banner"  @change="onChange">
+        <van-swipe v-if="type === 0 ||type === 1 || type === 2 || type === 4" :loop="false" ref="banner"  @change="onChange">
             <van-swipe-item
                 v-for="(item, index) in bannerData" :key="index">
                 <div class="banner-item">
                     <div class="banner-item-inner">
                         <img class="banner-img" :src="item.img" alt="">
                         <img v-if="item.btn"  class="btn-img" :src="item.btn.src" @click.stop="run(item.btn.method)" alt="">
-                        <div class="txt-box" v-html="txtArr[index]"></div>
+                        <div class="txt-box" v-html="txtArr[item.id]"></div>
                     </div>
                     
                 </div>
@@ -69,7 +94,7 @@
         </van-swipe>
         <div v-show="type === 1 || type === 2" style="height:0.5rem"></div>
         <!-- v-show="type === 1 && userInfo.orderId !== '0'" -->
-        <div v-if="false" class="unsubscribe" :class="userInfo.orderId === '0'?'underLine':''" @click.stop="unsubscribe">
+        <div v-if="false" class="unsubscribe" :class="userInfo.orderId.orderId === '0'?'underLine':''" @click.stop="unsubscribe">
             退订会员
         </div>
         <div v-show="type === 2" class="unsubscribed">
@@ -108,6 +133,7 @@
                         clearable
                         maxlength="6"
                         type="digit"
+                        @focus="blocklogHandler('超市会员订购短验确认', '0023', '0002')"
                         placeholder="请输入验证码" @change="smsInputCheck">
                         <van-button slot="button" size="small" type="default" :disabled="coutdownShow"
                             @click="getSms">
@@ -134,21 +160,24 @@
     import { sendSmsCode,placeOrder} from "@/api/goodsdetail";
     import BackHome from '@/components/common/BackHome.vue';
     import {VIPORDER,NEWVIPGIFT} from "@/utils/constant";
-    import { pagelogMixin } from "@/mixins/log"
+    import { pagelogMixin, blocklogMixin } from "@/mixins/log";
 
 
     export default {
-        mixins: [pagelogMixin],
+        mixins: [pagelogMixin, blocklogMixin],
         data() {
             return {
                 txtArr:[
-                    `<div>1、用户首次成为中国移动权益超市黄金会员，即可获得入会礼1GB通用流量日包一份。</div>
-                    <div>2、领取次数有且只有一次，流量奖品24小时内直充到账，届时会有短信提示，还请注意查收。</div>
-                    <div>3、1GB流量为日包产品，到账后24小时内有效。</div>`,
+                    `<div>1、用户成为中国移动权益超市黄金会员，则可每月领取1GB通用流量日包一份，若当月未领取，则次月无法补领；</div>
+                    <div>2、当月流量礼包领取后，24小时内直充到账，届时会有短信提示，请注意查收；</div>
+                    <div>3、1GB通用流量为日包产品，到账后24小时内有效。</div>`,
                     `<div>1、会员具有权益产品优惠购资格，以低于在售价的价格购买权益产品。</div>
                     <div>2、会员购买权益优惠购专区产品后将会收到订购短信提醒，还请实时关注。</div>`,
                     `<div>1、会员具有精品权益产品5折购资格，每月可选择专区内一款权益产品半价购买。</div>
                     <div>2、会员购买精选5折购专区权益产品后，会收到订购短信提醒，还请实时关注。</div>`,
+                    `<div>1、会员用户每月可在“会员福利社”领取福利优惠券，同一优惠券每月最多领取一次，领取及使用规则以单个优惠券页面规则为准；</div>
+                    <div>2、会员福利社的优惠券每月供应数量有限，领完即止。</div>
+                    <div>3、因权益方限制部分优惠券同一用户仅可领取一次，可领取的外部优惠券以界面展示为准。</div>`,
                     `<div>1、专属客服功能仅对会员开放。</div>
                     <div>2、会员如有相关问题，可直接咨询在线客服解决，或直接拨打10086咨询。</div>`
                 ],
@@ -171,35 +200,59 @@
                     content:{
                         txt:`
                         <div>一、订购规则：</div>
-                        <div>1、权益超市黄金会员（下文简称“会员”）当前仅支持移动用户办理，其中非个人客户（行业卡、物联网卡等）、欠费客户、余额不足的预付费客户、信用额度不足的后付费客户不能订购。</div>
-                        <div>2、会员资费5元/月，订购费用将从会员登录手机号话费中自动扣除，订购成功即时生效，可享受相关会员权益；</div>
-                        <div>3、 如无退订，默认次月自动续订会员，续订费用将从会员手机号话费中自动扣除；</div>
-                        <div>4、会员退订后，会员有效期至当月月底，次月起不再扣费。</div>
+                        <div>1、权益超市黄金会员（下文简称“黄金会员”）当前仅支持移动用户办理，其中非个人客户（行业卡、物联网卡等）、欠费客户、余额不足的预付费客户、信用额度不足的后付费客户不能订购。</div>
+                        <div>2、黄金会员资费5元/月，订购费用将从会员登录手机号话费中自动扣除，订购成功即时生效，可享受相关会员权益；</div>
+                        <div>3、如无退订，默认次月自动续订黄金会员，续订费用将从会员手机号话费中自动扣除；</div>
+                        <div>4、会员退订后，黄金会员有效期至当月月底，次月起不再扣费。</div>
                         <br />
-                        <div>二、会员福利：
-                        <div>1、入会有礼：用户首次成为中国移动权益超市黄金会员，即可获得入会礼1GB通用流量日包一份；领取次数有且只有一次，流量奖品24小时内直充到账，届时会有短信提示，还请注意查收；1GB流量为日包产品，到账后24小时内有效。</div>
-                        <div>2、会员优惠购：会员用户可在“会员优惠购”专区订购权益产品。会员购买会员优惠购专区权益后将会收到订购短信提醒，还请实时关注。</div>
-                        <div>3、精选5折购：会员用户可在“精选5折购”专区半价购买权益，每月限购一款。会员购买精选5折购专区权益后将会收到订购短信提醒，还请实时关注。</div>
-                        <div>4、专属客服：会员用户可享受专属客服服务。</div>`
+                        <div>二、会员福利：</div>
+                        <div>1、流量礼包：用户成为中国移动权益超市黄金会员，则可每月领取1GB通用流量日包一份，若当月未领取，则次月无法补领；当月流量礼包领取后，24小时内直充到账，届时会有短信提示，请注意查收；1GB通用流量为日包产品，到账后24小时内有效。</div>
+                        <div>2、会员优惠购：黄金会员用户可在“会员优惠购”专区订购权益产品。黄金会员购买会员优惠购专区权益后将会收到订购短信提醒，请实时关注。</div>
+                        <div>3、会员福利社：黄金会员每月可在“会员福利社”领取福利优惠券，同一优惠券每月限领一张，领取后优惠券使用规则以单个优惠券页面规则为准。</div>
+                        <div>4、精选5折购：黄金会员用户可在“精选5折购”专区半价购买权益，每月限购一款。黄金会员购买精选5折购专区权益后将会收到订购短信提醒，请实时关注。</div>
+                        <div>5、专属客服：黄金会员用户可享受专属客服服务。</div>`
+                    }
+                },
+                must_know_newstar:{
+                    title:'权益超市新星会员须知',
+                    content:{
+                        txt:`
+                        <div>一、会员规则：</div>
+                        <div>1、新星会员资费0元/月，永久免费。新星会员用户可享受相关会员权益；</div>
+                        <div>2、新星会员可升级成为黄金会员，在页面订购升级为黄金会员后，可享受黄金会员福利；若退订黄金会员后，仍可保留新星会员，享受新星会员福利。</div>
+                        <br />
+                        <div>二、会员福利：</div>
+                        <div>1、会员优惠购：新星会员用户可在“会员优惠购”专区订购权益产品。新星会员购买会员优惠购专区权益后将会收到订购短信提醒，请实时关注。</div>
+                        <div>2、会员福利社：新星会员每月可在“会员福利社”领取福利优惠券，同一优惠券每月限领一张，领取后优惠券使用规则以单个优惠券页面规则为准。</div>
+                        <div>3、专属客服：新星会员用户可享受专属客服服务。</div>`
                     }
                 },
                 show: false,
                 current:0,
                 nav:[
-                    {title:'入会有礼',normal:require('@imgs/vipbenefit/nav1_0_1.png'),active:require('@imgs/vipbenefit/nav1_1_1.png')},
-                    {title:'会员优惠购',normal:require('@imgs/vipbenefit/nav1_0_2.png'),active:require('@imgs/vipbenefit/nav1_1_2.png')},
-                    {title:'精选5折购',normal:require('@imgs/vipbenefit/nav1_0_3.png'),active:require('@imgs/vipbenefit/nav1_1_3.png')},
+                    {title:'流量礼包',normal:require('@imgs/vipbenefit/nav1_0_1.png'),active:require('@imgs/vipbenefit/nav1_1_1.png')},
+                    {title:'优惠购',normal:require('@imgs/vipbenefit/nav1_0_2.png'),active:require('@imgs/vipbenefit/nav1_1_2.png')},
+                    {title:'5折购',normal:require('@imgs/vipbenefit/nav1_0_3.png'),active:require('@imgs/vipbenefit/nav1_1_3.png')},
+                    {title:'福利社',normal:require('@imgs/vipbenefit/nav1_0_5.png'),active:require('@imgs/vipbenefit/nav1_1_5.png')},
+                    {title:'专属客服',normal:require('@imgs/vipbenefit/nav1_0_4.png'),active:require('@imgs/vipbenefit/nav1_1_4.png')},
+                ],
+                navStar:[
+                    {title:'优惠购',normal:require('@imgs/vipbenefit/nav1_0_2.png'),active:require('@imgs/vipbenefit/nav1_1_2.png')},
+                    {title:'福利社',normal:require('@imgs/vipbenefit/nav1_0_5.png'),active:require('@imgs/vipbenefit/nav1_1_5.png')},
                     {title:'专属客服',normal:require('@imgs/vipbenefit/nav1_0_4.png'),active:require('@imgs/vipbenefit/nav1_1_4.png')},
                 ],
                 arrNormal:[
                         {id:0,img:require('@imgs/vipbenefit/novip_card1.png')},
                         {id:1,img:require('@imgs/vipbenefit/novip_card2.png')},
                         {id:2,img:require('@imgs/vipbenefit/novip_card3.png')},
-                        {id:3,img:require('@imgs/vipbenefit/novip_card4.png')}
+                        {id:3,img:require('@imgs/vipbenefit/novip_card4.png')},
+                        {id:4,img:require('@imgs/vipbenefit/novip_card5.png')}
                 ]
             };
         },
         created(){
+            //曝光统计：
+            this.blocklogHandler('黄金会员权益', '0031', '');
             if(!this.userInfo.phone){
                 this.quickLogin(true);
             }else{
@@ -215,34 +268,60 @@
                 "sysInfo"
             ]),
             type(){
-                if(this.userInfo.phone && this.userInfo.isVip === 1 && this.userInfo.cancelFlag === "1"){// 登录了,是会员但已退订
-                    return 2
-                }else if(this.userInfo.phone && this.userInfo.isVip === 1 && this.userInfo.cancelFlag === "0"){// 登录了,是会员但未退订
-                    return 1
-                }else if(!this.userInfo.phone){// 非登录
-                    return 0
-                }else if(this.userInfo.phone && this.userInfo.isVip === 0){// 登录了，但非会员
-                    return 0
-                }else if(this.userInfo.phone && this.userInfo.isVip === ''){// 登录了，但会员信息还在查询途中
-                    return 3
-                }else{
-                    return null
+                if (this.$route.params.isNewStarVip) { // 路径有参数时，判断新星会员
+                    if (this.userInfo.phone && this.userInfo.newStarVipInfo && this.userInfo.newStarVipInfo !== '') {
+                        return 4;
+                    } else if (this.userInfo.phone && this.userInfo.newStarVipInfo === ''){
+                        return 3;
+                    } else {
+                        return 0;
+                    }
+                } else {
+                    if(this.userInfo.phone && this.userInfo.vipInfo && this.userInfo.vipInfo !== '' && this.userInfo.vipInfo !== null && this.userInfo.vipInfo.cancelFlag === "1"){// 登录了,是会员但已退订
+                        return 2
+                    }else if(this.userInfo.phone && this.userInfo.vipInfo && this.userInfo.vipInfo !== '' && this.userInfo.vipInfo !== null && this.userInfo.vipInfo.cancelFlag === "0"){// 登录了,是会员但未退订
+                        return 1
+                    }else if(!this.userInfo.phone){// 非登录
+                        return 0
+                    }else if(this.userInfo.phone && this.userInfo.vipInfo == null){// 登录了，但非会员
+                        return 0
+                    }else if(this.userInfo.phone && this.userInfo.vipInfo === ''){// 登录了，但会员信息还在查询途中
+                        return 3
+                    }else{
+                        return null
+                    }
                 }
             },
             bannerData(){
                 return this.type === 0 ? this.arrNormal:this.arrVip
             },
             arrVip(){
-                return [
-                    {id:0,img:require('@imgs/vipbenefit/vip_card1.png'),btn:{src:this.userInfo.hasNewGift == 1?require('@imgs/vipbenefit/ever_get.png'):require('@imgs/vipbenefit/get_now.png'), method: this.userInfo.hasNewGift == 1?'':'get_now'}},
-                    {id:1,img:require('@imgs/vipbenefit/vip_card2.png'),btn:{src:require('@imgs/vipbenefit/buy_now.png'),method:'buy_now'}},
-                    {id:2,img:require('@imgs/vipbenefit/vip_card3.png'),btn:{src:require('@imgs/vipbenefit/rob_now.png'),method:'rob_now'}},
-                    {id:3,img:require('@imgs/vipbenefit/vip_card4.png'),btn:{src:require('@imgs/vipbenefit/communicate_now.png'),method:'communicate_now'}}
-                ] 
+                if (this.type === 4) {
+                    return [
+                        {id:1,img:require('@imgs/vipbenefit/vip_card2.png'),btn:{src:require('@imgs/vipbenefit/buy_now.png'),method:'buy_now'}},
+                        {id:3,img:require('@imgs/vipbenefit/vip_card4.png'),btn:{src:require('@imgs/vipbenefit/get_now.png'),method:'draw_now'}},
+                        {id:4,img:require('@imgs/vipbenefit/vip_card5.png'),btn:{src:require('@imgs/vipbenefit/communicate_now.png'),method:'communicate_now'}}
+                    ] 
+                } else {
+                    return [
+                        {id:0,img:require('@imgs/vipbenefit/vip_card1.png'),btn:{src:this.userInfo.vipInfo.hasNewGift == 1?require('@imgs/vipbenefit/ever_get.png'):require('@imgs/vipbenefit/get_now.png'), method: this.userInfo.vipInfo.hasNewGift == 1?'':'get_now'}},
+                        {id:1,img:require('@imgs/vipbenefit/vip_card2.png'),btn:{src:require('@imgs/vipbenefit/buy_now.png'),method:'buy_now'}},
+                        {id:2,img:require('@imgs/vipbenefit/vip_card3.png'),btn:{src:require('@imgs/vipbenefit/rob_now.png'),method:'rob_now'}},
+                        {id:3,img:require('@imgs/vipbenefit/vip_card4.png'),btn:{src:require('@imgs/vipbenefit/get_now.png'),method:'draw_now'}},
+                        {id:4,img:require('@imgs/vipbenefit/vip_card5.png'),btn:{src:require('@imgs/vipbenefit/communicate_now.png'),method:'communicate_now'}}
+                    ] 
+                }
                 
             }
         },
         watch:{
+            'current'(n,o){
+                if(n>o){//操作统计：左滑翻页
+                    this.blocklogHandler('黄金会员权益', '0031', '0004');
+                }else if(n<o){//操作统计：右滑翻页
+                    this.blocklogHandler('黄金会员权益', '0031', '0005');
+                }
+            },
             'type'(n,o) {
                 if(n != o){
                     setTimeout(()=>{ // 必须用setTimeout才有效
@@ -250,28 +329,43 @@
                     },0)
                 }
             },
-            'show'(){
+            'show'(value){
+                if (!value) {
+                    //操作统计：关闭
+                    this.blocklogHandler('会员须知弹窗', '0032', '0000');
+                }else{
+                    //曝光统计：
+                    this.blocklogHandler('会员须知弹窗', '0032', '');
+                }
                 setTimeout(()=>{ // 必须用setTimeout才有效
                     this.$refs.content.scrollTop = 0;
                 },0)
-            }
+            },
+            'subscribeShow': {
+                handler: function (value) {
+                    if (!value) this.blocklogHandler('超市会员订购短验确认', '0023', '0000')
+                }
+            },
         },
         methods: {
             ...mapMutations([
                 'SET_USERINFO'
             ]),
             allow(i){
+                this.blocklogHandler('超市会员订购短验确认', '0023', '0006')
                 this['allowChecked'+i] = !this['allowChecked'+i] ;
             },
             // 获取验证码
             getSms() {
                 let that = this;
+                this.blocklogHandler('超市会员订购短验确认', '0023', '0003')
                 sendSmsCode({mobile: that.userInfo.phone}).then((response) => {
                     if (response.data.code == 0) {
                         // 倒计时逻辑
                         that.coutdownShow = true;
                         that.coutdownFunc();
                     } else {
+                        // this.blocklogHandler('超市会员订购短验确认', '0023', '0004')
                         that.$toast('验证码跑丢了，稍后再试哦！');
                     }
                 })
@@ -290,6 +384,7 @@
             },
             get_now(){
                 let that = this;
+                this.blocklogHandler('黄金会员权益', '0031', '0011');
                 // 如果手机号为空，则弹登录窗
                 if (!that.userInfo.phone) {
                     that.quickLogin(true);
@@ -298,7 +393,7 @@
                 let headers = {'phone': that.userInfo.phone};
                 let data = Object.assign({},NEWVIPGIFT);
                 data.channelCode = that.sysInfo.channelCode;
-                //window.console.log(data,'新人礼包');
+                data.selfChannelCode = that.sysInfo.selfChannelCode?that.sysInfo.selfChannelCode:''; //领取新人礼包增传selfChannelCode字段
 
                 that.$toast({
                     message: '领取中,请稍等…',
@@ -308,8 +403,10 @@
                 placeOrder(data, headers).then((r) => {
                     that.$toast.clear();
                     if (r.data.resultCode == 0) {
+                        this.blocklogHandler('超市会员订购短验确认', '0023', '0005')
                         // that.SET_USERINFO({hasNewGift:1});
                         messageBus.$emit('msg_getVipInfo');
+                        that.blocklogHandler('领取新人礼弹窗', '0034', '');
                         messageBus.$emit('msg_showPopup',{
                             flag: true,
                             title: '恭喜您！',
@@ -320,9 +417,10 @@
                                     txt: '我知道了',
                                     style:{
                                         backgroundColor:'rgb(237, 174, 99)',
-                                        border: '2px solid rgb(237, 174, 99)'
+                                        border: '1px solid rgb(237, 174, 99)'
                                     },
                                     handler: () => {
+                                        that.blocklogHandler('领取新人礼弹窗', '0034', '0001');
                                         messageBus.$emit('msg_showPopup',false);
                                     }
                                 }
@@ -333,6 +431,7 @@
                     //     that.$toast({message: '领取失败，请稍后重试', duration: 4000});
                     // } 
                     else if(r.data.resultCode == -1 && r.data.data.code == -1) {
+                        this.blocklogHandler('超市会员订购短验确认', '0023', '0004');
                         that.$toast({message: '请输入正确的验证码哦', duration: 4000});
                     } else if(r.data.resultCode == -102) {
                         that.$toast({message: '订购异常,请稍后重试!', duration: 4000});
@@ -357,14 +456,33 @@
             },
             buy_now(){
                 //window.console.log('buy_now');
+                this.blocklogHandler('黄金会员权益', '0031', '0021');
                 this.$router.push({name:'vipPreferential'})
             },
             rob_now(){
                 //window.console.log('rob_now')
+                this.blocklogHandler('黄金会员权益', '0031', '0031');
                 this.$router.push({name:'halfPrice'})
 
             },
+            draw_now(){// 福利社领取
+                let url = '';
+                if (process.env.VUE_APP_BUILD  !== 'production') {
+                    url = 'http://rwktst.aspire-tech.com:19088/frcm/fcyr4/index.html#/vipClub';
+                } else {
+                    url = 'https://apiserv.cmicrwx.cn/fcyr4/index.html#/vipClub';
+                }
+                if (this.userInfo.pnsign && this.userInfo.pnsign !== '') {
+                    url += '&pnsign=' + encodeURIComponent(this.userInfo.pnsign);
+                }
+                if (this.sysInfo.selfChannelCode && this.sysInfo.selfChannelCode !== '') {
+                    url += '&selfChannelCode=' + this.sysInfo.selfChannelCode;
+                }
+                url = url.replace('&', '?');
+                location.href = url;
+            },
             communicate_now(){
+                this.blocklogHandler('黄金会员权益', '0031', '0041');
                 //window.console.log('communicate_now')
                 // if(this.sysInfo.channel == 'st'){
                 //     this.$toast("敬请期待")
@@ -409,10 +527,11 @@
                     duration: 0,
                 });
                 //会员订购
-                //window.console.log(data,'订购');
+                console.log('会员订购-data:', data)
                 placeOrder(data, headers).then((r) => {
                     that.$toast.clear();
                     if (r.data.resultCode == 0) {
+                        this.blocklogHandler('超市会员订购短验确认', '0023', '0005')
                         //订购成功，关闭底部弹窗
                         that.subscribeShow = false;
                         messageBus.$emit('msg_getVipInfo');
@@ -424,6 +543,7 @@
                     //     that.$toast({message: '订购失败', duration: 4000});
                     // }
                     else if(r.data.resultCode == -1 && r.data.data.code == -1) {
+                        this.blocklogHandler('超市会员订购短验确认', '0023', '0004');
                         that.$toast({message: '请输入正确的验证码哦', duration: 4000});
                     } else if(r.data.resultCode == -102) {
                         that.$toast({message: '订购异常,请稍后重试!', duration: 4000});
@@ -447,6 +567,7 @@
                 })
             },
             subscribe(){
+                this.blocklogHandler('黄金会员权益', '0031', '0002');
                 this.$toast.clear();
                 if(this.userInfo.phone){//已登录,则开通会员
                     this.submitIndex = 0;
@@ -458,11 +579,13 @@
                 }
             },
             showPopup(target) {
+                this.blocklogHandler('超市会员订购短验确认', '0023', '0007')
                 this.$toast.clear();
                 this.popupInfo = target;
                 this.show = true;
             },
             changeslide(i){
+                this.blocklogHandler('黄金会员权益', '0031', '00'+(i+1));
                 this.$refs.banner.swipeTo(i);
             },
             onChange(i){
@@ -480,11 +603,12 @@
             unsubscribe(){
                 this.$toast.clear();
 
-                if(this.userInfo.orderId === '0'){return}//线下不给退订
-                
+                if(this.userInfo.vipInfo.orderId === '0'){return}//线下不给退订
+                //曝光统计：
+                this.blocklogHandler('退订黄金会员二次确认弹窗', '0033', '');
                 messageBus.$emit('msg_showPopup',{
                     flag: true,
-                    title: '是否退订'+ this.userInfo.vipLevelTag[parseInt(this.userInfo.vipLevel) - 1] +'会员？',
+                    title: '是否退订'+ this.userInfo.vipInfo.vipLevelTag[parseInt(this.userInfo.vipInfo.vipLevel) - 1] +'会员？',
                     content: '退订后次月起不再收费，相关会员权益享至本月底，请确认是否退订？',
                     mask: true,
                     btns: [
@@ -492,6 +616,7 @@
                             txt: '继续退订',
                             handler: () => {
                                 let that = this;
+                                that.blocklogHandler('退订黄金会员二次确认弹窗', '0033', '0001');
                                 // 如果手机号为空，则弹登录窗
                                 if (!that.userInfo.phone) {
                                     that.quickLogin(true);
@@ -546,6 +671,8 @@
                         },{
                             txt: '考虑一下',
                             handler: () => {
+                                let that = this;
+                                that.blocklogHandler('退订黄金会员二次确认弹窗', '0033', '0000');
                                 messageBus.$emit('msg_showPopup',false)
                             }
                         }
@@ -556,7 +683,7 @@
     }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
     #vip-benefit{
         background: #FFF;
         width: 100%;
@@ -608,6 +735,7 @@
                         justify-content: flex-start;
                         align-items: center;
                         margin-left: 0.5rem;
+                        margin-top: .14rem;
                         .diamond{
                             width:0.41rem;height:0.36rem;
                         }
@@ -615,6 +743,12 @@
                             font-size: 0.31rem;
                             font-weight:bold;
                             color:rgba(62,60,59,1);
+                        }
+                        .title-icon{
+                            display: inline-block;
+                            width: 1.36rem;
+                            height: .32rem;
+                            background:url('../assets/imgs/vipbenefit/golden_vip.png') left top/100% no-repeat
                         }
                     }
                     .status{
@@ -628,15 +762,15 @@
                     align-items: center;
                     justify-content: center;
                     .wrap{
-                        margin:0 0.25rem;
+                        margin:0 0.2rem;
                         display: flex;
                         flex-direction: column;
                         justify-content: flex-start;
                         align-items: center;
                         img{
                             display: block;
-                            height: 1rem;
-                            width: 1rem;
+                            height: .8rem;
+                            width: .8rem;
                         }
                         .title{
                             font-size: 0.2rem;
@@ -706,10 +840,77 @@
                         font-weight:bold;
                         color:rgba(62,60,59,1);
                     }
+                    .title-icon{
+                        display: inline-block;
+                        width: 1.36rem;
+                        height: .32rem;
+                        background:url('../assets/imgs/vipbenefit/golden_vip.png') left top/100% no-repeat
+                    }
                 }
                 .status{
                     font-weight: 400;
                     margin-right: 0.5rem;
+                }
+            }
+        }
+        .header2{
+            height: 2.6rem;
+            background: url("../assets/imgs/vipbenefit/header3_bg.png") left top/100% no-repeat;
+            border-radius:0 0 0.16rem 0.16rem ;
+            .top{
+                height: 1rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                .my-benefit{
+                    font-size: 0.33rem;
+                    font-weight:bold;
+                    color:rgba(56,58,63,1);
+                    margin-left:0.36rem; 
+                }
+                .must-know{
+                    margin-right: 0.52rem;
+                    text-decoration: underline;
+                    font-weight:400;
+                    font-size: 0.28rem;
+                    color:#3E3C3B;
+                }
+            }
+            .info{
+                width:6.7rem;
+                height:1.6rem;
+                margin:0 auto;
+                overflow: hidden;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                // background:linear-gradient(0deg,rgba(237,150,133,1),rgba(43,43,43,.12));
+                border-radius:0.16rem 0.16rem 0 0;
+                .level{
+                    display: flex;
+                    justify-content: flex-start;
+                    align-items: center;
+                    margin-left: 0.5rem;
+                    .diamond{
+                        width:0.41rem;height:0.36rem;
+                    }
+                    .title{
+                        font-size: 0.31rem;
+                        font-weight:bold;
+                        color:rgba(62,60,59,1);
+                    }
+                    .status{
+                        font-weight: 400;
+                        margin-left: 1.92rem;
+                        color: #333;
+                    }
+                }
+                .upgrade{
+                    display: inline-block;
+                    width: 1.8rem;
+                    height: .46rem;
+                    margin-right: .3rem;
+                    background: url("../assets/imgs/vipbenefit/upgrade.png") left top/100% no-repeat;
                 }
             }
         }

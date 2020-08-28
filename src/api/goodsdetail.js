@@ -8,11 +8,12 @@ export function getFindMembersBymid(data) { // 获取分类数据接口
     })
 }
 
-export function getFindMemberSales(data) { // 获取详情数据接口
+export function getFindMemberSales(data, headers) { // 获取详情数据接口
     return request({
         url: '/api/qymb/findMemberSales',
         method: 'post',
         data: data,
+        headers: headers,
     })
 }
 
@@ -60,6 +61,15 @@ export function findMemberTc(data) { // 第三方支付接口
 export function queryAcceptFivego(data, headers) { // 查找fivego是否可用接口
     return request({
         url: '/api/order/queryAcceptFivego.do',
+        method: 'post',
+        data: data,
+        headers: headers,
+    })
+}
+
+export function checkSeckillCompp(data, headers) { // 立即订购接口
+    return request({
+        url: '/api/order/checkSeckillCompp.do',
         method: 'post',
         data: data,
         headers: headers,

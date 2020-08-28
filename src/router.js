@@ -9,6 +9,7 @@ import VipBenefit from './views/VipBenefit.vue'
 import Sort from './views/Sort.vue'
 import HalfPrice from './views/HalfPrice.vue'
 import VipPreferential from './views/VipPreferential.vue'
+import Vip from './views/Vip.vue'
 
 Vue.use(Router)
 
@@ -23,7 +24,8 @@ export default new Router({
             name: 'home',
             component: Home,
             meta: {
-                title: '中国移动权益超市'
+                title: '中国移动权益超市',
+                keepAlive:true
             }
         },
         {
@@ -64,7 +66,7 @@ export default new Router({
             //     import ( /* webpackChunkName: "myOrder" */ './views/MyOrder.vue')
         },
         {
-            path: '/goodsDetail/:mid/:proid?/:saleid?',
+            path: '/goodsDetail/:mid/:proid?/:saleid?/:paytype?/:tc?',
             name: 'goodsDetail',
             component: GoodsDetail,
             meta: {
@@ -120,6 +122,14 @@ export default new Router({
             path: '/vipPreferential',
             name: 'vipPreferential',
             component: VipPreferential,
+            meta: {
+                title: '中国移动权益超市'
+            }
+        },
+        {
+            path: '/vip',
+            name: 'vip',
+            component: Vip,
             meta: {
                 title: '中国移动权益超市'
             }

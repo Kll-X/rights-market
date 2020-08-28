@@ -85,17 +85,18 @@
                 }
             },
             readAgreement(){
+                this.blocklogHandler('登录','0001','0009');
                 location.href = 'https://wap.cmpassport.com/resources/html/contract.html';
-                this.blocklogHandler('登录','0001','0008');
             },
             allow(i){
                 this['allowChecked'+i] = !this['allowChecked'+i] ;
                 if (this['allowChecked'+i]){
-                    this.blocklogHandler('登录','0001','0007');
+                    this.blocklogHandler('登录','0001','0008');
                 }
             },
             automaticLogin(){
                 let that = this;
+                that.blocklogHandler('登录','0001','0001');
                 // 有选中已同意，才能登录
                 if(that.allowChecked1){
                     that.$toast.loading({
@@ -136,8 +137,6 @@
                     }).catch(()=>{                   
                         this.$toast('网络繁忙，请稍后重试');
                     })
-                    this.blocklogHandler('登录','0001','0001');
-
                 }else{
                     that.$toast("请先勾选同意《中国移动提供认证服务》");
                 }
@@ -227,7 +226,6 @@
                 this.blocklogHandler('登录','0001','0005');
             },
             manualLogin(){
-                this.blocklogHandler('登录','0001','0006');
                 let that = this;
 
                 // 号码检测
@@ -256,6 +254,7 @@
                 }).then((res)=>{
                     that.$toast.clear();
                     if(res.data.resultCode == 0){
+                        this.blocklogHandler('登录','0001','0007');
                         // 短信校验成功（登录成功），更新用户信息
                         that.SET_USERINFO(res.data.data);
                         // cookie缓存登录状态
@@ -275,6 +274,7 @@
                             that.$router.replace(window.preRoute);
                         }
                     }else{
+                        this.blocklogHandler('登录','0001','0006');
                         if(res.data.data.msg){
                             this.$toast('异常了，请稍后再试哦！');
                         }else{

@@ -10,7 +10,7 @@
             </div>
         </van-popup>
         <van-popup class="overlay-popup"
-               v-model="info.payShow"
+               v-model="popupShow[0]"
                position="bottom">
             <img class="close-popup" @click="info.payShow = false"
                 src="@imgs/goodsdetail/close-popup.png" alt="">
@@ -32,6 +32,7 @@
                         clearable
                         maxlength="6"
                         type="digit"
+                        @focus="analysisFuc"
                         placeholder="请输入验证码">
                         <van-button slot="button" size="small" type="default" :disabled="coutdownShow"
                                     @click="getSms">
@@ -47,6 +48,23 @@
             </div>
             <div class="popup-btn submit" @click="submitBtn">确认支付</div>
         </van-popup>
+        <van-popup v-model="popupShow[1]" :close-on-click-overlay="false" :close-on-popstate="true">
+            <div class="popup2">
+                <div class="title">{{'您即将订购'+info.paydetailList.name}}</div>
+                <div class="txt">
+                    <div>{{'订购产品:'+info.paydetailList.name + (info.order?('-' + info.order):'')}}</div>
+                    <div>{{'订购资费:'+ ((info.paydetailList.amount)/100).toFixed(2) +'元'}}</div>
+                </div>
+                <div v-show="info.paydetailList.isVipOrder" class="automatic-allow">
+                    <img @click.stop="allow('2')" class="allow1"  :src="allowChecked2?require('@imgs/login/new_checked.png'):require('@imgs/login/new_nocheck.png')" alt="">
+                    <label for="read1" class="read-desc"><span @click.stop="allow('2')">我已阅读并同意</span><span  style="color:#FD7028" @click.stop="showPopup(must_know)">《权益超市黄金会员须知》</span></label>
+                </div>
+                <div class="btns">
+                    <div class="btn" @click="info.payShow=false">残忍拒绝</div>
+                    <div class="btn" @click="info.payShow=false;submitBtn(true)">确认订购</div>
+                </div>
+            </div>
+        </van-popup>
     </div>
 </template>
 
@@ -54,14 +72,25 @@
     import { sendSmsCode, placeOrder} from "@/api/goodsdetail";
     import { mapState } from 'vuex'
     import { Toast } from 'vant';
+    import { blocklogMixin } from "@/mixins/log";
     export default {
         name: "second-confirm-buy",
+        mixins: [blocklogMixin],
+        computed:{
+            popupShow(){
+                return [
+                    this.info.payShow&&this.info.type==0,
+                    this.info.payShow&&this.info.type==1,
+                ]
+            }
+        },
         data(){
             return {
                 coutdownShow: false,
                 coutdownTime: 60,
                 smsCode: '',
                 allowChecked1: 0,
+                allowChecked2: 0,
                 popupInfo:{
                     title:'',
                     content:'',
@@ -102,8 +131,25 @@
                             phone: '',
                             phoneMask: '',//带mask
                         },
-                        callback:''
+                        callback:'' //订购结果回调函数
                     }
+                }
+            },
+        },
+        watch:{
+            'show'(value){
+                if (!value) this.blocklogHandler('订购界面的会员须知弹窗', '0024', '0001');
+            },
+            'info.payShow': {
+                handler: function (value) {
+                    if (!value && !this.info.type) {
+                        this.smsCode = '';
+                        if (this.info.paydetailList.isVipOrder) {
+                            this.blocklogHandler('超市会员订购短验确认', '0023', '0000')
+                        } else {
+                            this.blocklogHandler('商品订购短验确认', '0022', '0000', '', this.info.paydetailList.mid, this.info.paydetailList.name);
+                        }
+                    } 
                 }
             },
         },
@@ -111,20 +157,31 @@
             "userInfo"
         ]),
         methods:{
-            submitBtn() {
+            submitBtn(dontneedSms) {
                 let that = this;
-                // 短信码不能为空
-                if (this.smsCode == ''){
-                    Toast('请输入验证码');
-                    return false;
+                let blockName = '';
+                let blockId = '';
+                if (this.info.paydetailList.isVipOrder) {
+                    blockName = '超市会员订购短验确认';
+                    blockId = '0023';
+                } else {
+                    blockName = '商品订购短验确认';
+                    blockId = '0022';
                 }
-                // 短信码六位数校验
-                if (this.smsCode.length != 6){
-                    Toast('请输入六位验证码');
-                    return false;
+                if (!dontneedSms) {
+                    // 短信码不能为空
+                    if (this.smsCode == ''){
+                        Toast('请输入验证码');
+                        return false;
+                    }
+                    // 短信码六位数校验
+                    if (this.smsCode.length != 6){
+                        Toast('请输入六位验证码');
+                        return false;
+                    }
                 }
                 // 如果当前订购产品是会员但却没有勾选同意
-                if (this.info.paydetailList.isVipOrder && !this.allowChecked1) {
+                if (this.info.paydetailList.isVipOrder && !this['allowChecked'+ (+this.info.type + 1)]) {
                     Toast('请确认权益超市黄金会员须知');
                     return false;
                 }
@@ -139,6 +196,7 @@
                     duration: 0,
                 });
                 // 校验短信验证码
+                console.log(this.info.paydetailList)
                 let headers = {'phone': this.info.orderObject.phone};
                 let data = Object.assign({},this.info.paydetailList,{smsCode:this.smsCode});
                 window.console.log(data)
@@ -148,7 +206,11 @@
                         this.info.callback(r.data);
                     }else {
                         if (r.data.resultCode == 0) {
+                            this.blocklogHandler(blockName, blockId, '0005', '', this.info.paydetailList.mid, this.info.paydetailList.name);
                             that.$router.push({name: 'myOrder', params: {type:'all'}});
+                        } else if (r.data.resultCode == -1 && r.data.data.code == -1) {
+                            this.blocklogHandler(blockName, blockId, '0004', '', this.info.paydetailList.mid, this.info.paydetailList.name);
+                            that.$toast({message: '请输入正确的验证码哦', duration: 4000});
                         } else {
                             Toast({message: r.data.msg, duration: 4000});
                         }
@@ -160,6 +222,16 @@
             // 获取验证码
             getSms() {
                 let that = this;
+                let blockName = '';
+                let blockId = '';
+                if (this.info.paydetailList.isVipOrder) {
+                    blockName = '超市会员订购短验确认';
+                    blockId = '0023';
+                } else {
+                    blockName = '商品订购短验确认';
+                    blockId = '0022';
+                }
+                this.blocklogHandler(blockName, blockId, '0003');
                 sendSmsCode({mobile: this.info.orderObject.phone}).then((response) => {
                     if (response.data.code == 0) {
                         // 倒计时逻辑
@@ -169,6 +241,14 @@
                         Toast(response.data.msg);
                     }
                 })
+            },
+            // 埋点
+            analysisFuc() {
+                if (this.info.paydetailList.isVipOrder) {
+                    this.blocklogHandler('超市会员订购短验确认', '0023', '0002');
+                } else {
+                    this.blocklogHandler('商品订购短验确认', '0022', '0002', '', this.info.paydetailList.mid, this.info.paydetailList.name);
+                }
             },
             // 倒计时方法
             coutdownFunc() {
@@ -183,13 +263,15 @@
                 }, 1000);
             },
             allow(i){
+                this.blocklogHandler('超市会员订购短验确认', '0023', '0006');
                 this['allowChecked'+i] = !this['allowChecked'+i] ;
             },
             showPopup(target) {
+                this.blocklogHandler('超市会员订购短验确认', '0023', '0007')
                 this.$toast.clear();
                 this.popupInfo = target;
                 this.show = true;
-            },
+            }
         }
     }
 </script>
@@ -214,7 +296,7 @@
             text-align: left;
             font-size:0.24rem;
             font-weight:500;
-            color:rgba(56,58,63,1);
+            color:rgb(35, 47, 77);
             opacity:0.6;
         }
     }
@@ -349,6 +431,60 @@
         .submit{
             background: #FD7028;
             color: #FFF;
+        }
+    }
+
+    .popup2{
+        background-color: white;
+        width: 5.8rem;
+        padding: .7rem .4rem .4rem .4rem;
+        box-sizing: border-box;
+        border-radius: .16rem;
+        .title{
+            font-size: .36rem;
+            color: #343434;
+        }
+        .txt{
+            padding: .4rem .2rem 0 .2rem;
+            font-size: .32rem;
+            font-weight:400;
+            color: #666666;
+            text-align: left;
+        }
+        .automatic-allow{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.21rem;
+            margin:.4rem auto 0.5rem;
+            .allow1{
+                width:0.25rem;
+                height: 0.25rem;
+                margin-right: 0.13rem
+            }
+        }
+        .btns{
+            display: flex;
+            justify-content: space-between;
+            margin-top: .6rem;
+            .btn{
+                width: 2.4rem;
+                height: .7rem;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: .32rem;
+                box-sizing: border-box;
+                border-radius: .35rem;
+            }
+            .btn:nth-child(1){
+                color: #fd7028;
+                border: 2px solid #fd7028;
+            }
+            .btn:nth-child(2){
+                background-color: #fd7028;
+                color: white;
+            }
         }
     }
 </style>

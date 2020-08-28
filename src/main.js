@@ -10,16 +10,16 @@ import Common from './common';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/css/swiper.css';
 import {is_weixin,share} from '@/utils/func';
-
+process.env.NODE_ENV != 'production' && require('@/utils/mock.js')
 
 Vue.use(Vant).use(Lazyload);
 Vue.use(Common);
 Vue.use(VueAwesomeSwiper );
 
-
 Vue.use(Vuex);
 Vue.config.productionTip = false
 window.preRoute = ''
+// Vue.prototype.$homeScroll = 0;
 
 router.beforeEach((to, from, next) => {
     window.preRoute = Object.assign({},from);

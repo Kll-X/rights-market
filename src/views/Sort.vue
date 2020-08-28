@@ -22,42 +22,46 @@
                 v-show="item.cid == tabsValue">
                 <div class="tabs-content-common" v-if="item.cid != '6'">
                     <!-- 商品卡片图标 -->
-                    <router-link :to="{name: 'goodsDetail', params: {mid: content.mid}}" class="tabs-card"
-                        v-for="content in item.contentList" :key="content.index">
+                    <router-link :to="{name: 'goodsDetail', params: {mid: content.mid}}" class="tabs-card" 
+                        @click.native="blocklogHandler('分类','0016','00'+getActiveTabOrder()+(('00'+(idx+1)).slice(-3)),'',content.mid,content.name)"
+                        v-for="(content,idx) in item.contentList" :key="content.index">
                         <img class="card-image" :src="content.icon" alt="">
                         <div class="card-fonts">{{content.name}}</div>
                         <div class="card-value">{{((content.price)/100).toFixed(2)}}元起</div>
                     </router-link>
                 </div>
                 <div class="tabs-content-common" v-if="item.cid == '6'">
-                    <a href="https://dev.coc.10086.cn/coc/web/coc2020/heartChoose/?channelId=C00004001116" class="tabs-card">
+                    <div class="tabs-card" @click.stop="itemClick('1','https://dev.coc.10086.cn/coc/web/coc2020/heartChoose/?channelId=C00004001116')">
                         <img class="card-image" src="@imgs/sort/heart_choose.png" alt="">
                         <div class="card-fonts">随心看会员</div>
-                    </a>
-                    <a href="https://rwk.cmicrwx.cn/rwx/rwkvue/enjoyRight/?channelId=C10000032426&channelSeqId=C10000032404&pageType=ENJOYRIGHT" class="tabs-card">
+                    </div>
+                    <div class="tabs-card" @click.stop="itemClick('2','https://rwk.cmicrwx.cn/rwx/rwkvue/enjoyRight/?channelId=C10000032426&channelSeqId=C10000032404&pageType=ENJOYRIGHT')">
                         <img class="card-image" src="@imgs/sort/enjoy_right.png" alt="">
                         <div class="card-fonts">随心选会员</div>
-                    </a>
+                    </div>
                 </div>
             </div>
         </div>
-        <Menu/>
+        <!-- <Menu/> -->
+        <BackHome :stShow="true"></BackHome>
     </div>
 </template>
 
 <script>
-    import Menu from '@/components/common/Menu.vue';
+    // import Menu from '@/components/common/Menu.vue';
     import { mapState } from 'vuex';
     // 接口调用
     import { getCategory } from "@/api/sort";
     import { getFindMembers } from "@/api/sort";
-    import { pagelogMixin,blocklogMixin } from "@/mixins/log"
+    import { pagelogMixin,blocklogMixin } from "@/mixins/log";
+    import BackHome from '@/components/common/BackHome.vue';
 
     export default {
         name: "sort",
         mixins: [pagelogMixin,blocklogMixin],
         components: {
-            Menu
+            // Menu
+            BackHome
         },
         data() {
             return {
@@ -68,17 +72,25 @@
                 tabsValue: '1',
                 // 排序数组
                 sortList: ['视频会员','音乐会员','阅读学习','生活服务','移动会员'],
+                listObj:[],
+                activeTabCid:'0'
             };
         },
         created() {
             //曝光统计：搜索
-            this.blocklogHandler("搜索入口",'0003','')
+            this.blocklogHandler("搜索入口",'0003','');
+            //曝光统计：分类
+            this.blocklogHandler("分类",'0016','');
         },
         mounted() {
             // 获取列表
             this.getList();
         },
         methods: {
+            itemClick(i,url){
+                this.blocklogHandler('分类','0016','00'+ this.getActiveTabOrder()+'00'+i,url);
+                window.location.href=url
+            },
             // 获取tabs内容
             getSort(value) {
                 let that = this;
@@ -106,6 +118,10 @@
             },
             // 切换tab栏
             changeTabs(value, isFirst) {
+                this.activeTabCid = value;
+                //操作统计：分类>分类标签
+                this.blocklogHandler("分类",'0016','00'+ this.getActiveTabOrder());
+
                 this.tabsValue = value;
                 // 判断当前的tab是否已经请求过接口
                 for (let index = 0; index < this.tabsList.length; index++) {
@@ -117,7 +133,9 @@
                     }
                 }
                 if (!isFirst) {
-                    this.$router.replace({name: 'sort', params: {type: value}});
+                    if(this.$route.params.type != value){
+                        this.$router.replace({name: 'sort', params: {type: value}});
+                    }
                 }
             },
             // 获取分类数据
@@ -127,6 +145,9 @@
                 getCategory().then((response) => {
                     // 根据返回的tab创建list
                     const listObj = response.data.data;
+                    if(response.data.data.length > 0){
+                        that.listObj = JSON.parse(JSON.stringify(response.data.data));
+                    }
                     for (let index = 0; index < listObj.length; index++) {
                         const item = listObj[index];
                         item.fristLoad = true;
@@ -149,7 +170,7 @@
                     //             }
                     //         }
                     //     }
-                    // }
+                    // }that.listObj = Object.assign({},response.data.data);
                     // 根据路由获取对应列表内容
                     if (type) {
                         that.changeTabs(type, true);
@@ -158,6 +179,13 @@
                     }
                 })
             },
+            getActiveTabOrder(){
+                for (let idx = 0; idx < this.listObj.length; idx++) {
+                    if(this.listObj[idx].cid == this.activeTabCid){
+                        return ++idx
+                    }
+                }
+            }
         },
         computed:{
             ...mapState([
@@ -203,7 +231,8 @@
             align-items: flex-start;
             font-size: 0;
             .tabs-title, .tabs-content{
-                height: calc(~"100vh - 2.29rem");
+                // height: calc(~"100vh - 2.29rem");
+                height: calc(~"100vh - 1rem");
                 overflow-y: auto;
                 display: inline-block;
                 vertical-align: top;
@@ -220,7 +249,7 @@
                 }
                 .active{
                     background: #FFF;
-                    color: #6696FF;
+                    color: #FD7028;
                     position: relative;
                 }
                 .active:after{
@@ -229,7 +258,7 @@
                     left: 0;
                     height: 1.4rem;
                     width: .06rem;
-                    background: #6696FF;
+                    background: #FD7028;
                 }
             }
             .tabs-content{
@@ -260,7 +289,7 @@
                         }
                         .card-value{
                             font-size: .22rem;
-                            color: #6696FF;
+                            color: #FD7028;
                             margin-top: .1rem;
                         }
                     }

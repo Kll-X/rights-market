@@ -1,6 +1,6 @@
 <template>
     <div class="get-rights">
-        <div class="card" v-for="(right,i) in rights" :key=i @click.stop="jump(right.link)">
+        <div class="card" v-for="(right,i) in rights" :key=i @click.stop="jump(right.link, i)">
             <img class="card-img" :src="right.img" alt="">
         </div>
         <!-- 底部菜单栏 -->
@@ -10,11 +10,11 @@
 
 <script>
     import Menu from '@/components/common/Menu.vue'
-    import { pagelogMixin } from "@/mixins/log"
+    import { pagelogMixin,blocklogMixin } from "@/mixins/log"
 
     export default {
         name: "get-rights",
-        mixins: [pagelogMixin],
+        mixins: [pagelogMixin,blocklogMixin],
         data(){
             return {
                 rights:[
@@ -29,7 +29,10 @@
             Menu
         },
         methods:{
-            jump(link){
+            jump(link, index){
+                let str = '0000' + (index + 1);
+                str = str.substring(str.length - 4);
+                this.blocklogHandler("领权益",'0019',str)
                 window.location.href = link
             }
         }

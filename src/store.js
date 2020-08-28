@@ -18,26 +18,29 @@ export default new Vuex.Store({
             timestamp: '',
             provinceCode: null,
             iswhite:0,
-            isVip:'',
-            orderId:'',
-            expireTime:'',
-            cancelFlag:'',
-            hasNewGift:'',
-            vipTypeTag:['全网会员','5G高级会员'],
-            vipLevelTag:['普通','黄金','铂金'],
-            vipType:'',
-            vipLevel:'',
-            effectTime:'',
-            returnOrderId:'',
-            effect:'',
-            effectDaysBefore:''
+            vipInfo:'',
+            newStarVipInfo:''
+            // isVip:'',
+            // orderId:'',
+            // expireTime:'',
+            // cancelFlag:'',
+            // hasNewGift:'',
+            // vipTypeTag:['全网会员','5G高级会员'],
+            // vipLevelTag:['普通','黄金','铂金'],
+            // vipType:'',
+            // vipLevel:'',
+            // effectTime:'',
+            // returnOrderId:'',
+            // effect:'',
+            // effectDaysBefore:''
         },
         showQuickLogin: false,
         sysInfo: {
             channelCode:'',
             channel: 'all',
             locationCode: '',
-            selfChannelCode:''
+            selfChannelCode:'00020001',
+            interval:0
         }
     },
     mutations: {
@@ -47,18 +50,34 @@ export default new Vuex.Store({
         SET_SHOWQUICKLOGIN: (state, boolean) => {
             state.showQuickLogin = boolean;
         },
-        SET_CHANNEL:(state, code) => {
+        SET_CHANNEL: (state, code) => {
             switch (+code) {
-                case CHANNELCODE.st: state.sysInfo.channel = 'st';state.sysInfo.channelCode = +code;break;
-                case CHANNELCODE.wx: state.sysInfo.channel = 'wx';state.sysInfo.channelCode = +code;break;
-                case CHANNELCODE.group: state.sysInfo.channel = 'group';state.sysInfo.channelCode = +code;break;
-                case CHANNELCODE.sms: state.sysInfo.channel = 'sms';state.sysInfo.channelCode = +code;break;
-                case CHANNELCODE.banner: state.sysInfo.channel = 'banner';state.sysInfo.channelCode = +code;break;
-                default: state.sysInfo.channel = 'all';state.sysInfo.channelCode = CHANNELCODE.all;
+                case 0 : state.sysInfo.channel = 'wx';break;
+                case 1 : state.sysInfo.channel = 'st';break;
+            }
+            
+        },
+        SET_CHANNELCODE:(state, code) => {
+            console.log(code)
+            switch (+code) {
+                case CHANNELCODE.st: state.sysInfo.channelCode = +code;state.sysInfo.selfChannelCode='00010017';break;
+                case CHANNELCODE.wx: state.sysInfo.channelCode = +code;break;
+                case CHANNELCODE.group: state.sysInfo.channelCode = +code;break;
+                case CHANNELCODE.sms: state.sysInfo.channelCode = +code;break;
+                case CHANNELCODE.banner: state.sysInfo.channelCode = +code;break;
+                default: state.sysInfo.channelCode = CHANNELCODE.all;
             }
         },
         SET_SELFCHANNEL:(state, code) => {
             state.sysInfo.selfChannelCode = code;
+            // if (SELFCHANNELCODE.indexOf(code)>-1) {
+            //     state.sysInfo.selfChannelCode = code;
+            //     if (code == '00010017') {
+            //         state.sysInfo.channel = 'st'
+            //     }
+            // } else {
+            //     state.sysInfo.selfChannelCode = '00020001';
+            // }
         },
         SET_SYSINFO: (state, sysInfo) => {
             Object.assign(state.sysInfo, sysInfo);

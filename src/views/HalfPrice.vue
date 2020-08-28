@@ -14,14 +14,14 @@
             finished-text="没有更多了"
             @load="onLoad"
             :offset="10">
-            <app-card2 :class="{'half-wrap':true,'noPaddingTop':j == 0}" v-for="(item,j) in itemList" :key="j" :info="item" :index="j" />
+            <app-card2 :class="{'half-wrap':true,'noPaddingTop':j == 0}" v-for="(item,j) in itemList" :key="j" :info="item" :cssType='2'/>
         </van-list>
         <BackHome/>
     </div>
 </template>
 
 <script>
-    import AppCard2 from '@/components/home/AppCard2.vue'
+    import AppCard2 from '@/components/common/AppCard.vue'
     import { getData } from "@/api/halfprice";
     import BackHome from '@/components/common/BackHome.vue';
     import { pagelogMixin } from "@/mixins/log"

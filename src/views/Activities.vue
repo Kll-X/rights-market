@@ -3,7 +3,7 @@
         <div class="activities-top">
             <span class="page-title">活动</span>
         </div>
-        <activity-card v-for="(item,i) in activityList" :key="i" :info="item"></activity-card>
+        <activity-card v-for="(item,i) in activityList" @click.native="analysisData(i)" :key="i" :info="item"></activity-card>
         <Menu/>
     </div>
 </template>
@@ -11,6 +11,7 @@
 <script>
     import Menu from '@/components/common/Menu.vue'
     import ActivityCard from '@/components/activity/ActivityCard.vue';
+    import { blocklogMixin } from "@/mixins/log";
     // 接口调用
     import { mapState } from 'vuex'
     import { getData } from "@/api/activities";
@@ -54,7 +55,7 @@
             }
             
         },              
-        mixins: [pagelogMixin],
+        mixins: [pagelogMixin, blocklogMixin],
         components: {
             Menu,
             ActivityCard
@@ -74,6 +75,13 @@
                 })
             }
         },
+        methods: {
+            analysisData(index) {
+                let str = '0000' + (index + 1);
+                str = str.substring(str.length - 4);
+                this.blocklogHandler("活动",'0018',str)
+            },
+        }
     }
 </script>
 

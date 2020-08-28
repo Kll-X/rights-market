@@ -7,7 +7,7 @@
             </div>
         </div>
         <div class="tips" :class="!showTimeFlag?'tips-outdate':''">
-            <img @click="tipsHandler" :class="userInfo.isVip?'tips-getrights':'tips-openvip'" :src="tipsSrc" alt="">
+            <img @click="tipsHandler" :class="userInfo.vipInfo?'tips-getrights':'tips-openvip'" :src="tipsSrc" alt="">
         </div>
         <div class="part-new" :class="!showTimeFlag?'margin-top56':''">
             <div class="title">
@@ -158,7 +158,7 @@
                 }
                 if(!this.checkLogin()) return;
                 let that = this;
-                if(!this.userInfo.isVip && !isVipOrder && !dontneedVip){
+                if(!this.userInfo.vipInfo && !isVipOrder && !dontneedVip){
                     that.showToast({
                         tips:'<div style="text-align: center"><div>本次活动仅限</div><div>权益超市黄金会员参加，</div>快去开通会员！</div>',
                         type:2,
@@ -210,6 +210,7 @@
                 this.SecondConfirmInfo.orderObject.phoneMask = this.userInfo.phoneMask
                 this.SecondConfirmInfo.paydetailList = data;
                 this.SecondConfirmInfo.payShow = true;
+                this.SecondConfirmInfo.type = this.sysInfo.selfChannelCode == '00010017'? 1 : 0;
                 this.SecondConfirmInfo.callback = res =>{
                     that.SecondConfirmInfo.payShow = false;
                     if (res.resultCode == 0) {
@@ -240,7 +241,7 @@
                 }
             },
             tipsHandler(){
-                if(!this.userInfo.isVip) {
+                if(!this.userInfo.vipInfo) {
                     let order;
                     order = Object.assign({},VIPORDER);
                     order.name = '黄金会员订购';
@@ -282,25 +283,12 @@
                 });
             },
             getVipInfo(){
-                let that = this;
-                myVip({
-                    proId:NEWVIPGIFT.proId,
-                    salesId:NEWVIPGIFT.salesId,
-                    channelCode:that.sysInfo.channelCode,
-                    phone:that.userInfo.phone,
-                }).then((res)=>{
-                    if(res.data.resultCode == 0){ //获得vip信息
-                        res.data.data.isVip = 1;
-                        that.SET_USERINFO(res.data.data);
-                    }else{
-                        that.SET_USERINFO({isVip:0});
-                    }
-                })
+                messageBus.$emit('msg_getVipInfo')
             },
             gotoReward(link,index){
                 let that = this;
                 if(!this.checkLogin()) return;
-                if(!this.userInfo.isVip) {
+                if(!this.userInfo.vipInfo) {
                     that.showToast({
                         tips:'<div style="text-align: center"><div>本次活动仅限</div><div>权益超市黄金会员参加，</div>快去开通会员！</div>',
                         type:2,
@@ -354,7 +342,7 @@
                 "sysInfo"
             ]),
             tipsSrc(){
-                return this.userInfo.isVip?require('../../assets/imgs/custompage/2/tips_getRights.png'):require('../../assets/imgs/custompage/2/tips_openvip.png');
+                return this.userInfo.vipInfo?require('../../assets/imgs/custompage/2/tips_getRights.png'):require('../../assets/imgs/custompage/2/tips_openvip.png');
             }
         },
         components: {

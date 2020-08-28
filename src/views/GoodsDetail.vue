@@ -10,8 +10,28 @@
         </div>
         <!-- 开通会员选项 -->
         <div class="goods-vip-wrap">
-            <div v-show="!isVip && (paydetailList.price2 && paydetailList.price2 !== null)" class="goods-vip-icon">
-                <router-link :to="{name: 'vipBenefit'}" class="goods-vip-button"></router-link>
+            <div v-show="!isVip && (paydetailList.price2 && paydetailList.price2 !== null) && !isSeckill" class="goods-vip-icon">
+                <router-link @click.native="blocklogHandler('详情页会员引导', '0021', '0001')" :to="{name: 'vipBenefit'}" class="goods-vip-button"></router-link>
+            </div>
+            <div v-show="isSeckill" class="goods-vip-seckill">
+                <div v-show="seckillRate == 0" class="goods-vip-seckill-wrap">
+                    <span class="goods-vip-seckill-font">秒杀将于</span>
+                    <span class="goods-vip-seckill-font goods-vip-seckill-font-stime">{{ seckillStime }}</span>
+                    <span class="goods-vip-seckill-font">开始</span>
+                </div>
+                <div v-show="seckillRate == 1" class="goods-vip-seckill-wrap">
+                    <span class="goods-vip-seckill-font">秒杀将于</span>
+                    <span class="goods-vip-seckill-time">{{seckillTime.HH}}</span>
+                    <span class="goods-vip-seckill-font">:</span>
+                    <span class="goods-vip-seckill-time">{{seckillTime.MM}}</span>
+                    <span class="goods-vip-seckill-font">:</span>
+                    <span class="goods-vip-seckill-time">{{seckillTime.SS}}</span>
+                    <span class="goods-vip-seckill-font">后结束</span>
+                </div>
+                <div v-show="seckillRate == 2" class="goods-vip-seckill-wrap">
+                    <span class="goods-vip-seckill-font">秒杀活动已结束</span>
+                </div>
+                <span class="goods-vip-seckill-check" @click.stop="showSeckill(must_know)">查看秒杀规则</span>
             </div>
         </div>
         <!-- 单选框 -->
@@ -22,6 +42,7 @@
                 @change="changeRadio"
                 :radioObj="orderList"
                 :isVip="isVip"
+                :isStarVip="isStarVip"
                 :itemDetail.sync="paydetailList"/>
             <!-- <RadioCard class="order-radio"
                 ref="radioOrder"
@@ -107,11 +128,25 @@
             </div>
         </div> -->
         <!-- 新版底部付款框 -->
-        <div class="payment-btn-wrap">
+        <div v-show="!isSeckill" class="payment-btn-wrap">
             <div class="payment-btn-wrap-button" :class="{'payment-btn-wrap-button-gray': (isFivego && isVip && !canBuyFivego)}" @click="orderFunc">
                 <span v-show="!isFivego || (isFivego && canBuyFivego && isVip)">立即订购</span>
-                <span v-show="(isFivego && !isVip && phoneNumber) || (isFivego && !phoneNumber)">开通会员立享5折</span>
+                <span v-show="(isFivego && !isVip && phoneNumber && !isStarVip) || (isFivego && !phoneNumber)">开通会员立享5折</span>
+                <span v-show="(isFivego && !isVip && phoneNumber && isStarVip)">开通黄金会员立享5折</span>
                 <span v-show="isFivego && isVip && !canBuyFivego">本月已享5折优惠</span>
+            </div>
+        </div>
+        <div v-show="isSeckill" class="payment-btn-wrap">
+            <div class="payment-btn-wrap-button" 
+                :class="{'payment-btn-wrap-button-gray': (seckillRate != 1) || (seckillRate == 1 && seckillNum == '0'), 'payment-btn-wrap-button-seckill': (seckillRate == 1 && !isVip && seckillNum != '0'), 'payment-btn-wrap-button-starvip': (seckillRate == 1 && isStarVip && !isVip && seckillNum != '0')}"
+                @click="orderFunc">
+                <span v-show="seckillRate == 0">即将开始</span>
+                <span v-show="seckillRate == 1 && isVip && seckillNum != '0'">立即秒杀</span>
+                <span v-show="(seckillRate == 1 || seckillRate == 2) && seckillNum == '0'">已秒光</span>
+                <span v-show="seckillRate == 2 && seckillNum != '0'">已结束</span>
+                <!-- <span v-show="!isFivego || (isFivego && canBuyFivego && isVip)">立即订购</span>
+                <span v-show="(isFivego && !isVip && phoneNumber) || (isFivego && !phoneNumber)">开通会员立享5折</span>
+                <span v-show="isFivego && isVip && !canBuyFivego">本月已享5折优惠</span> -->
             </div>
         </div>
         <!-- 弹出二次确认框 -->
@@ -174,10 +209,10 @@
             <div class="popup-btn" @click="changeSelect">确定</div>
         </van-popup>
         <!-- 二次确认蒙版 -->
-        <van-popup class="overlay-popup"
+        <!-- <van-popup class="overlay-popup"
             v-model="payShow"
             position="bottom">
-            <img class="close-popup" @click="payShow = false"
+            <img class="close-popup" @click="closePopupBtnHandler"
                 src="@imgs/goodsdetail/close-popup.png" alt="">
             <div class="popup-title">{{paydetailList.name}}</div>
             <div class="popup-price">¥
@@ -196,6 +231,7 @@
                         clearable
                         maxlength="6"
                         type="digit"
+                        @focus="blocklogHandler('商品订购短验确认', '0022', '0002', '', paydetailList.mid, paydetailList.name)"
                         placeholder="请输入验证码">
                         <van-button slot="button" size="small" type="default" :disabled="coutdownShow"
                             @click="getSms">
@@ -206,6 +242,18 @@
                 </div>
             </div>
             <div class="popup-btn submit" @click="submitBtn">确认支付</div>
+        </van-popup> -->
+        <!-- 二次确认组件 -->
+        <SecondConfirmBuy :info="SecondConfirmInfo"></SecondConfirmBuy>
+        <!-- 通知模板 -->
+        <van-popup class="white-board-wrap" v-model="show" lock-scroll closeable :close-on-popstate="true" :close-on-click-overlay="false">
+            <div class="white-board">
+                <div class="title">
+                    {{popupInfo.title}}
+                </div>
+                <div ref="content" class="content" v-html="popupInfo.content.txt" :style="popupInfo.content.style">
+                </div>
+            </div>
         </van-popup>
         <BackHome/>
     </div>
@@ -219,16 +267,19 @@
     import DetailCard from '@/components/goodsdetail/DetailCard.vue';
     import OverlayBox from '@/components/goodsdetail/OverlayBox.vue';
     import BackHome from '@/components/common/BackHome.vue';
+    import SecondConfirmBuy from '@/components/common/SecondConfirmBuy';
     import {STATISTICS,NEWVIPGIFT} from "@/utils/constant";
     import { getCategory } from "@/api/sort";
     import {customAnalysis} from "@/assets/js/analysis";
     import {share} from "@/utils/func"
     import { pagelog } from "@/api/common";
+    import { blocklogMixin } from "@/mixins/log";
+    import { findSecKill } from "@/api/home";
 
     // 接口调用
     import { mapState } from 'vuex';
     // import { Encrypt } from '@/utils/encrypt';
-    import { getFindMembersBymid, getFindMemberSales, sendSmsCode, placeOrder, payOrderByH5, findMemberTc, queryAcceptFivego } from "@/api/goodsdetail";
+    import { getFindMembersBymid, getFindMemberSales, sendSmsCode, placeOrder, payOrderByH5, findMemberTc, queryAcceptFivego, checkSeckillCompp } from "@/api/goodsdetail";
     import { Toast } from 'vant';
     import { myVip } from '@/api/vipbenefit';
     import messageBus from '../utils/messageBus';
@@ -236,8 +287,9 @@
 
     export default {
         name: "goods-detail",
+        mixins: [blocklogMixin],
         components: {
-            GoodsSwipe,RadioCard,SwipeRadio,PaymentType,DetailCard,OverlayBox,BackHome
+            GoodsSwipe,RadioCard,SwipeRadio,PaymentType,DetailCard,OverlayBox,BackHome,SecondConfirmBuy,
         },
         computed:{
             ...mapState([
@@ -253,11 +305,63 @@
                 isFristLoad: true,
                 defaultStyle: true, // 默认样式
                 defaultFirstStyle: true, // 默认只在第一次出现的样式
+                canAutoBuy: false, // 可以执行自动购买操作
 
                 // 会员参数
                 isVip: 0, // 0：非会员 1：会员
                 isFivego: 0, // 0: 不是五折产品 1：五折产品
                 canBuyFivego: 1, // 1:可以购买五折 2：不可以购买五折
+
+                // 新星会员参数
+                isStarVip: 0,
+
+                // 购买组件
+                SecondConfirmInfo: {
+                    payShow: false,
+                    paydetailList: {
+                        price: '0',
+                    },
+                    orderObject: {
+                        phone: '',
+                        phoneMask: ''
+                    },
+                    callback:''
+                },
+
+                // 秒杀参数
+                isSeckill: 0, // 0: 不是秒杀产品 1：秒杀产品
+                seckillRate: 0, // 0:未开始 1：开始 2： 已结束
+                seckillNum: '', // 当前秒杀产品的数量
+                seckillStime: '', // 活动开始时间
+                show: false,
+                timeseckill: null,
+                seckillTime: {
+                    HH: '88',
+                    MM: '88',
+                    SS: '88',
+                },
+                popupInfo:{
+                    title:'',
+                    content:'',
+                    btns:''
+                },
+                must_know:{
+                    title:'秒杀规则',
+                    content:{
+                        txt:`
+                        <div>1、本活动仅限中国移动用户参与，非个人客户（行业卡、物联网卡等）、欠费客户、余额不足的预付费客户、信用额度不足的后付费客户不能参与；</div>
+                        <div>2、本活动只允许订购权益超市黄金会员的用户参与。8月共两期秒杀活动，每位黄金会员每月仅可参与其中一期。每期活动仅可购买其中1款，并仅可购买1次；</div>
+                        <div>3、秒杀时间：</div>
+                        <div>第一期8月6日10:00-8月8日24:00</div>
+                        <div>第二期8月17日10:00-8月19日24:00</div>
+                        <div>4、每期均含3款产品，每款限量900份，用户先到先得，份数秒杀完毕，则不再进行补货；</div>
+                        <div>5、秒杀价格为1元，仅支持话费支付；</div>
+                        <div>6、用户订购权益产品后，即时生效，期间无法退订；</div>
+                        <div>7、用户订购成功后的订单，可在已有的权益超市-订单详情页中查看订单情况；</div>
+                        <div>8、用户订购成功后，将向手机号码绑定的账户下发权益，权益到账情况可至权益方端内查看；</div>
+                        <div>9、本活动最终解释权归中国移动所有。</div>`
+                    }
+                },
 
                 // 分类对象
                 categoryObj: {},
@@ -316,33 +420,35 @@
                 payList: {
                     title: '支付方式',
                     eng: 'pay',
-                    value: "1",
+                    value: "2",
                     list: [
-                        {
-                            label: ['话费支付', '单次点播'],
-                            value: '1',
-                            disable: false,
-                            hidden: false,
-                            name: '话费支付',
-                        }, 
                         {
                             label: ['话费支付', '连续包月'],
                             value: '2',
                             disable: true,
                             hidden: false,
                             name: '话费支付-连续包月',
-                        }
-                        // , {
-                        //     label: ['支付宝支付', '单次点播'],
-                        //     value: '3',
-                        //     disable: true,
-                        //     hidden: false,
-                        // }, {
-                        //     label: ['微信支付', '单次点播'],
-                        //     value: '4',
-                        //     disable: true,
-                        //     hidden: false,
-                        // }
+                        },
+                        {
+                            label: ['话费支付', '单次点播'],
+                            value: '1',
+                            disable: false,
+                            hidden: false,
+                            name: '话费支付',
+                        },
+                        {
+                            label: ['微信支付', '单次点播'],
+                            value: '4',
+                            disable: true,
+                            hidden: false,
+                            name: '微信支付',
+                        }, {
+                            label: ['支付宝支付', '单次点播'],
+                            value: '3',
+                            disable: true,
+                            hidden: false,
+                            name: '支付宝',
+                        },
                     ],
                     obj: {
                         '1': '话费支付-单次点播',
@@ -387,7 +493,14 @@
                 this.isWeixin = true;
             }
             this.mid = this.$route.params.mid;
-            if (this.userInfo.isVip !== '') this.isVip = +this.userInfo.isVip;
+            // if (this.userInfo.isVip !== '') this.isVip = +this.userInfo.isVip;
+            if (this.userInfo.newStarVipInfo && this.userInfo.newStarVipInfo !=='') {
+                this.isStarVip = 1;
+            }
+            if (this.userInfo.vipInfo && this.userInfo.vipInfo !== '') {
+                this.isVip = 1;
+                this.isStarVip = 0;
+            }
             this.initialize();
             if (this.userInfo.phone) {
                 this.phoneNumber = this.userInfo.phoneMask;
@@ -408,7 +521,7 @@
             },
             // 初始化页面
             async initialize() {
-                await this.getIsVip();
+                // await this.getIsVip();
                 await this.getMemberTc();
                 await this.getSort();
                 this.getList(this.mid);
@@ -420,19 +533,19 @@
             // 获取用户vip信息
             getIsVip() {
                 return new Promise((reslove, reject) => {
-                    if (this.userInfo.isVip == 1) {
+                    if (this.userInfo.vipInfo) {
                         this.isVip = 1;
                         reslove();
                         return false;
                     }
-                    if (this.userInfo.phone && this.userInfo.isVip === '') {
+                    if (this.userInfo.phone && !this.userInfo.vipInfo && this.userInfo.vipInfo !== '') {
                         myVip({
                             proId: NEWVIPGIFT.proId,
                             salesId: NEWVIPGIFT.salesId,
                             channelCode: this.sysInfo.channelCode,
                             phone: this.userInfo.phone,
                         }).then((res)=>{
-                            if (res.data.resultCode == 0){ //获得vip信息
+                            if (res.data.resultCode == 0){
                                 this.isVip = 1;
                             } else {
                                 this.isVip = 0;
@@ -532,24 +645,57 @@
                 let data = {
                     mid: id
                 }
-                if (this.phoneNumber) data.isVip = this.isVip;
-                getFindMemberSales(data).then((response) => {
+                let headers = {'phone': this.orderObject.mobile};
+                if (this.phoneNumber) data.isVip = (this.userInfo.vipInfo || this.userInfo.vipInfo!=='') ? this.isVip : this.isStarVip;
+                getFindMemberSales(data, headers).then((response) => {
                     if (response.data.resultCode == 0){
                         this.defaultStyle = false;
                         this.defaultFirstStyle = false;
+                        let temp = {
+                            tc: '',
+                            paytype: '',
+                            index: 0,
+                        }
                         if (response.data.data == null || response.data.data.length == 0 ) {
                             Toast({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
                             return;
                         }
                         that.detailList = response.data.data;
+                        for (let index = 0; index < response.data.data.length; index++) {
+                            const item = response.data.data[index];
+                            if (temp.tc == '' || temp.tc != item.tc) {
+                                temp.tc = item.tc;
+                                temp.paytype = item.paytype;
+                                temp.index = index;
+                            } else {
+                                if (temp.paytype == '1' && item.paytype == '2') {
+                                    response.data.data[temp.index] = [response.data.data[index], response.data.data[index] = response.data.data[temp.index]][0];
+                                } else {
+                                    temp.tc = item.tc;
+                                    temp.paytype = item.paytype;
+                                    temp.index = index;
+                                }
+                            }
+                            let newObj = {};
+                            if (item.paytype == 3) {
+                                if (!this.isAli) {
+                                    newObj = {...item};
+                                    newObj.paytype = '4';
+                                    this.detailList.push(newObj);
+                                }
+                                if (this.isWeixin) {
+                                    item.paytype = '4';
+                                }
+                            }
+                        }
                         // 改变isFivego的状态
                         if (response.data.data[0].fivego) this.isFivego = response.data.data[0].fivego;
                         let provinceFlag = false; // 所有数据是否包含的标志
-                        if (this.$route.params.proid && this.$route.params.saleid){ // 如果路径有存在的参数
+                        if ((this.$route.params.proid && this.$route.params.saleid) || (this.$route.params.paytype && this.$route.params.tc)){ // 如果路径有存在的参数
                             for (let index = 0; index < this.detailList.length; index++) {
                                 const item = this.detailList[index];
-                                if (item.proid == this.$route.params.proid
-                                    && item.saleid == this.$route.params.saleid){
+                                if ((item.proid == this.$route.params.proid
+                                    && item.saleid == this.$route.params.saleid) || (item.paytype == this.$route.params.paytype && item.tc == this.$route.params.tc)){
                                     // 如果是输入未登录或者是白名单的情况 正常处理
                                     if (this.userInfo.provinceCode == null || this.userInfo.iswhite == 1
                                         || (item.provincecode == '' || item.provincecode == 0 || item.provincecode.indexOf(this.userInfo.provinceCode) != -1)) {
@@ -567,24 +713,50 @@
                                         //     this.paydetailList = this.detailList[0];
                                         //     this.goodsName = this.detailList[0].name;
                                         // }
-                                        if ((item.paytype == 3 && this.isWeixin) || (item.paytype == 4 && this.isAli)) {
-                                            this.$refs.radioOrder.radio = this.detailList[0].tc;
-                                            this.$refs.radioPay.radio = this.detailList[0].paytype;
-                                            this.paydetailList = this.detailList[0];
-                                            this.goodsName = this.detailList[0].name;
+                                        // 如果有paytype
+                                        if (this.$route.query.paytype) {
+                                            if (this.$route.query.paytype == 3 && this.isWeixin) {
+                                                this.$refs.radioOrder.radio = item.tc;
+                                                this.$refs.radioPay.radio = '4';
+                                                this.paydetailList = item;
+                                                this.paydetailList.paytype = this.detailList[index + 1];
+                                                this.goodsName = item.name;
+                                            } else if (this.$route.query.paytype == 4 && this.isAli) {
+                                                this.$refs.radioOrder.radio = item.tc;
+                                                this.$refs.radioPay.radio = '3';
+                                                this.paydetailList = item;
+                                                this.paydetailList.paytype = item;
+                                                this.goodsName = item.name;
+                                            } else {
+                                                this.$refs.radioOrder.radio = item.tc;
+                                                this.$refs.radioPay.radio = this.$route.query.paytype;
+                                                this.paydetailList = this.$route.query.paytype == '3' ? item : this.detailList[index + 1];
+                                                this.goodsName = item.name;
+                                            }
                                         } else {
                                             this.$refs.radioOrder.radio = item.tc;
                                             this.$refs.radioPay.radio = item.paytype;
                                             this.paydetailList = item;
                                             this.goodsName = item.name;
                                         }
+                                        // if ((item.paytype == 3 && this.isWeixin) || (item.paytype == 4 && this.isAli)) { // 支付方式与环境不符的情况
+                                        //     this.$refs.radioOrder.radio = this.detailList[0].tc;
+                                        //     this.$refs.radioPay.radio = this.detailList[0].paytype;
+                                        //     this.paydetailList = this.detailList[0];
+                                        //     this.goodsName = this.detailList[0].name;
+                                        // } else {
+                                        //     this.$refs.radioOrder.radio = item.tc;
+                                        //     this.$refs.radioPay.radio = item.paytype;
+                                        //     this.paydetailList = item;
+                                        //     this.goodsName = item.name;
+                                        // }
                                         // 判断是否存在autobuy参数，自动调起支付框
                                         if (this.$route.query.autobuy) {
-                                            this.orderFunc();
+                                            this.canAutoBuy = true;
                                         }
                                     } else {
                                         this.isCantOrder = true;
-                                        if (item.tc == 1 && item.paytype == 1) this.isFristChangeRadio = false;
+                                        if (item.tc == 1 && item.paytype == 2) this.isFristChangeRadio = false;
                                         Toast('您好，本省号码暂未上架本产品，可看看其他商品哦~');
                                         // 选择第一个可选权益
                                         this.$refs.radioOrder.radio = item.tc;
@@ -678,20 +850,71 @@
                             // 查询当前五折是否可用接口
                             if (this.phoneNumber) this.checkFivego();
                         }
-
+                        // 秒杀产品的处理
+                        if (this.paydetailList.aid !== '0') {
+                            this.isSeckill = 1;
+                            findSecKill({aid: this.paydetailList.aid}).then((res) => {
+                                let data = res.data.data;
+                                let headers = {'phone': this.orderObject.mobile};
+                                if (data.list.length != 0 && this.phoneNumber) {
+                                    checkSeckillCompp({
+                                        aid: data.list[0].aid,
+                                        salesId: this.paydetailList.saleid,
+                                    }, headers)
+                                }
+                                this.seckillRate = data.activityStatus;
+                                if (data.list.length && data.list.length !== 0) {
+                                    for (let index = 0; index < data.list.length; index++) {
+                                        const item = data.list[index];
+                                        if (item.mid == this.mid) {
+                                            this.seckillNum = item.availableNum;
+                                            if (item.originprice && item.originprice !== null) {
+                                                this.paydetailList.price2 = item.originprice;
+                                            }
+                                        }
+                                    }
+                                }
+                                // this.paydetailList.price2 = data.list[0].originprice;
+                                // 活动时间处理
+                                switch (this.seckillRate) {
+                                    case 0:
+                                        this.seckillStime = data.startTime.substring(5, 16);
+                                        this.seckillStime = this.seckillStime.replace('-', '月')
+                                        this.seckillStime = this.seckillStime.replace(' ', '日 ')
+                                        break;
+                                    case 1:
+                                        this.seckillTimeFunc(data.startTime, data.endTime);
+                                        break;
+                                    case 2:
+                                        // clearInterval(this.timeseckill);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                if (this.canAutoBuy) {
+                                    this.orderFunc();
+                                }
+                            })
+                        } else {
+                            if (this.canAutoBuy) {
+                                this.orderFunc();
+                            }
+                        }
                         //分享及统计
                         let sharename = this.paydetailList.name || '会员';
                         let shareImg = this.paydetailList.iconurl?'https:'+ this.Common.getImgUrl(this.paydetailList.iconurl):location.origin + '/imgs/pro/share.png';
+                        let shareTitle = this.isSeckill? "中国移动权益超市":"买"+sharename+",上中国移动权益超市";
+                        let shareDesc = this.isSeckill?"1元秒杀热门会员，先到先得，快来抢购！":"你知道的会员、你不知道的划算权益，都在这里，速点！"
                         share({
-                            title: "买"+sharename+",上中国移动权益超市",
-                            desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                            title: shareTitle,
+                            desc: shareDesc,
                             link: location.href,
                             imgUrl: shareImg
                         })
                         pagelog({
                             phone: this.userInfo.phone
                         },{
-                            "isvip":this.userInfo.isVip,//是否会员
+                            "isvip":this.isVip,//是否会员
                             "chanelcode":this.sysInfo.selfChannelCode,//超市渠道号
                             "chanelcode3":this.sysInfo.channelCode,//三级渠道号
                             "cur_url":location.href,//当前页面url
@@ -787,38 +1010,49 @@
             },
 
             // 返回改变swipe的index
-            changeSwipe(index) {
+            changeSwipe(index, beforeIndex) {
+                if (beforeIndex == this.goodsList.length-1 && index == 0) {
+                    this.$refs.swipe.$refs.swipe.swipeTo(beforeIndex);
+                    return false;
+                }
                 if (!this.isFristLoad) this.defaultStyle = true;
                 this.mid = this.goodsList[index].mid;
+                // 秒杀产品
+                if (this.isSeckill) {
+                    clearInterval(this.timeseckill);
+                    this.timeseckill = null;
+                }
                 // 复原支付方式和五折产品参数
                 this.isFivego = 0;
                 this.canBuyFivego = 1;
                 this.payList.list = [
+                    {
+                        label: ['话费支付', '连续包月'],
+                        value: '2',
+                        disable: true,
+                        hidden: false,
+                        name: '话费支付-连续包月',
+                    },
                     {
                         label: ['话费支付', '单次点播'],
                         value: '1',
                         disable: false,
                         hidden: false,
                         name: '话费支付',
-                    }, 
+                    },
                     {
-                        label: ['话费支付', '连续包月'],
-                        value: '2',
-                        disable: false,
+                        label: ['微信支付', '单次点播'],
+                        value: '4',
+                        disable: true,
                         hidden: false,
-                        name: '话费支付-连续包月',
+                        name: '微信支付',
+                    }, {
+                        label: ['支付宝支付', '单次点播'],
+                        value: '3',
+                        disable: true,
+                        hidden: false,
+                        name: '支付宝',
                     }
-                    // , {
-                    //     label: ['支付宝支付', '单次点播'],
-                    //     value: '3',
-                    //     disable: true,
-                    //     hidden: false,
-                    // }, {
-                    //     label: ['微信支付', '单次点播'],
-                    //     value: '4',
-                    //     disable: true,
-                    //     hidden: false,
-                    // }
                 ];
                 // 白名单的处理
                 // if (this.userInfo.iswhite) {
@@ -836,9 +1070,11 @@
                 this.isFristLoad = false;
                 let sharename = this.paydetailList.name || '会员';
                 let shareImg = this.paydetailList.iconurl?'https:'+ this.Common.getImgUrl(this.paydetailList.iconurl):location.origin + '/imgs/pro/share.png';
+                let shareTitle = this.isSeckill? "中国移动权益超市":"买"+sharename+",上中国移动权益超市";
+                let shareDesc = this.isSeckill?"1元秒杀热门会员，先到先得，快来抢购！":"你知道的会员、你不知道的划算权益，都在这里，速点！"
                 share({
-                    title: "买"+sharename+",上中国移动权益超市",
-                    desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                    title: shareTitle,
+                    desc: shareDesc,
                     link: location.href,
                     imgUrl: shareImg
                 })
@@ -851,6 +1087,14 @@
                     this.isCantOrder = false;
                 }
                 if (radioObj.eng == 'order') {
+                    for (let index = 0; index < radioObj.list.length; index++) {
+                        const item = radioObj.list[index];
+                        if (item.value == value) {
+                            let str = '000' + (index + 1);
+                            str = str.substring(str.length - 3);
+                            this.blocklogHandler("商品详情",'0020', str, '', this.paydetailList.mid, this.paydetailList.name);
+                        }
+                    }
                     this.order = radioObj.obj[value];
                     this.judgeRadio()
                 }
@@ -879,12 +1123,15 @@
                 // }
                 let sharename = this.paydetailList.name || '会员';
                 let shareImg = this.paydetailList.iconurl?'https:'+ this.Common.getImgUrl(this.paydetailList.iconurl):location.origin + '/imgs/pro/share.png';
+                let shareTitle = this.isSeckill? "中国移动权益超市":"买"+sharename+",上中国移动权益超市";
+                let shareDesc = this.isSeckill?"1元秒杀热门会员，先到先得，快来抢购！":"你知道的会员、你不知道的划算权益，都在这里，速点！"
                 share({
-                    title: "买"+sharename+",上中国移动权益超市",
-                    desc: "你知道的会员、你不知道的划算权益，都在这里，速点！",
+                    title: shareTitle,
+                    desc: shareDesc,
                     link: location.href,
                     imgUrl: shareImg
                 })
+                this.blocklogHandler("商品详情",'0020', this.payList.value, '', this.paydetailList.mid, this.paydetailList.name);
             },
             // 更改一级套餐选择时，列出对应的支付方式组
             judgeRadio() {
@@ -893,14 +1140,6 @@
                 for (let index = 0; index < this.payList.list.length; index++) {
                     const item = this.payList.list[index];
                     item.disable = true;
-
-                    // 根据浏览器判断
-                    if (item.value == 3 && this.isAli) {
-                        this.payList.list[index + 1].hidden = true;
-                    }
-                    if (item.value == 4 && this.isWeixin) {
-                        this.payList.list[index - 1].hidden = true;
-                    }
                 }
                 // 二级选项栏重新赋值
                 for (let index = 0; index < this.detailList.length; index++) {
@@ -909,13 +1148,6 @@
                         for (let k = 0; k < this.payList.list.length; k++) {
                             let pay = this.payList.list[k];
                             if (item.paytype == pay.value) {
-                                // 现网环境下暂时屏蔽掉连续包月
-                                // if (pay.value == '2' && item.provincecode == '1') {
-                                //     continue;
-                                // }
-                                // if (pay.value == '2' && process.env.NODE_ENV == 'production' && !this.userInfo.iswhite) {
-                                //     continue;
-                                // }
                                 if (this.userInfo.provinceCode == null) {
                                     pay.disable = false;
                                 } else {
@@ -940,8 +1172,7 @@
                 if (!flag) { // 如果当前套餐没有对应的支付，则选择该套餐第一个可行支付
                     for (let index = 0; index < this.detailList.length; index++) {
                         const item = this.detailList[index];
-                        if (item.tc == this.orderList.value && !this.payList.list[item.paytype - 1].hidden
-                            && !this.payList.list[item.paytype - 1].disable) {
+                        if (item.tc == this.orderList.value) {
                             if (this.popupShow) {
                                 this.$refs.popupPay.radio = item.paytype;
                             }
@@ -1004,6 +1235,48 @@
                 //     }
                 // }
             },
+            // 呼出弹出框
+            showSeckill(target) {
+                // alert(document.body.scrollTop)
+                if (document.body.scrollTop == 0) {
+                    document.body.scrollTop = 1;
+                }
+                this.blocklogHandler('详情页秒杀状态', '0039', '0001', '', this.paydetailList.mid, this.paydetailList.name)
+                if (this.$refs.content) {
+                    this.popupInfo.content.txt = '';
+                    setTimeout(() => {
+                        this.popupInfo.content.txt = target.content.txt;
+                    }, 10)
+                } else {
+                    this.popupInfo = JSON.parse(JSON.stringify(target));
+                }
+                this.$toast.clear();
+                this.show = true;
+            },
+            // 秒杀倒计时方法
+            seckillTimeFunc(starttime,endtime) {
+                let that = this;
+                starttime = starttime.replace(/-/g,'/');
+                endtime = endtime.replace(/-/g,'/');
+                // let stime = new Date(starttime).getTime();
+                let etime = new Date(endtime).getTime();
+                this.timeseckill = setInterval(() => {
+                    let nowTime = new Date().getTime() + that.sysInfo.interval;
+                    let d = Math.floor((etime - nowTime) / (24*3600*1000));
+                    if (nowTime >= etime) {
+                        clearInterval(this.seckillTime);
+                        this.seckillRate = 2;
+                    }
+                    // this.seckillTime.HH = parseInt(((etime - nowTime) % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    this.seckillTime.HH = d * 24 + Math.floor((etime - nowTime) % (24 * 3600 * 1000) / (3600 * 1000));
+                    this.seckillTime.MM = parseInt(((etime - nowTime) % (1000 * 60 * 60)) / (1000 * 60));
+                    this.seckillTime.SS = parseInt((etime - nowTime) % (1000 * 60)) / 1000;
+                    this.seckillTime.HH < 10 ? this.seckillTime.HH = '0' + this.seckillTime.HH : this.seckillTime.HH;
+                    this.seckillTime.MM < 10 ? this.seckillTime.MM = '0' + this.seckillTime.MM : this.seckillTime.MM;
+                    this.seckillTime.SS < 10 ? this.seckillTime.SS = '0' + this.seckillTime.SS : this.seckillTime.SS;
+                    this.seckillTime.SS = this.seckillTime.SS.toString().substring(0, 2);
+                }, 1000);
+            },
             // 呼出弹出层
             showPopup() {
                 this.popupShow = true;
@@ -1014,6 +1287,10 @@
                     this.$refs.popupOrder.radio = this.orderList.value;
                     this.$refs.popupPay.radio = this.payList.value;
                 })
+            },
+            closePopupBtnHandler(){
+                this.payShow = false;
+                this.orderObject.smsCode = '';
             },
             // 关闭弹出层
             closePopup() {
@@ -1030,6 +1307,29 @@
             },
             // 立即订购
             orderFunc() {
+                // 按钮埋点
+                if (this.isFivego && !this.isVip) {
+                    this.blocklogHandler("商品详情",'0020', '0007', '', this.paydetailList.mid, this.paydetailList.name);
+                } else if (this.isSeckill && this.seckillRate == 1 && !this.isVip){
+                    this.blocklogHandler("商品详情",'0020', '0008', '', this.paydetailList.mid, this.paydetailList.name);
+                } else {
+                    switch (this.paydetailList.paytype) {
+                        case '1':
+                            this.blocklogHandler("商品详情",'0020', '0003', '', this.paydetailList.mid, this.paydetailList.name);
+                            break;
+                        case '2':
+                            this.blocklogHandler("商品详情",'0020', '0004', '', this.paydetailList.mid, this.paydetailList.name);
+                            break;
+                        case '3':
+                            this.blocklogHandler("商品详情",'0020', '0006', '', this.paydetailList.mid, this.paydetailList.name);
+                            break;
+                        case '4':
+                            this.blocklogHandler("商品详情",'0020', '0005', '', this.paydetailList.mid, this.paydetailList.name);
+                            break;
+                        default:
+                            break;
+                    }
+                }
                 // 如果为空
                 if (this.detailList == null || this.detailList.length == 0 ) {
                     Toast({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
@@ -1043,26 +1343,98 @@
                 if (this.isFivego && this.isVip && !this.canBuyFivego) {
                     return false;
                 }
+                // 秒杀产品处理
                 if (this.isCantOrder) {
                     Toast('您好，本省号码暂未上架本产品，可看看其他商品哦~');
                     return false;
                 }
+                if (this.isSeckill) {
+                    if (this.seckillRate == 0) return false;
+                    if (this.seckillRate == 1 && this.seckillNum == '0') {
+                        return false;
+                    }
+                    if (this.seckillRate == 2) return false;
+                }
                 // 判断是否登录
                 if (!this.phoneNumber) { // 跳转到登录页面
-                    if (this.paydetailList.proid != this.$route.params.proid && this.paydetailList.saleid != this.$route.params.saleid){
-                        this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
+                    // if (this.paydetailList.proid != this.$route.params.proid || this.paydetailList.saleid != this.$route.params.saleid){
+                    //     this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
+                    // }
+                    if (this.paydetailList.paytype != this.$route.params.paytype || this.paydetailList.tc != this.$route.params.tc){
+                        this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid, paytype: this.paydetailList.paytype, tc: this.paydetailList.tc}});
                     }
-                    let backUrl = encodeURIComponent(this.$route.fullPath + '?autobuy=true');
+                    let url = this.$route.fullPath + '?autobuy=true';
+                    if (this.paydetailList.paytype == '3' || this.paydetailList.paytype == '4') url += '&paytype=' + this.paydetailList.paytype;
+                    let backUrl = encodeURIComponent(url);
                     if(this.sysInfo.channel == 'st'){
                         messageBus.$emit('msg_checkLogin','init');
                     }else{
                         this.$router.push({name: 'login', query: {'backUrl': backUrl}});
                     }
                 } else {
+                    if (this.isFivego && !this.isVip && this.isStarVip) {
+                        this.$router.push({name: 'vipBenefit'});
+                        return false;
+                    }
+                    if (this.isSeckill) {
+                        if (this.seckillRate == 1 && !this.isVip && this.phoneNumber) {
+                            this.$router.push({name: 'vipBenefit'});
+                            return false;
+                        }
+                    }
                     if (this.payList.value < '3') {
                         // 弹出二次确认框
                         // this.overlay = true;
-                        this.payShow = true;
+                        // this.payShow = true;
+                        let data = {
+                            proId: this.paydetailList.proid,
+                            name: this.paydetailList.name,
+                            salesId: this.paydetailList.saleid,
+                            channelCode: this.sysInfo.channelCode ,
+                            selfChannelCode: this.sysInfo.selfChannelCode,
+                            dealType: 0,
+                            isPay: 1,
+                            payType: 10,
+                            amount: this.paydetailList.price,
+                            orderWay: this.paydetailList.paytype,
+                        }
+                        let secondConfirmType = this.sysInfo.selfChannelCode == '00010017'? 1 : 0;
+                        this.SecondConfirmInfo = {
+                            order:this.order,
+                            payShow: true,
+                            paydetailList: data,
+                            orderObject: {
+                                phone: this.userInfo.phone,
+                                phoneMask: this.userInfo.phoneMask,
+                            },
+                            type: secondConfirmType,
+                            callback: r=>{
+                                if (r.resultCode == 0) {
+                                    this.blocklogHandler('商品订购短验确认', '0022', '0005', '', this.paydetailList.mid, this.paydetailList.name);
+                                    Toast({message: '订购成功啦,快去体验吧！', duration: 4000});
+                                    this.$router.push({name: 'myOrder', params: {type:'all'}});
+                                } else if(r.resultCode == -1 && r.data.code == -1) {
+                                    this.blocklogHandler('商品订购短验确认', '0022', '0004', '', this.paydetailList.mid, this.paydetailList.name);
+                                    Toast({message: '请输入正确的验证码哦', duration: 4000});
+                                } else if(r.resultCode == -102) {
+                                    Toast({message: '订购异常,请稍后重试!', duration: 4000});
+                                } else if(r.resultCode == -117) {
+                                    Toast({message: '退订异常,请稍后重试！', duration: 4000});
+                                } else if(r.resultCode == -116) {
+                                    Toast({message: '退订异常,请稍后重试！', duration: 4000});
+                                } else if(r.resultCode == -113) {
+                                    Toast({message: '订购异常，检查下话费余额后重试哦！', duration: 4000});
+                                } else if(r.resultCode == -118) {
+                                    Toast({message: r.msg, duration: 4000});
+                                } else if(r.resultCode == -112) {
+                                    Toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                } else if(r.resultCode == 4) {
+                                    Toast({message: '异常了,bug修复中,请稍后再试！', duration: 4000});
+                                } else {
+                                    Toast({message: r.msg, duration: 4000});
+                                }
+                            }
+                        }
                     } else { // 第三方支付
                         this.payShow = false;
                         const toast = Toast({
@@ -1072,6 +1444,8 @@
                         });
                         let channelCode = this.sysInfo.channelCode?'?channelCode='+this.sysInfo.channelCode:'';
                         let data = {
+                            aId: '',
+                            productName: this.paydetailList.name,
                             tc: this.paydetailList.tc,
                             paytype: this.paydetailList.paytype,
                             productId: this.paydetailList.proid,
@@ -1079,8 +1453,13 @@
                             mobile: this.orderObject.mobile,
                             channelCode: this.sysInfo.channelCode,
                             selfChannelCode: this.sysInfo.selfChannelCode,
-                            returnUrl: window.location.origin + '/transfer.html'+ channelCode,
                             paymentType: this.paymentTypeList[this.payList.value],
+                        }
+                        if (this.payList.value != '4' || this.sysInfo.channel != "st") {
+                            data.returnUrl= window.location.origin + '/transfer.html'+ channelCode;
+                        }
+                        if (this.paydetailList.aid && this.paydetailList.aid != '0') {
+                            data.aid = this.paydetailList.aid;
                         }
                         payOrderByH5(data).then((response) => {
                             toast.clear();
@@ -1098,12 +1477,15 @@
             // 获取验证码
             getSms() {
                 let that = this;
+                this.blocklogHandler('商品订购短验确认', '0022', '0003', '', this.paydetailList.mid, this.paydetailList.name);
                 sendSmsCode({mobile: this.orderObject.mobile}).then((response) => {
                     if (response.data.code == 0) {
+                        // this.blocklogHandler('商品订购短验确认', '0022', '0005');
                         // 倒计时逻辑
                         that.coutdownShow = true;
                         that.coutdownFunc();
                     } else {
+                        // this.blocklogHandler('商品订购短验确认', '0022', '0004');
                         Toast('验证码跑丢了，稍后再试哦！');
                         // 去掉获取验证码失败跳转逻辑
                         // this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
@@ -1143,7 +1525,8 @@
                 }
                 // 如果手机号为空，则跳转到登录页
                 if (this.orderObject.mobile == '') {
-                    this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
+                    // this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
+                    this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid, paytype: this.paydetailList.paytype, tc: this.paydetailList.tc}});
                     let backUrl = encodeURIComponent(this.$route.fullPath + '?autobuy=true');
                     if(this.sysInfo.channel == 'st'){
                         messageBus.$emit('msg_checkLogin','init');
@@ -1205,15 +1588,20 @@
                     isPay: 1,
                     payType: 10,
                     amount: this.paydetailList.price,
-                    orderWay: this.payList.value,
+                    orderWay: this.paydetailList.paytype,
                     smsCode: this.orderObject.smsCode,
+                }
+                if (this.paydetailList.aid && this.paydetailList.aid != '0') {
+                    data.aid = this.paydetailList.aid;
                 }
                 placeOrder(data, headers).then((r) => {
                     toast.clear();
                     if (r.data.resultCode == 0) {
+                        this.blocklogHandler('商品订购短验确认', '0022', '0005', '', this.paydetailList.mid, this.paydetailList.name);
                         Toast({message: '订购成功啦,快去体验吧！', duration: 4000});
                         that.$router.push({name: 'myOrder', params: {type:'all'}});
                     } else if(r.data.resultCode == -1 && r.data.data.code == -1) {
+                        this.blocklogHandler('商品订购短验确认', '0022', '0004', '', this.paydetailList.mid, this.paydetailList.name);
                         Toast({message: '请输入正确的验证码哦', duration: 4000});
                     } else if(r.data.resultCode == -102) {
                         Toast({message: '订购异常,请稍后重试!', duration: 4000});
@@ -1238,9 +1626,15 @@
             },
         },
         watch:{
-            '$store.state.userInfo.isVip'(n){
-                this.isVip = n;
-                this.changeInitialize(this.mid);
+            '$store.state.userInfo.phone'(){
+                this.phoneNumber = this.userInfo.phoneMask;
+                this.orderObject.mobile = this.userInfo.phone;
+            },
+            '$store.state.userInfo.vipInfo'(n){
+                if (n !== '' && n !== null) {
+                    this.isVip = 1;
+                    this.changeInitialize(this.mid);
+                }
             },
             'paydetailList': {
                 deep: true,
@@ -1257,7 +1651,21 @@
                         }
                     }
                 },
-            }
+            },
+            'payShow': {
+                handler: function (value) {
+                    if (!value) this.blocklogHandler('商品订购短验确认', '0022', '0000', '', this.paydetailList.mid, this.paydetailList.name)
+                }
+            },
+            'show': {
+                handler: function (value) {
+                    if (!value) this.blocklogHandler('秒杀规则弹窗', '0040', '0001', '', this.paydetailList.mid, this.paydetailList.name)
+                }
+            },
+        },
+        beforeDestroy(){
+            clearInterval(this.timeseckill);
+            this.timeseckill = null
         },
     }
 </script>
@@ -1292,6 +1700,46 @@
                     height: 1.11rem;
                     top: .17rem;
                     left: 0;
+                }
+            }
+            .goods-vip-seckill{
+                width: 6.8rem;
+                height: .76rem;
+                line-height: .76rem;
+                margin: .32rem auto;
+                padding: 0 .32rem 0 .27rem;
+                font-size: 0rem;
+                background: #F55F5F;
+                border-radius: .38rem;
+                text-align: left;
+                box-sizing: border-box;
+                .goods-vip-seckill-wrap{
+                    display: inline-block;
+                    .goods-vip-seckill-font{
+                        color: #FFF;
+                        font-size: .28rem;
+                    }
+                    .goods-vip-seckill-font-stime{
+                        color: #F5E95F;
+                    }
+                    .goods-vip-seckill-time{
+                        display: inline-block;
+                        min-width: .3rem;
+                        height: .3rem;
+                        line-height: .3rem;
+                        text-align: center;
+                        font-size: .24rem;
+                        background: #FFF;
+                        border-radius: .06rem;
+                        color: #F55F5F;
+                        margin: 0 .04rem;
+                    }
+                }
+                .goods-vip-seckill-check{
+                    float: right;
+                    font-size: .24rem;
+                    color: #FFF;
+                    text-decoration: underline;
                 }
             }
         }
@@ -1506,6 +1954,18 @@
             .payment-btn-wrap-button-gray{
                 background: #CCC;
             }
+            .payment-btn-wrap-button-seckill{
+                background: url('../assets/imgs/goodsdetail/seckillBtn.png');
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 6.39rem 1.37rem;
+            }
+            .payment-btn-wrap-button-starvip{
+                background: url('../assets/imgs/goodsdetail/starVipBtn.png');
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 6.39rem 1.37rem;
+            }
         }
         .overlay-box{
             .overlay-input-wrap{
@@ -1661,6 +2121,29 @@
             .submit{
                 background: #FD7028;
                 color: #FFF;
+            }
+        }
+        .white-board-wrap{
+            border-radius:0.12rem;
+            .white-board{
+                background:#fff;
+                padding:0.6rem 0.38rem 0.83rem;
+                box-sizing: border-box;
+                width:5.8rem;
+                .title{
+                    font-size:0.34rem;
+                    font-weight: bold;
+                    padding-bottom:0.47rem;
+                }
+                .content{
+                    overflow-y: auto;
+                    height: 5.28rem;
+                    text-align: left;
+                    font-size:0.24rem;
+                    font-weight:500;
+                    color:rgba(56,58,63,1);
+                    opacity:0.6;
+                }
             }
         }
     }

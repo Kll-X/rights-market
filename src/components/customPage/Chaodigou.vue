@@ -22,7 +22,7 @@
         <van-popup class="overlay-popup"
             v-model="payShow"
             position="bottom">
-            <img class="close-popup" @click="payShow = false"
+            <img class="close-popup" @click="closePopupBtnHandler"
                 src="@imgs/goodsdetail/close-popup.png" alt="">
             <div class="popup-title">产品订购</div>
             <div class="popup-price">¥
@@ -41,6 +41,7 @@
                         clearable
                         maxlength="6"
                         type="digit"
+                        @focus="blocklogHandler('商品订购短验确认', '0022', '0002')"
                         placeholder="请输入验证码">
                         <van-button slot="button" size="small" type="default" :disabled="coutdownShow"
                             @click="getSms">
@@ -65,8 +66,10 @@
     import messageBus from "@/utils/messageBus";
     import {APPLIST_CHAODIGOU,STATISTICS_ACTIVITY} from '@/utils/constant';
     import {pvAnalysis} from '@/assets/js/analysis';
+    import { blocklogMixin,pagelogMixin } from "@/mixins/log";
     export default {
         name: "chaodigou",
+        mixins: [blocklogMixin,pagelogMixin],
         data(){
             return{
                 applist:APPLIST_CHAODIGOU,
@@ -225,12 +228,15 @@
             // 获取验证码
             getSms() {
                 let that = this;
+                this.blocklogHandler('商品订购短验确认', '0022', '0003');
                 sendSmsCode({mobile: this.orderObject.mobile}).then((response) => {
                     if (response.data.code == 0) {
+                        this.blocklogHandler('商品订购短验确认', '0022', '0005');
                         // 倒计时逻辑
                         that.coutdownShow = true;
                         that.coutdownFunc();
                     } else {
+                        this.blocklogHandler('商品订购短验确认', '0022', '0004');
                         Toast(response.data.msg);
                         // this.$router.replace({name: 'goodsDetail', params: {mid: this.mid, proid: this.paydetailList.proid, saleid: this.paydetailList.saleid}});
                         // let backUrl = encodeURIComponent(this.$route.fullPath + '?autobuy=true');
@@ -313,11 +319,22 @@
                     link: process.env.VUE_APP_BUILD=='production'?'https://shop.10086.cn/zhuanqu/anniversary/index.html#/equity/index':'https://shop.10086.cn/zhuanqu/test/anniversary/index.html#/equity/index',
                     linkTxt: '重新登录'
                 })
+            },
+            closePopupBtnHandler(){
+                this.payShow = false;
+                this.orderObject.smsCode = '';
             }
         },
         mounted() {
 
-        }
+        },
+        watch:{
+            'payShow': {
+                handler: function (value) {
+                    if (!value) this.blocklogHandler('商品订购短验确认', '0022', '0000');
+                }
+            },
+        },
     }
 </script>
 

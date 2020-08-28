@@ -3,14 +3,18 @@
         <div class="top">
             <img class="icon" :src="Common.getImgUrl(info.iconUrl)" alt="">
             <div class="content">
-                <div class="title">{{info.name}}</div>
+                <div class="title">
+                    <span class="txt">{{nameTxt}}</span>
+                    <img v-if="info.salesType == 1 || info.salesType ==2" class="tips-vip" src="@imgs/myorder/tips_vip.png">
+                    <img v-if="info.salesType == 3" class="tips-seckilling" src="@imgs/myorder/seckilling.png">
+                </div>
                 <div>
                     <span class="payType">{{info.payType | payTypeTxt}} </span>
 <!--                    <span class="payType">{{info.qyPayType | qyPayTypeTxt}} </span>-->
 <!--                    <span class="orderWay">{{info.orderWay | orderWayTxt}} </span>-->
                 </div>
                 <div class="price">
-                    资费：{{(info.price/100).toFixed(2)}}元
+                    {{info.salesType | salesTypeTxt}}{{(info.price/100).toFixed(2)}}元
                 </div>
             </div>
         </div>
@@ -19,7 +23,7 @@
                 <span>订购日期：</span>{{info.updateTime | timeFormat}}
             </div>
             <div class="handlerBtns" v-if="!isVipOrder">
-                <div class="btn-bind" v-if="needBind && !+info.td"  @click.stop="bindHandler(info.name)">去绑定</div>
+                <div class="btn-bind" v-if="needBind && !+info.td"  @click.stop="blocklogHandler('订单列表', '0036', '00002');bindHandler(info.name)">去绑定</div>
                 <div class="btn-unsubscribe" v-if="info.status === 1 && info.orderWay == 2 && info.td!= -1 && info.td!= 5" @click.stop="tdHandler">退订</div>
                 <div class="btn-td" v-if="info.td == -1" @click.stop="">已退订</div>
                 <div class="btn-tding" v-if="info.td == 5" @click.stop="">退订中</div>
@@ -43,7 +47,8 @@
     import messageBus from "@/utils/messageBus";
     import {placeOrder,queryOrderStatus} from "@/api/myOrder";
     import { mapState } from 'vuex';
-    import {APPLIST_CHAODIGOU,VIPORDER,APPLIST_VIPOPENING,APPLIST_VIPOPENING_NINE} from '@/utils/constant'
+    import {APPLIST_CUSTOMPAGE,VIPORDER,APPLIST_CHAODIGOU} from '@/utils/constant'
+    import { blocklogMixin } from "@/mixins/log"
 
     export default {
         name: "order-item",
@@ -53,6 +58,7 @@
                 required: true
             }
         },
+        mixins:[blocklogMixin],
         data(){
             return {
                 detailLinkFlag: true,
@@ -65,10 +71,22 @@
             for (let item of APPLIST_CHAODIGOU) {
                 if(+item.salesid == +this.info.salesId) {
                     this.info.price = item.currentPrice;
-                    this.info.iconUrl = item.icon;
+                    this.info.iconUrl = item.icon.search('http')>-1?item.icon:location.origin+'/'+item.icon;
                     this.info.name = item.title;
                     this.info.payType = 1;
                     this.detailLinkFlag = false;
+                    break;
+                }
+            }
+            //活动订单(618、717)polyfill
+            for (let item of APPLIST_CUSTOMPAGE) {
+                if(+item.saleid == +this.info.salesId) {
+                    this.info.price = item.price;
+                    this.info.iconUrl = item.icon.search('http')>-1?item.icon:location.origin+'/'+item.icon;
+                    this.info.name = item.name;
+                    this.info.payType = 1;
+                    item.detailLinkFlag!==undefined && (this.detailLinkFlag = item.detailLinkFlag);
+                    item.detailLinkPath!==undefined && (this.detailLinkPath = item.detailLinkPath);
                     break;
                 }
             }
@@ -79,30 +97,11 @@
                 //会员订单根据effect判断状态
                 this.isVipOrder = true;
             }
-            //618活动订单polyfill
-            for (let item of APPLIST_VIPOPENING) {
-                if(+item.saleid == +this.info.salesId) {
-                    this.info.price = item.price;
-                    this.info.iconUrl = item.icon;
-                    this.info.name = item.name;
-                    this.info.payType = 1;
-                    this.detailLinkPath = {path: '/custompage/2'};
-                    break;
-                }
-            }
-            for (let item of APPLIST_VIPOPENING_NINE) {
-                if(+item.saleid == +this.info.salesId) {
-                    this.info.price = item.price;
-                    this.info.iconUrl = item.icon;
-                    this.info.name = item.name;
-                    this.info.payType = 1;
-                    this.detailLinkPath = {path: '/custompage/2'};
-                    break;
-                }
-            }
         },
         methods: {
             gotoDetail(){
+                //操作统计：点击订单
+                this.blocklogHandler('订单列表', '0036', '00001');
                 if (this.detailLinkFlag){
                     if (this.detailLinkPath) {
                         this.$router.push(this.detailLinkPath);
@@ -159,6 +158,7 @@
             },
             tdHandler(){
                 let that = this;
+                that.blocklogHandler('订单列表', '0036', '00003');
                 let orderData;
                 if(+VIPORDER.salesId == +this.info.salesId) {
                     orderData = Object.assign({},VIPORDER);
@@ -272,6 +272,16 @@
                     default: txt = '单次点播';
                 }
                 return txt;
+            },
+            salesTypeTxt: function (value) {
+                let txt;
+                switch (+value) {
+                    case 0: txt='资费：';break;
+                    case 1: txt='五折价：';break;
+                    case 2: txt='会员价：';break;
+                    case 3: txt='秒杀价：';break;
+                }
+                return txt;
             }
         },
         computed:{
@@ -286,6 +296,11 @@
                 let opt1 = false;
                 let opt2 = (name.search('qq音乐') > -1 || name.search('QQ音乐') > -1)&& (this.info.status === 1 || this.info.status === 0) ;
                 return opt1 || opt2;
+            },
+            nameTxt(){
+                let maxLength=13;
+                if (this.info.salesType) maxLength = 8;
+                return this.info.name.length > (maxLength+1) ? this.info.name.slice(0,maxLength)+'...' : this.info.name;
             }
         }
     }
@@ -329,11 +344,24 @@
         text-align: left;
         flex-grow: 1;
         .title{
-            color: #0F0B1A;
-            font-size: .3rem;
-            opacity: .8;
-            font-weight: 500;
-            line-height: .3rem;
+            display: flex;
+            align-items: center;
+            padding: .1rem 0;
+            .txt{
+                color: #0F0B1A;
+                font-size: .3rem;
+                opacity: .8;
+                font-weight: 500;
+                line-height: .3rem;
+            }
+            .tips-seckilling{
+                width: 1.3rem;
+                padding-left: .1rem;
+            }
+            .tips-vip{
+                padding-left: .1rem;
+                width: 1rem;
+            }
         }
         .payType, .orderWay{
             color: #0F0B1A;
@@ -421,12 +449,12 @@
     }
 }
 .color-1{
-    background-image: url("../../assets/imgs/mark_success.png");
+    background-image: url("../../assets/imgs/myorder/mark_success.png");
 }
 .color-2{
-    background-image: url("../../assets/imgs/mark_close.png");
+    background-image: url("../../assets/imgs/myorder/mark_close.png");
 }
 .color-0{
-    background-image: url("../../assets/imgs/mark_trading.png");
+    background-image: url("../../assets/imgs/myorder/mark_trading.png");
 }
 </style>

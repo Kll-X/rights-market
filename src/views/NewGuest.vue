@@ -48,8 +48,8 @@
             ])
         },
         watch:{
-            '$store.state.userInfo.hasNewGift'(n){
-                this.hasNewGift = n;
+            '$store.state.userInfo.vipInfo'(n){
+                this.hasNewGift = n.hasNewGift;
             },
         },
         data() {
@@ -59,7 +59,7 @@
             };
         },
         mounted() {
-            if (this.userInfo.phone) this.hasNewGift = this.userInfo.hasNewGift;
+            if (this.userInfo.phone) this.hasNewGift = this.userInfo.vipInfo.hasNewGift;
         },
         methods: {
             receiveFunc() {

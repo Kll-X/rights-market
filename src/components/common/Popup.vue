@@ -2,7 +2,7 @@
     <div class="popup" :style="{'background-color':mask?'rgba(0,0,0,.6)':''}">
         <div class="content">
             <div class="title" :style="{fontSize: content?'.36rem':'.32rem'}">{{title}}</div>
-            <div class="txt" v-if="content" v-html="content"></div>
+            <div class="txt" :style="css.txt" v-if="content" v-html="content"></div>
             <div :class="{'btns':true,'unique':btns.length == 1}">
                 <div class="btn" :style="btn.style?btn.style:''" v-for="btn in btns" @click="btn.handler" :key="btn.title">{{btn.txt}}</div>
             </div>
@@ -45,6 +45,14 @@
                             }
                         }
                     ]
+                }
+            },
+            css: {
+                type: Object,
+                default: function(){
+                    return {
+                        txt:{}
+                    }
                 }
             },
             closeBtn:{

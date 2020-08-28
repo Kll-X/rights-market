@@ -1,17 +1,17 @@
 <template>
-        <router-link tag='div' :class="{'app-card':true,'marginRight':index%3!=2,'wrap':index>2,'vip':vip}" :to="{name: 'goodsDetail', params: {mid:info.mid,saleid:info.saleid,proid: info.proid }}">
-            <img class="logo" :src="Common.getImgUrl(info.icon)" alt="">
-            <div class="name">{{name}}</div>
-            <div v-show="vip" class="vip-pay">
-                <img class="symbol" src="@imgs/vip_mark.png"  alt="">
-                &nbsp;
-                <span class="price" v-if="info.price">{{(parseInt(info.price)/100).toFixed(2)}}元/月</span>
-            </div>
-            <div class="originprice" v-if="vip && info.originprice">
-                {{(parseInt(info.originprice)/100).toFixed(2)}}元/月
-            </div>
-            <div class="pay" v-if="!vip">{{info.remark}}</div>
-        </router-link>
+    <router-link tag='div' :class="{'app-card':true,'marginRight':index%3!=2,'wrap':index>2,'vip':vip}" :to="{name: 'goodsDetail', params: {mid:info.mid,saleid:info.saleid,proid: info.proid }}">
+        <img class="logo" :src="Common.getImgUrl(info.icon)" alt="">
+        <div class="name">{{name}}</div>
+        <div v-show="vip" class="vip-pay">
+            <img class="symbol" src="@imgs/vip_mark.png"  alt="">
+            &nbsp;
+            <span class="price" v-if="info.price">{{(parseInt(info.price)/100).toFixed(2)}}元/月</span>
+        </div>
+        <div class="originprice" v-if="vip && info.originprice">
+            {{(parseInt(info.originprice)/100).toFixed(2)}}元/月
+        </div>
+        <div class="pay" v-if="!vip">{{info.remark}}</div>
+    </router-link>
 </template>
 
 <script>

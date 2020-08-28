@@ -2,7 +2,7 @@
     <!-- 蒙版 -->
     <div id="goods-swipe">
         <van-swipe :loop="false" @change="changeSwipe" ref="swipe">
-            <van-swipe-item :class="{'van-swipe-five': (itemDetail.fivego == 1 && swipeIndex == index)}"
+            <van-swipe-item :class="{'van-swipe-five': (itemDetail.fivego == 1 && swipeIndex == index), 'van-swipe-seckill': (itemDetail.aid !== '0')}"
                 v-for="(item, index) in swipeList" :key="index">
                 <div class="swipe-item">
                     <img class="swipe-item-icon" :src=" Common.getImgUrl(item.icon)" alt="">
@@ -45,7 +45,9 @@
 </template>
 
 <script>
+    import { blocklogMixin } from "@/mixins/log"
     export default {
+        mixins: [blocklogMixin],
         props: {
             swipeList: Array,
             isVip: Number,
@@ -62,8 +64,12 @@
         },
         methods: {
             changeSwipe(index) {
+                let beforeIndex = this.swipeIndex;
+                let dir = '';
+                this.swipeIndex > index ? dir = '0001' : dir = '0002';
+                this.blocklogHandler("商品详情",'0020', dir, '', this.swipeList[index].mid, this.swipeList[index].name);
                 this.swipeIndex = index;
-                this.$emit('change', index);
+                this.$emit('change', index, beforeIndex);
             }
         },
     }
@@ -155,6 +161,9 @@
                 }
                 .van-swipe-five{
                     background-image: url('../../assets/imgs/goodsdetail/vipBg.png');
+                }
+                .van-swipe-seckill{
+                    background-image: url('../../assets/imgs/goodsdetail/seckillBg.png');
                 }
             }
             .van-swipe__indicators{
