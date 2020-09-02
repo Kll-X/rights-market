@@ -49,7 +49,7 @@ function getSingleRsa(data) {
 }
 
 function getPhoneNum(callback) {
-    var test = location.href.search('/qymk.cmicrwx.cn/') == -1;
+    var test = (location.href.search('/qymk.cmicrwx.cn/') == -1) && (location.href.search('/grayqymk.cmicrwx.cn/') == -1) && (location.href.search('/testqymk.cmicrwx.cn/') == -1) ;
     var appId = test ? "000314" : "300011965167";
     var version = '1.2';
     var sign = YDRZ.getSign(appId, version);

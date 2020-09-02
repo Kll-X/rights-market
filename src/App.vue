@@ -1,10 +1,8 @@
 <template>
     <div id="app">
-        <!-- <keep-alive>
-            <router-view v-if="$route.meta.keepAlive"></router-view>
+        <keep-alive include="home">
+            <router-view/>
         </keep-alive>
-        <router-view v-if="!$route.meta.keepAlive"></router-view> -->
-        <router-view/>
         <quick-login v-if="showQuickLogin"></quick-login>
         <Popup v-show="popupInfo.flag" v-bind="popupInfo"></Popup>
     </div>
@@ -130,7 +128,8 @@
         },
         watch:{
             '$store.state.userInfo.phone'(n){
-                n &&  this.getVipInfo()
+                n &&  this.getVipInfo();
+                n && messageBus.$emitidonce('logined')
             },
             '$route'(){
                 setTimeout(() => { //用setTimeout才有效
@@ -197,6 +196,16 @@
                                 },info);
                             }
                         }
+                        //线下退订兼容
+                        if (vipInfo&&vipInfo.expireTime) {
+                            let date = vipInfo.expireTime.slice(6,8);
+                            let month = vipInfo.expireTime.slice(4,6);
+                            let year = vipInfo.expireTime.slice(0,4);
+                            let time = year+'/' + month + '/' + date;
+                            if(new Date(time).getTime() - (new Date().getTime() + that.sysInfo.interval)<= 31*24*3600*1000){
+                                vipInfo.cancelFlag = '1';
+                            } 
+                        }
                         that.SET_USERINFO({
                             vipInfo:vipInfo,
                             newStarVipInfo: newStarVipInfo
@@ -248,8 +257,8 @@
                                 timestamp: '',
                                 provinceCode: null,
                                 iswhite:0,
-                                vipInfo:'',
-                                newStarVipInfo:'',
+                                vipInfo:null,
+                                newStarVipInfo:null,
                                 // isVip:'',
                                 // orderId:'',
                                 // expireTime:'',

@@ -1,3 +1,4 @@
+
 export function is_weixin() {
     var a = navigator.userAgent.toLowerCase();
     return "micromessenger" == a.match(/MicroMessenger/i) ? !0 : !1
@@ -24,7 +25,7 @@ export function delQuery(url=window.location.href,paramKey) {
 
         for (let i = 0; i < urlParamArr.length; i++) {
             let paramArr = urlParamArr[i].split("="); //将参数键，值拆开
-            //如果键雨要删除的不一致，则加入到参数中
+            //如果键与要删除的不一致，则加入到参数中
             if (paramArr[0] != paramKey) {
                 arr.push(urlParamArr[i]);
             }
@@ -85,4 +86,33 @@ export function share(data) {
 
         // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
     });
+}
+
+export function addQuery(url=window.location.href,params={},pos='hash'){
+    let pathArr = url.split('?');
+    if (pos == 'path') {
+        pathArr[1] = addParamsBefore(pathArr[1],params)
+        return pathArr.join("?");
+    }
+    let hashArr = url.split('#');
+    if (pos == 'hash') {
+        if(hashArr.length == 1){
+            return url;
+        } else {
+            let snippetArr = hashArr[1].split("?");
+            snippetArr[1] = addParamsBefore(snippetArr[1],params);
+            hashArr[1] = snippetArr.join("?");
+            return hashArr.join("#");
+        }
+    }
+    function addParamsBefore(str,obj){
+        let newParamStr = '';
+        for(let param in obj) {
+            newParamStr += param + '=' + obj[param] + '&'
+        }
+        if(pathArr.length == 1) {
+            newParamStr = newParamStr.slice(0,-1)
+        } 
+        return newParamStr + str;
+    }
 }

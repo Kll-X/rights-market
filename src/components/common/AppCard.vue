@@ -76,6 +76,11 @@
             },
             'txt': {
                 type: Object,
+                 default(){
+                    return {
+                        orderBtn:'',
+                    }
+                }
             },
             'customStyle':{
                 type: Object,
@@ -83,7 +88,9 @@
                     return {
                         btnOrder:'',
                         title:'',
-                        wrapper:''
+                        wrapper:'',
+                        currentPrice:'',
+                        orginPrice:''
                     }
                 }
             }

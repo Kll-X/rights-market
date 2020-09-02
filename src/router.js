@@ -24,8 +24,7 @@ export default new Router({
             name: 'home',
             component: Home,
             meta: {
-                title: '中国移动权益超市',
-                keepAlive:true
+                title: '中国移动权益超市'
             }
         },
         {
@@ -111,7 +110,7 @@ export default new Router({
             }
         },
         {
-            path: '/vipBenefit',
+            path: '/vipBenefit/:isNewStarVip?',
             name: 'vipBenefit',
             component: VipBenefit,
             meta: {

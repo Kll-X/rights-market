@@ -63,7 +63,7 @@
                     &nbsp;
                     <span class="title">新星会员</span> -->
                     <span class="status">
-                        {{type === 4?'连续包月中':type === 2 && userInfo.newStarVipInfo.expireTime ?'有效期至' + userInfo.newStarVipInfo.expireTime.substring(0,4)+'.'+ userInfo.newStarVipInfo.expireTime.substring(4,6)+'.'+ userInfo.newStarVipInfo.expireTime.substring(6,8):''}}
+                        {{type === 4?'会员生效中':type === 2 && userInfo.newStarVipInfo.expireTime ?'有效期至' + userInfo.newStarVipInfo.expireTime.substring(0,4)+'.'+ userInfo.newStarVipInfo.expireTime.substring(4,6)+'.'+ userInfo.newStarVipInfo.expireTime.substring(6,8):''}}
                     </span>
                 </span>
                 <span v-show="!userInfo.vipInfo || userInfo.vipInfo == ''" class="upgrade" @click.stop="subscribe"></span>
@@ -208,7 +208,7 @@
                         <div>二、会员福利：</div>
                         <div>1、流量礼包：用户成为中国移动权益超市黄金会员，则可每月领取1GB通用流量日包一份，若当月未领取，则次月无法补领；当月流量礼包领取后，24小时内直充到账，届时会有短信提示，请注意查收；1GB通用流量为日包产品，到账后24小时内有效。</div>
                         <div>2、会员优惠购：黄金会员用户可在“会员优惠购”专区订购权益产品。黄金会员购买会员优惠购专区权益后将会收到订购短信提醒，请实时关注。</div>
-                        <div>3、会员福利社：黄金会员每月可在“会员福利社”领取福利优惠券，同一优惠券每月限领一张，领取后优惠券使用规则以单个优惠券页面规则为准。</div>
+                        <div>3、会员福利社：黄金会员用户每月可在“会员福利社”领取福利优惠券，同一优惠券每月最多领取一次，领取及使用规则以单个优惠券页面规则为准。</div>
                         <div>4、精选5折购：黄金会员用户可在“精选5折购”专区半价购买权益，每月限购一款。黄金会员购买精选5折购专区权益后将会收到订购短信提醒，请实时关注。</div>
                         <div>5、专属客服：黄金会员用户可享受专属客服服务。</div>`
                     }
@@ -223,7 +223,7 @@
                         <br />
                         <div>二、会员福利：</div>
                         <div>1、会员优惠购：新星会员用户可在“会员优惠购”专区订购权益产品。新星会员购买会员优惠购专区权益后将会收到订购短信提醒，请实时关注。</div>
-                        <div>2、会员福利社：新星会员每月可在“会员福利社”领取福利优惠券，同一优惠券每月限领一张，领取后优惠券使用规则以单个优惠券页面规则为准。</div>
+                        <div>2、会员福利社：新星会员用户每月可在“会员福利社”领取福利优惠券，同一优惠券每月最多领取一次，领取及使用规则以单个优惠券页面规则为准。</div>
                         <div>3、专属客服：新星会员用户可享受专属客服服务。</div>`
                     }
                 },
@@ -467,7 +467,7 @@
             },
             draw_now(){// 福利社领取
                 let url = '';
-                if (process.env.VUE_APP_BUILD  !== 'production') {
+                if (process.env.VUE_APP_BUILD !== 'production') {
                     url = 'http://rwktst.aspire-tech.com:19088/frcm/fcyr4/index.html#/vipClub';
                 } else {
                     url = 'https://apiserv.cmicrwx.cn/fcyr4/index.html#/vipClub';

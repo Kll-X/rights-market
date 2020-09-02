@@ -25,7 +25,7 @@
 <script>
     import messageBus from "@/utils/messageBus";
     import {delCookie } from "@/utils/cookie";
-    import {VIPORDER} from "@/utils/constant";
+    // import {VIPORDER} from "@/utils/constant";
     import { blocklogMixin } from "@/mixins/log";
 
     import { mapState } from 'vuex'
@@ -65,7 +65,7 @@
                 if(!this.userInfo.phone){//没登录，引导登录
                     delCookie('ql');
                     messageBus.$emit('msg_checkLogin','quick',true);
-                }else if(this.userInfo.phone && this.userInfo.isVip !== 1){//登陆了但还没开通会员，弹框引导开通会员
+                }else if(this.userInfo.phone && !this.userInfo.vipInfo){//登陆了但还没开通会员，弹框引导开通会员
                     messageBus.$emit('msg_showPopup',{
                         flag: true,
                         title: '您还不是会员哦',
@@ -153,7 +153,7 @@
                             }
                         ]
                     });
-                }else if(this.userInfo.phone && this.userInfo.isVip === 1){//已登陆并已开通会员，跳转商品详情页
+                }else if(this.userInfo.phone && this.userInfo.vipInfo){//已登陆并已开通会员，跳转商品详情页
                     this.$router.push({name: 'goodsDetail', params: {mid:this.info.mid,saleid:this.info.saleid,proid: this.info.proid }})
                 }else{
                     console.log('其他情况')

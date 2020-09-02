@@ -33,7 +33,8 @@
                 case 1: this.customName = 'Chaodigou';break; 
                 // case 2: this.customName = 'VipOpening';break; 
                 case 2: this.customName = 'Outdated';break; 
-                case 3: this.customName = 'Activity717';break; 
+                // case 3: this.customName = 'Activity717';break; 
+                case 3: this.customName = 'Outdated';break; 
                 case 4: this.customName = 'NewStarVip';break;
             }
         },

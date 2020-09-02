@@ -96,6 +96,17 @@
                 this.detailLinkPath = {name: 'vipBenefit'};
                 //会员订单根据effect判断状态
                 this.isVipOrder = true;
+                //兼容线下退订
+                if (this.info.expireTime) {
+                    let date = this.info.expireTime.slice(6,8);
+                    let month = this.info.expireTime.slice(4,6);
+                    let year = this.info.expireTime.slice(0,4);
+                    let time = year+'/' + month + '/' + date;
+                    // debugger
+                    if(new Date(time).getTime() - (new Date().getTime() + this.sysInfo.interval)<= 31*24*3600*1000){
+                        this.info.effect = 1;
+                    } 
+                }
             }
         },
         methods: {
@@ -300,7 +311,11 @@
             nameTxt(){
                 let maxLength=13;
                 if (this.info.salesType) maxLength = 8;
-                return this.info.name.length > (maxLength+1) ? this.info.name.slice(0,maxLength)+'...' : this.info.name;
+                if(this.info.name) {
+                    return this.info.name.length > (maxLength+1) ? this.info.name.slice(0,maxLength)+'...' : this.info.name;
+                } else {
+                    return '';
+                }
             }
         }
     }

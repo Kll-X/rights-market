@@ -12,6 +12,9 @@
     import messageBus from "@/utils/messageBus";
     import { pagelogMixin } from "@/mixins/log"
     import { myPlaceNewStarVip } from "@/api/common";
+    import { znLogin } from "@/api/login";
+    import { setCookie } from "@/utils/cookie";
+
     export default {
         name: "newStarVip",
         data(){
@@ -60,6 +63,7 @@
                     //     })
                     // }
                     messageBus.$on('getPhoneNumDone',()=>{
+                        let that = this;
                         if(!this.userInfo.phoneShow){
                             this.SET_SHOWQUICKLOGIN(true);
                         }else{
@@ -77,6 +81,33 @@
                                         console.log("注册成功")                                              
                                     }
                                 }
+                            })
+
+                            znLogin({
+                                phone:that.userInfo.phoneShow
+                            }).then((res)=>{
+                                that.$toast.clear();
+                                if(res.data.resultCode == 0){
+                                    window.console.log('一键登录成功');
+                                    // 一键登录成功，更新用户信息
+                                    that.SET_USERINFO(res.data.data);
+                                    // cookie缓存登录状态
+                                    setCookie('p',encodeURIComponent(res.data.data.phone));
+                                    setCookie('pm',res.data.data.phoneMask);
+                                    setCookie('t',Date.parse(new Date()));
+                                    setCookie('pc',res.data.data.provinceCode);
+                                    setCookie('pnsign',res.data.data.pnsign);
+                                    setCookie('iswhite',res.data.data.iswhite);
+                                    messageBus.$emit('msg_countDown');
+                                }else{
+                                    if(res.data.msg){
+                                        this.$toast(res.data.msg);
+                                    }else{
+                                        this.$toast('网络繁忙，请稍后重试!');
+                                    }
+                                }
+                            }).catch(()=>{
+                                this.$toast('网络繁忙，请稍后重试');
                             })
 
                             // setTimeout(() => {
@@ -116,7 +147,7 @@
             },
             goVip(){
                 if(!this.userInfo.phone && !this.userInfo.phoneShow){
-
+                    this.SET_SHOWQUICKLOGIN(true);
                 }else{
                     this.$router.push({name:'vip'})
                 }               
@@ -149,9 +180,11 @@
         top: 12.37rem;
         left: 6.13%;
         box-shadow: 0 0.07rem 0 #2fa3ed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         .go{
             font-size: 0.6rem;
-            margin-top: 0.1rem;
         }
         .tip{
             font-size: 0.24rem;

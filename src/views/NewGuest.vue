@@ -13,11 +13,11 @@
         <van-overlay :show="show" @click="show = false">
             <div class="overlay-wrapper" @click.stop>
                 <span @click="show = false" class="close-overlay"></span>
-                <div class="overlay-title">入会有礼</div>
+                <div class="overlay-title">流量礼包</div>
                 <div class="overlay-con">
-                    1、用户首次成为中国移动权益超市黄金会员，即可获得入会礼1GB通用流量日包一份。<br>
-                    2、领取次数有且只有一次，流量奖品24小时内直充到账，届时会有短信提示，还请注意查收。<br>
-                    3、1GB流量为日包产品，到账后24小时内有效。
+                    1、用户成为中国移动权益超市黄金会员，则可每月领取1GB通用流量日包一份，若当月未领取，次月无法补领；<br>
+                    2、当月流量礼包领取后，24小时内直充到账，届时会有短信提示，请注意查收；<br>
+                    3、1GB通用流量为日包产品，到账后24小时内有效。
                 </div>
             </div>
         </van-overlay>
@@ -49,7 +49,9 @@
         },
         watch:{
             '$store.state.userInfo.vipInfo'(n){
-                this.hasNewGift = n.hasNewGift;
+                if (n && n !== '') {
+                    this.hasNewGift = n.hasNewGift;
+                }
             },
         },
         data() {
@@ -59,7 +61,7 @@
             };
         },
         mounted() {
-            if (this.userInfo.phone) this.hasNewGift = this.userInfo.vipInfo.hasNewGift;
+            if (this.userInfo.phone && this.userInfo.vipInfo && this.userInfo.vipInfo !== '') this.hasNewGift = this.userInfo.vipInfo.hasNewGift;
         },
         methods: {
             receiveFunc() {
@@ -67,7 +69,8 @@
                     delCookie('ql');
                     messageBus.$emit('msg_checkLogin','quick')
                 } else {
-                    if (this.userInfo.isVip == 0) {
+                    if (this.userInfo.vipInfo == '') return false;
+                    if (!this.userInfo.vipInfo && this.userInfo.vipInfo !== '') {
                         this.$router.push({name: 'vipBenefit'});
                     } else {
                         let headers = {'phone': this.userInfo.phone};

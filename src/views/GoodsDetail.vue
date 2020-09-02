@@ -10,7 +10,7 @@
         </div>
         <!-- 开通会员选项 -->
         <div class="goods-vip-wrap">
-            <div v-show="!isVip && (paydetailList.price2 && paydetailList.price2 !== null) && !isSeckill" class="goods-vip-icon">
+            <div v-show="!isVip && !isStarVip && (paydetailList.price2 && paydetailList.price2 !== null) && !isSeckill" class="goods-vip-icon">
                 <router-link @click.native="blocklogHandler('详情页会员引导', '0021', '0001')" :to="{name: 'vipBenefit'}" class="goods-vip-button"></router-link>
             </div>
             <div v-show="isSeckill" class="goods-vip-seckill">
@@ -129,7 +129,7 @@
         </div> -->
         <!-- 新版底部付款框 -->
         <div v-show="!isSeckill" class="payment-btn-wrap">
-            <div class="payment-btn-wrap-button" :class="{'payment-btn-wrap-button-gray': (isFivego && isVip && !canBuyFivego)}" @click="orderFunc">
+            <div class="payment-btn-wrap-button" :class="{'payment-btn-wrap-button-gray': ((isFivego && isVip && !canBuyFivego) || greyBtn)}" @click="orderFunc">
                 <span v-show="!isFivego || (isFivego && canBuyFivego && isVip)">立即订购</span>
                 <span v-show="(isFivego && !isVip && phoneNumber && !isStarVip) || (isFivego && !phoneNumber)">开通会员立享5折</span>
                 <span v-show="(isFivego && !isVip && phoneNumber && isStarVip)">开通黄金会员立享5折</span>
@@ -306,6 +306,7 @@
                 defaultStyle: true, // 默认样式
                 defaultFirstStyle: true, // 默认只在第一次出现的样式
                 canAutoBuy: false, // 可以执行自动购买操作
+                greyBtn: false,
 
                 // 会员参数
                 isVip: 0, // 0：非会员 1：会员
@@ -394,6 +395,8 @@
 
                 //产品详情列表
                 paydetailList: {
+                    aid: '0',
+                    fivego: 0,
                     price: '0',
                 },
 
@@ -646,19 +649,21 @@
                     mid: id
                 }
                 let headers = {'phone': this.orderObject.mobile};
-                if (this.phoneNumber) data.isVip = (this.userInfo.vipInfo || this.userInfo.vipInfo!=='') ? this.isVip : this.isStarVip;
+                if (this.phoneNumber) data.isVip = (this.userInfo.vipInfo && this.userInfo.vipInfo!=='') ? this.isVip : this.isStarVip;
                 getFindMemberSales(data, headers).then((response) => {
                     if (response.data.resultCode == 0){
+                        if (response.data.data == null || response.data.data.length == 0 ) {
+                            this.orderList.list = [];
+                            this.greyBtn = true;
+                            Toast({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
+                            return;
+                        }
                         this.defaultStyle = false;
                         this.defaultFirstStyle = false;
                         let temp = {
                             tc: '',
                             paytype: '',
                             index: 0,
-                        }
-                        if (response.data.data == null || response.data.data.length == 0 ) {
-                            Toast({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
-                            return;
                         }
                         that.detailList = response.data.data;
                         for (let index = 0; index < response.data.data.length; index++) {
@@ -1016,6 +1021,7 @@
                     return false;
                 }
                 if (!this.isFristLoad) this.defaultStyle = true;
+                this.greyBtn = false; // 订购按钮不置灰
                 this.mid = this.goodsList[index].mid;
                 // 秒杀产品
                 if (this.isSeckill) {
@@ -1333,6 +1339,7 @@
                 // 如果为空
                 if (this.detailList == null || this.detailList.length == 0 ) {
                     Toast({message: '此商品已经下架或不存在', forbidClick: true, duration: 4000});
+                    return false;
                 }
                 // 五折登录非会员的处理
                 if (this.isFivego && !this.isVip && this.phoneNumber) {
@@ -1397,6 +1404,9 @@
                             payType: 10,
                             amount: this.paydetailList.price,
                             orderWay: this.paydetailList.paytype,
+                        }
+                        if (this.paydetailList.aid && this.paydetailList.aid != '0') {
+                            data.aid = this.paydetailList.aid;
                         }
                         let secondConfirmType = this.sysInfo.selfChannelCode == '00010017'? 1 : 0;
                         this.SecondConfirmInfo = {
@@ -1630,11 +1640,15 @@
                 this.phoneNumber = this.userInfo.phoneMask;
                 this.orderObject.mobile = this.userInfo.phone;
             },
-            '$store.state.userInfo.vipInfo'(n){
-                if (n !== '' && n !== null) {
-                    this.isVip = 1;
-                    this.changeInitialize(this.mid);
+            '$store.state.userInfo.vipInfo'(){
+                if (this.userInfo.newStarVipInfo && this.userInfo.newStarVipInfo !== '') {
+                    this.isStarVip = 1;
                 }
+                if (this.userInfo.vipInfo && this.userInfo.vipInfo !== '') {
+                    this.isVip = 1;
+                    this.isStarVip = 0;
+                }
+                this.changeInitialize(this.mid);
             },
             'paydetailList': {
                 deep: true,

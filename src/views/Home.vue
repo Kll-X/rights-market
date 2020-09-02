@@ -37,7 +37,7 @@
                 <!-- 文字广播 -->
                 <div class="text" v-if="textApps.length">
                     <div class="text-wrap">
-                        <div class="text-title"></div>if
+                        <div class="text-title"></div>
                         <div class="text-split"></div> 
                         <div class="text-swipe" v-if="textApps.length != 1">
                             <swiper class="text-swipe-wrap" ref="textSwiper" :options="textSwiper">
@@ -48,7 +48,7 @@
                             </swiper>
                         </div>
                         <div class="text-swipe" v-if="textApps.length == 1">
-                            <div class="text-font" @click="jump(textApps[0].linkurl)">{{textApps[0].name}}</div>
+                            <div class="text-font" @click.stop="jump(textApps[0].linkurl)">{{textApps[0].name}}</div>
                         </div>
                     </div> 
                 </div>
@@ -58,26 +58,20 @@
                     <classification-item1 v-for="(item,i) in classification" :key="i" :item="item"></classification-item1>
                 </div> -->
                 <!-- 权益领取 -->
-                <guide-headline :info="guide7" v-if="sysInfo.channel=='st' && banner3_arr.length"></guide-headline>
+                <guide-headline style="padding-top:.3rem" :info="guide7" v-if="sysInfo.channel=='st' && rightsApps.length"></guide-headline>
                 <!-- 权益领取轮播图 -->
 
-                <div class="banner3-wrapper" v-if="sysInfo.channel=='st' && banner3_arr.length">
-                <!-- <div class="banner3-wrapper" v-if="rightsApps.length" v-show="banner3Show"> -->
-                    <div class="banner3" ref="banner3" @scroll="banner3_scroll">
+                 <!--<div class="banner3-wrapper" v-if="sysInfo.channel=='st' && banner3_arr.length">-->
+                <div class="banner3-wrapper" v-if="sysInfo.channel=='st' && rightsApps.length">
+                    <!-- <div class="banner3" ref="banner3" @scroll="banner3_scroll"> -->
+                    <div class="banner3" ref="banner3">
                         <swiper class="content" ref="rightSwiper" :options="rightSwiper">
-                            <swiper-slide v-for="(item, index) in banner3_arr" :key="index">
-                                <classification-item2 :item="item" @click.native="blocklogHandler('分类区tap2','0009',i<9?'000'+(i+1):'00'+(i+1),item.linkurl)"></classification-item2>
+                            <swiper-slide v-for="(item, index) in rightsApps" :key="index">
+                                <classification-item2 :item="item" @click.native="blocklogHandler('分类区tap2','0009',('000'+(index+1)).slice(-4),item.linkurl)"></classification-item2>
                             </swiper-slide>
                         </swiper>
                         <div class="swiper-scrollbar" slot="scrollbar"></div>
-                        <!-- <div class="content" ref="banner3_content" :style="{width:banner3_arr.length * 1.7 +'rem'}">
-                            <classification-item2 v-for="(item,i) in banner3_arr" :key="i" :item="item" @click.native="blocklogHandler('分类区tap2','0009',i<9?'000'+(i+1):'00'+(i+1),item.linkurl)"></classification-item2>
-                        </div> -->
                     </div>
-                    <!-- <div class="progress-bar" ref="progress_bar" v-show="rightsApps.length > 4"> -->
-                    <!-- <div class="progress-bar" ref="progress_bar">
-                        <div class="progress" ref="progress"></div>
-                    </div> -->
                 </div>
 
                 <!-- 活动区 -->
@@ -170,7 +164,7 @@
                  <div class="hot-sell">
                     <hot-card v-for="(item,n) in hotSaleApps" :key="n" :info="item" :index="n" :saleId="hotAndNewSaleId" :hotCount="hotCount"></hot-card>
                 </div>
-                <div class="bottom-tip" v-if="loadding" :style="{height:(loaddingMessage === '努力加载中')?'1.01rem':''}">{{loaddingMessage}}</div>
+                <div class="bottom-tip" v-if="loadding" :style="{height:(loaddingMessage === '上拉加载更多')?'1.01rem':''}">{{loaddingMessage}}</div>
             </div>
             <!-- 本地专享 -->
             <div class="zone local" v-if="zone == 'local' && userInfo.phone && localFlag">
@@ -208,10 +202,12 @@
             <!-- <div class="add-popup-con" @click.stop="jump('http://www.baidu.com')">
                 <img class="add-popup-img" src="@imgs/home/addPopup.png" alt="">
             </div> -->
-            <router-link tag="div" to="/vipBenefit" class="add-popup-con">
-                <img class="add-popup-img" src="@imgs/home/addPopup.png" alt="">
-            </router-link>
-            <div @click="addPopupShow=false" class="add-popup-close"></div>
+            <div class='ad-wrapper'>
+                <router-link tag="div" to="/vipBenefit" class="add-popup-con">
+                    <img class="add-popup-img" src="@imgs/home/addPopup.png" alt="">
+                </router-link>
+                <div @click="addPopupShow=false" class="add-popup-close"></div>
+            </div>
         </div>
         <!-- 订购会员二次确认弹窗 -->
         <SecondConfirmBuy :info="SecondConfirmInfo"></SecondConfirmBuy>
@@ -253,160 +249,168 @@
         mixins: [pagelogMixin,blocklogMixin],
         created(){
             vm = this;
-            // 登录页不弹框
-            setCookie('ql','true',30);
-            // 微信环境下不展示
-            let userAgent = navigator.userAgent.toLowerCase();
-            if (userAgent.match(/MicroMessenger/i)=="micromessenger") {
-                this.banner3Show = false;
-            }
-            let that = this;
-            let headers = {'phone': this.userInfo.phone};
-            this.banner1.arr = getBanner(this.banner1.arr, this.sysInfo.channelCode);// 静态取banner
-            getData(headers).then((res)=>{
-                this.halfApps = res.data.data['108']?res.data.data['108']:[];
-                this.newApps = res.data.data['100']?res.data.data['100']:[];
-                this.hotApps = res.data.data['101']?res.data.data['101']:[];
-                this.textApps = res.data.data['112']?res.data.data['112']:[];
-                this.specialApps = res.data.data['102']?res.data.data['102']:[];
-                if (res.data.data['111'] && res.data.data['111'].length!=0) {
-                    for (let index = 0; index < res.data.data['111'].length; index++) {
-                        const item = res.data.data['111'][index];
-                        if (item.icon && item.icon!=='') {
-                            this.bannerHot.arr.push(item);
-                        }
-                    }
-                }
-                this.rightsApps = res.data.data['113']?res.data.data['113']:[];
-                if (this.banner1.arr.length === 0) {
-                    let resultArr = [];
-                    for (let item of res.data.data['105']) {
-                        if(item.icon){
-                            resultArr.push(item);
-                        }
-                    }
-                     this.banner1.arr = resultArr;
-                // this.banner1.arr[0] && (this.banner1.arr[0].needPnsign = true);
-                }
+            
+            // // 微信环境下不展示
+            // let userAgent = navigator.userAgent.toLowerCase();
+            // if (userAgent.match(/MicroMessenger/i)=="micromessenger") {
+            //     this.banner3Show = false;
+            // }
+            // let that = this;
+            // let headers = {'phone': this.userInfo.phone};
+            // this.banner1.arr = getBanner(this.banner1.arr, this.sysInfo.channelCode);// 静态取banner
+            // getData(headers).then((res)=>{
+            //     this.halfApps = res.data.data['108']?res.data.data['108']:[];
+            //     this.newApps = res.data.data['100']?res.data.data['100']:[];
+            //     this.hotApps = res.data.data['101']?res.data.data['101']:[];
+            //     this.textApps = res.data.data['112']?res.data.data['112']:[];
+            //     this.specialApps = res.data.data['102']?res.data.data['102']:[];
+            //     if (res.data.data['111'] && res.data.data['111'].length!=0) {
+            //         for (let index = 0; index < res.data.data['111'].length; index++) {
+            //             const item = res.data.data['111'][index];
+            //             if (item.icon && item.icon!=='') {
+            //                 this.bannerHot.arr.push(item);
+            //             }
+            //         }
+            //     }
+            //     this.rightsApps = [];
+            //     res.data.data['113'] && res.data.data['113'].forEach(item => {
+            //         item.img = process.env.VUE_APP_IMG_PRE+item.icon;
+            //         item.title = item.name;
+            //         item.icon && this.rightsApps.push(item)
+            //     });
+
+            //     if (this.banner1.arr.length === 0) {
+            //         let resultArr = [];
+            //         for (let item of res.data.data['105']) {
+            //             if(item.icon){
+            //                 resultArr.push(item);
+            //             }
+            //         }
+            //          this.banner1.arr = resultArr;
+            //     // this.banner1.arr[0] && (this.banner1.arr[0].needPnsign = true);
+            //     }
 
 
-                //曝光统计：商品上新
-                if(this.newApps.length > 0){
-                    this.blocklogHandler("商品新上",'0012','')
-                    this.newApps.forEach(item => {
-                        this.hotAndNewSaleId.push(item.saleid)
-                    })
-                    if(this.hotAndNewSaleId >8){
-                        this.hotAndNewSaleId = this.hotAndNewSaleId.slice(0,8)
-                    }
-                }
-                //曝光统计：热门推荐
-                if(this.hotApps.length > 0){
-                    this.blocklogHandler("热门推荐",'0013','')
-                    if(this.hotApps.length > 6){
-                        this.hotApps.forEach((item,index) => {     
-                            if(index <6){
-                                this.hotAndNewSaleId.unshift(item.saleid)//如果多于6个，只取前6个
-                            }                                             
-                        })
-                        this.hotCount = 6
-                    }else{
-                        this.hotApps.forEach(item => {                       
-                            this.hotAndNewSaleId.unshift(item.saleid)
-                        })
-                        this.hotCount = this.hotApps.length;
-                    }
-                }
-                //曝光统计：特色权益
-                if(this.specialApps.length > 0){
-                    this.blocklogHandler("特色权益",'0014','')
-                }
-                if (this.textApps.length !== 0) {
-                    let href = window.location.href.split('#')[0];
-                    for (let index = 0; index < this.textApps.length; index++) {
-                        const item = this.textApps[index];
-                        if (item.linkurl.indexOf(window.location.host) != -1) {
-                            item.linkurl = href + '#' + item.linkurl.split('#')[1];
-                        }
-                    }
-                }
-            }).catch((e)=>{
-               window.console.log(e)
-                this.$toast('加载失败了，刷新重试哦！');
-            });
-            findSecKill({aid:AID_SECKILL}).then((res)=>{
-                if(res.data.resultCode == 0){
-                    that.guide8.activityStatus = + res.data.data.activityStatus;
-                    that.guide8.startTime = res.data.data.startTime?res.data.data.startTime.replace(/-/g,'/'):'';
-                    that.guide8.endTime = res.data.data.endTime?res.data.data.endTime.replace(/-/g,'/'):'';
-                    // that.guide8.activityStatus = res.data.data.activityStatus = 0;
-                    // that.guide8.startTime = '2020-07-24 12:55:00';
-                    // that.guide8.endTime = '2020-07-24 12:56:00';
-                    if(res.data.data && res.data.data.list.length > 0){
-                        that.limitbuyApps = res.data.data.list;
-                    }
-                }
-            })
-            .catch((e)=>{
-                window.console.log(e)
-                that.$toast('加载失败了，刷新重试哦！');
-            });
-            hotSales({
-                current:1 , 
-                size:10
-            }).then((res)=>{
-                if(res.data.resultCode == 0){
-                    this.hotSaleApps = res.data.data.records?res.data.data.records:[];
-                }
-            })
-            .catch((e)=>{
-                window.console.log(e)
-                that.$toast('加载失败了，刷新重试哦！');
-            });
-            this.resetBanner2();
+            //     //曝光统计：商品上新
+            //     if(this.newApps.length > 0){
+            //         this.blocklogHandler("商品新上",'0012','')
+            //         this.newApps.forEach(item => {
+            //             this.hotAndNewSaleId.push(item.saleid)
+            //         })
+            //         if(this.hotAndNewSaleId >8){
+            //             this.hotAndNewSaleId = this.hotAndNewSaleId.slice(0,8)
+            //         }
+            //     }
+            //     //曝光统计：热门推荐
+            //     if(this.hotApps.length > 0){
+            //         this.blocklogHandler("热门推荐",'0013','')
+            //         if(this.hotApps.length > 6){
+            //             this.hotApps.forEach((item,index) => {     
+            //                 if(index <6){
+            //                     this.hotAndNewSaleId.unshift(item.saleid)//如果多于6个，只取前6个
+            //                 }                                             
+            //             })
+            //             this.hotCount = 6
+            //         }else{
+            //             this.hotApps.forEach(item => {                       
+            //                 this.hotAndNewSaleId.unshift(item.saleid)
+            //             })
+            //             this.hotCount = this.hotApps.length;
+            //         }
+            //     }
+            //     //曝光统计：特色权益
+            //     if(this.specialApps.length > 0){
+            //         this.blocklogHandler("特色权益",'0014','')
+            //     }
+            //     if (this.textApps.length !== 0) {
+            //         let href = window.location.href.split('#')[0];
+            //         for (let index = 0; index < this.textApps.length; index++) {
+            //             const item = this.textApps[index];
+            //             if (item.linkurl && (item.linkurl.indexOf(window.location.host) != -1)) {
+            //                 item.linkurl = href + '#' + item.linkurl.split('#')[1];
+            //             }
+            //         }
+            //     }
+            // }).catch((e)=>{
+            //    window.console.log(e)
+            //     this.$toast('加载失败了，刷新重试哦！');
+            // });
+            // findSecKill({aid:AID_SECKILL}).then((res)=>{
+            //     if(res.data.resultCode == 0){
+            //         that.guide8.activityStatus = + res.data.data.activityStatus;
+            //         that.guide8.startTime = res.data.data.startTime?res.data.data.startTime.replace(/-/g,'/'):'';
+            //         that.guide8.endTime = res.data.data.endTime?res.data.data.endTime.replace(/-/g,'/'):'';
+            //         // that.guide8.activityStatus = res.data.data.activityStatus = 0;
+            //         // that.guide8.startTime = '2020-07-24 12:55:00';
+            //         // that.guide8.endTime = '2020-07-24 12:56:00';
+            //         if(res.data.data && res.data.data.list.length > 0){
+            //             that.limitbuyApps = res.data.data.list;
+            //         }
+            //     }
+            // })
+            // .catch((e)=>{
+            //     window.console.log(e)
+            //     that.$toast('加载失败了，刷新重试哦！');
+            // });
+            // hotSales({
+            //     current:1 
+            // }).then((res)=>{
+            //     if(res.data.resultCode == 0){
+            //         this.hotSaleApps = res.data.data?res.data.data:[];
+            //     }
+            // })
+            // .catch((e)=>{
+            //     window.console.log(e)
+            //     that.$toast('加载失败了，刷新重试哦！');
+            // });
+            // this.resetBanner2();
+            // // 登录页不弹框
+            // setCookie('ql','true',30);
+            // messageBus.$on('msg_resetBanner2',this.resetBanner2);
+            // messageBus.$on('msg_setSeckillActivityStatus',(num)=>{
+            //     this.setSeckillActivityStatus(num);
+            // });
+            // // 集团渠道插码
+            // if(this.sysInfo.channelCode == 67057){
+            //     (function(){
+            //         let sdcjs = document.getElementById("sdcjs");
+            //         if (sdcjs){
+            //             sdcjs.parentNode.removeChild(sdcjs);
+            //         }
+            //         var s=document.createElement("script"); s.async=true;s.id='sdcjs'; s.src="./js/jt_sdc_load.js";    
+            //         var s2=document.getElementsByTagName("script")[0]; s2.parentNode.insertBefore(s,s2);
+            //     }());
+            // }
+            // //全渠道、微信渠道、手厅渠道、分省渠道统计
+            // if (this.sysInfo.channel == 'wx' || this.sysInfo.channel == 'st'){
+            //     customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][0])
+            // }
+            // customAnalysis(STATISTICS.activityId, STATISTICS.all[0]);
+            // if (this.sysInfo.locationCode && process.env.VUE_APP_BUILD == 'production') {
+            //     customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key);
+            //     customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key,this.sysInfo.locationCode);
+            // }
+            // //曝光统计：搜索
+            // this.blocklogHandler("搜索入口,首页banner",'0003,0007','')
+            // if (this.sysInfo.channel == 'st') {
+            //     this.blocklogHandler("首页个人信息2,分类区tap2",'0006,0009','')
+            // }else{
+            //     this.blocklogHandler("首页个人信息1",'0005','')
+            // }
 
-            messageBus.$on('msg_resetBanner2',this.resetBanner2);
-            messageBus.$on('msg_setSeckillActivityStatus',(num)=>{
-                this.setSeckillActivityStatus(num);
-            });
-            // 集团渠道插码
-            if(this.sysInfo.channelCode == 67057){
-                (function(){
-                    let sdcjs = document.getElementById("sdcjs");
-                    if (sdcjs){
-                        sdcjs.parentNode.removeChild(sdcjs);
-                    }
-                    var s=document.createElement("script"); s.async=true;s.id='sdcjs'; s.src="./js/jt_sdc_load.js";    
-                    var s2=document.getElementsByTagName("script")[0]; s2.parentNode.insertBefore(s,s2);
-                }());
-            }
-            //全渠道、微信渠道、手厅渠道、分省渠道统计
-            if (this.sysInfo.channel == 'wx' || this.sysInfo.channel == 'st'){
-                customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][0])
-            }
-            customAnalysis(STATISTICS.activityId, STATISTICS.all[0]);
-            if (this.sysInfo.locationCode && process.env.VUE_APP_BUILD == 'production') {
-                customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key);
-                customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key,this.sysInfo.locationCode);
-            }
-            //曝光统计：搜索
-            this.blocklogHandler("搜索入口,首页banner",'0003,0007','')
-            if (this.sysInfo.channel == 'st') {
-                this.blocklogHandler("首页个人信息2,分类区tap2",'0006,0009','')
-            }else{
-                this.blocklogHandler("首页个人信息1",'0005','')
-            }
+            // //会员订购二次确认窗显隐 
+            // messageBus.$on('msg_subscribePopup',(flag)=>{
+            //     this.subscribePopup(flag)
+            // });
 
-            //会员订购二次确认窗显隐 
-            messageBus.$on('msg_subscribePopup',(flag)=>{
-                this.subscribePopup(flag)
-            });
+            // // 广告弹框新建cookie
+            // if (getCookie('ql') && !getCookie('ad') && this.sysInfo.channel!='st') {
+            //     setCookie('ad','true', 720);
+            //     this.addPopupShow = true;
+            // }
 
-            // 广告弹框新建cookie
-            if (getCookie('ql') && !getCookie('ad') && this.sysInfo.channel!='st') {
-                setCookie('ad','true', 720);
-                this.addPopupShow = true;
-            }
+            //绑定刷新或关闭页面事件 
+            // window.addEventListener('beforeunload', e => this.beforeunloadFn(e))
         },
         data(){
             return{
@@ -454,7 +458,7 @@
                     autoHeight: true,
                     loop: true,
                     on: {
-                        click: function(r) {
+                        click: function() {
                             vm.jump(vm.textApps[this.realIndex].linkurl);
                         }
                     },
@@ -550,7 +554,7 @@
                 guide10:{
                     name: '热卖权益',
                     id: '1',
-                    moreDesc:'更多权益',
+                    moreDesc:'全部权益',
                 },
                 limitbuyApps:[],
                 halfApps:[],
@@ -654,6 +658,11 @@
             window.addEventListener('scroll', this.lazyLoading);//滑动到底部，加载更多热门权益
         },
         methods:{
+            // beforeunloadFn(e) {
+            //     console.log(e,'刷新或关闭');
+            //     // 记录首页滚动高度
+            //     setCookie('homeScroll',document.documentElement.scrollTop);
+            // },
             onChange1(i){
                 this.banner1.current = i
             },
@@ -714,23 +723,19 @@
                     //事件处理
                     window.removeEventListener('scroll', this.lazyLoading);
                     this.loadding = true;
-                    this.loaddingMessage = "努力加载中"
+                    this.loaddingMessage = "上拉加载更多"
                     this.hotAxiosCount = this.hotAxiosCount+1
                     //请求接口
                     hotSales({
-                        current:this.hotAxiosCount,
-                        size:10
+                        current:this.hotAxiosCount
                     }).then((res)=>{
                         if(res.data.resultCode == 0){    
-                            this.hotSaleAddApps = res.data.data.records?res.data.data.records:[];
-                             if(this.hotSaleAddApps.length == 10){//返回10条数据                   
+                            this.hotSaleAddApps = res.data.data?res.data.data:[];
+                             if(this.hotAxiosCount == 2){//返回10条数据                 
                                 this.hotSaleApps = this.hotSaleApps.concat(this.hotSaleAddApps)
                                 this.loaddingMessage = ""
                                 window.addEventListener('scroll', this.lazyLoading); 
-                            }else if(this.hotSaleAddApps.length == 0){
-                                this.loaddingMessage = "———— 我是有底线的哦 ————"
-                                window.removeEventListener('scroll', this.lazyLoading);
-                            }else{//少于10条数据，说明是最后的数据了
+                            }else{//少于10条数据，说明是最后的数据了   
                                 this.hotSaleApps = this.hotSaleApps.concat(this.hotSaleAddApps)
                                 this.loaddingMessage = "———— 我是有底线的哦 ————"
                                 window.removeEventListener('scroll', this.lazyLoading);
@@ -864,28 +869,200 @@
 
             }
         },
-        // //使用keep-alive，进入路由即触发 created、mounted只触发一次
-        // activated (){
-        //     let that = this;
-        //     setTimeout(()=>{
-        //         this.$nextTick(() => {
-        //             window.scrollTo({ 
-        //                 top:  that.$homeScroll,
-        //                 behavior: "instant" 
-        //             })
-        //         })
-        //     });
+        //使用keep-alive，进入路由即触发 created、mounted只触发一次
+        activated (){
+            let that = this;
+            setTimeout(()=>{
+                this.$nextTick(() => {
+                    window.scrollTo({ 
+                        top:  that.$homeScroll,
+                        behavior: "instant" 
+                    })
+                })
+            });
 
-        //     // created、mounted逻辑待搬移 todo
-        //     window.addEventListener('scroll', this.lazyLoading);//滑动到底部，加载更多热门权益
+            // created部分
+            // 微信环境下不展示
+            let userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.match(/MicroMessenger/i)=="micromessenger") {
+                this.banner3Show = false;
+            }
+            let headers = {'phone': this.userInfo.phone};
+            this.banner1.arr = getBanner(this.banner1.arr, this.sysInfo.channelCode);// 静态取banner
+            getData(headers).then((res)=>{
+                this.halfApps = res.data.data['108']?res.data.data['108']:[];
+                this.newApps = res.data.data['100']?res.data.data['100']:[];
+                this.hotApps = res.data.data['101']?res.data.data['101']:[];
+                this.textApps = res.data.data['112']?res.data.data['112']:[];
+                this.specialApps = res.data.data['102']?res.data.data['102']:[];
+                if (res.data.data['111'] && res.data.data['111'].length!=0) {
+                    for (let index = 0; index < res.data.data['111'].length; index++) {
+                        const item = res.data.data['111'][index];
+                        if (item.icon && item.icon!=='') {
+                            this.bannerHot.arr.push(item);
+                        }
+                    }
+                }
+                this.rightsApps = [];
+                res.data.data['113'] && res.data.data['113'].forEach(item => {
+                    item.img = process.env.VUE_APP_IMG_PRE+item.icon;
+                    item.title = item.name;
+                    item.icon && this.rightsApps.push(item)
+                });
+                //曝光统计：权益领取
+                if(this.rightsApps.length > 0){
+                    this.blocklogHandler('分类区tap2','0009','');
+                }
 
-        // },
+                if (this.banner1.arr.length === 0) {
+                    let resultArr = [];
+                    for (let item of res.data.data['105']) {
+                        if(item.icon){
+                            resultArr.push(item);
+                        }
+                    }
+                     this.banner1.arr = resultArr;
+                // this.banner1.arr[0] && (this.banner1.arr[0].needPnsign = true);
+                }
+
+
+                //曝光统计：会员优惠购
+                if(this.halfApps.length > 0){
+                    this.blocklogHandler('会员优惠购','0011','');
+                }
+
+                //曝光统计：商品上新
+                if(this.newApps.length > 0){
+                    this.blocklogHandler("商品新上",'0012','')
+                    this.newApps.forEach(item => {
+                        this.hotAndNewSaleId.push(item.saleid)
+                    })
+                    if(this.hotAndNewSaleId >8){
+                        this.hotAndNewSaleId = this.hotAndNewSaleId.slice(0,8)
+                    }
+                }
+                //曝光统计：热门推荐
+                if(this.hotApps.length > 0){
+                    this.blocklogHandler("热门推荐",'0013','')
+                    if(this.hotApps.length > 6){
+                        this.hotApps.forEach((item,index) => {     
+                            if(index <6){
+                                this.hotAndNewSaleId.unshift(item.saleid)//如果多于6个，只取前6个
+                            }                                             
+                        })
+                        this.hotCount = 6
+                    }else{
+                        this.hotApps.forEach(item => {                       
+                            this.hotAndNewSaleId.unshift(item.saleid)
+                        })
+                        this.hotCount = this.hotApps.length;
+                    }
+                }
+                //曝光统计：特色权益
+                if(this.specialApps.length > 0){
+                    this.blocklogHandler("特色权益",'0014','')
+                }
+                if (this.textApps.length !== 0) {
+                    let href = window.location.href.split('#')[0];
+                    for (let index = 0; index < this.textApps.length; index++) {
+                        const item = this.textApps[index];
+                        if (item.linkurl && (item.linkurl.indexOf(window.location.host) != -1)) {
+                            item.linkurl = href + '#' + item.linkurl.split('#')[1];
+                        }
+                    }
+                }
+            }).catch((e)=>{
+               window.console.log(e)
+                this.$toast('加载失败了，刷新重试哦！');
+            });
+            findSecKill({aid:AID_SECKILL}).then((res)=>{
+                if(res.data.resultCode == 0){
+                    that.guide8.activityStatus = + res.data.data.activityStatus;
+                    that.guide8.startTime = res.data.data.startTime?res.data.data.startTime.replace(/-/g,'/'):'';
+                    that.guide8.endTime = res.data.data.endTime?res.data.data.endTime.replace(/-/g,'/'):'';
+                    // that.guide8.activityStatus = res.data.data.activityStatus = 0;
+                    // that.guide8.startTime = '2020-07-24 12:55:00';
+                    // that.guide8.endTime = '2020-07-24 12:56:00';
+                    if(res.data.data && res.data.data.list.length > 0){
+                        that.limitbuyApps = res.data.data.list;
+                    }
+                }
+            })
+            .catch((e)=>{
+                window.console.log(e)
+                that.$toast('加载失败了，刷新重试哦！');
+            });
+            hotSales({
+                current:1 
+            }).then((res)=>{
+                if(res.data.resultCode == 0){
+                    this.hotSaleApps = res.data.data?res.data.data:[];
+                }
+            })
+            .catch((e)=>{
+                window.console.log(e)
+                that.$toast('加载失败了，刷新重试哦！');
+            });
+            this.resetBanner2();
+            // 登录页不弹框
+            setCookie('ql','true',30);
+            messageBus.$on('msg_resetBanner2',this.resetBanner2);
+            messageBus.$on('msg_setSeckillActivityStatus',(num)=>{
+                this.setSeckillActivityStatus(num);
+            });
+            // 集团渠道插码
+            if(this.sysInfo.channelCode == 67057){
+                (function(){
+                    let sdcjs = document.getElementById("sdcjs");
+                    if (sdcjs){
+                        sdcjs.parentNode.removeChild(sdcjs);
+                    }
+                    var s=document.createElement("script"); s.async=true;s.id='sdcjs'; s.src="./js/jt_sdc_load.js";    
+                    var s2=document.getElementsByTagName("script")[0]; s2.parentNode.insertBefore(s,s2);
+                }());
+            }
+            //全渠道、微信渠道、手厅渠道、分省渠道统计
+            if (this.sysInfo.channel == 'wx' || this.sysInfo.channel == 'st'){
+                customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][0])
+            }
+            customAnalysis(STATISTICS.activityId, STATISTICS.all[0]);
+            if (this.sysInfo.locationCode && process.env.VUE_APP_BUILD == 'production') {
+                customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key);
+                customAnalysis(STATISTICS_PROVINCE.activityId,STATISTICS_PROVINCE.key,this.sysInfo.locationCode);
+            }
+            //曝光统计：搜索
+            this.blocklogHandler("搜索入口,首页banner",'0003,0007','')
+            if (this.sysInfo.channel == 'st') {
+                this.blocklogHandler("首页个人信息2,分类区tap2",'0006,0009','')
+            }else{
+                this.blocklogHandler("首页个人信息1",'0005','')
+            }
+
+            //会员订购二次确认窗显隐 
+            messageBus.$on('msg_subscribePopup',(flag)=>{
+                this.subscribePopup(flag)
+            });
+
+            // 广告弹框新建cookie
+            if (getCookie('ql') && !getCookie('ad') && this.sysInfo.channel!='st') {
+                setCookie('ad','true', 720);
+                this.addPopupShow = true;
+            }
+
+            //mounted部分
+            window.addEventListener('scroll', this.lazyLoading);//滑动到底部，加载更多热门权益
+
+        },
         beforeRouteLeave(to,from,next){
-            // //全局变量homeScroll默认为0 离开页面时 记录当前的页面滚动值
-            // this.$homeScroll= document.documentElement.scrollTop || document.body.scrollTop;
-            // // 若使用keep-alive，beforeDestory不执行，所以里面逻辑搬移到这里
-            // window.removeEventListener('scroll', this.lazyLoading); 
-            // messageBus.$off(['msg_resetBanner2','msg_subscribePopup','setSeckillActivityStatus']);
+            //全局变量homeScroll默认为0 离开页面时 记录当前的页面滚动值
+            this.$homeScroll= document.documentElement.scrollTop || document.body.scrollTop;
+            // 若使用keep-alive，beforeDestory不执行，所以里面逻辑搬移到这里
+            window.removeEventListener('scroll', this.lazyLoading); 
+            messageBus.$off(['msg_resetBanner2','msg_subscribePopup','setSeckillActivityStatus']);
+
+
+            // 记录首页滚动高度
+            // setCookie('homeScroll',document.documentElement.scrollTop);
 
 
             // if(from.name == 'home' && this.sysInfo.channel == 'st' && getQuery('zindex')=='basic'){
@@ -907,9 +1084,19 @@
                 next();
             }
         },
+        // beforeRouteEnter(to,from,next){
+        //     next(vm=>{
+        //         if(vm.sysInfo.channel != 'st' &&  getCookie('homeScroll')){//非手厅
+        //             setTimeout(() => {
+        //                 window.scrollTo(0,getCookie('homeScroll'))
+        //             }, 1000);
+        //         }
+        //     })
+        // },
         beforeDestroy: function () {
             messageBus.$off(['msg_resetBanner2','msg_subscribePopup','setSeckillActivityStatus']);
             window.removeEventListener('scroll', this.lazyLoading); 
+            // window.removeEventListener('beforeunload', e => this.beforeunloadFn(e))
         }
     }
 </script>
@@ -1304,21 +1491,27 @@
         height: 100vh;
         z-index: 100;
         background-color: rgba(0, 0, 0, .6);
-        .add-popup-con{
-            width: 6.8rem;
-            height: 9.14rem;
-            margin: 1.4rem auto .54rem;
-            .add-popup-img{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .ad-wrapper{
+            .add-popup-con{
                 width: 6.8rem;
                 height: 9.14rem;
+                margin: 0 auto .54rem;
+                .add-popup-img{
+                    width: 6.8rem;
+                    height: 9.14rem;
+                }
+            }
+            .add-popup-close{
+                width: .6rem;
+                height: .6rem;
+                margin: 0 auto;
+                background: url('../assets/imgs/home/close_btn.png') no-repeat center/100% 100%;
             }
         }
-        .add-popup-close{
-            width: .6rem;
-            height: .6rem;
-            margin: 0 auto;
-            background: url('../assets/imgs/home/close_btn.png') no-repeat center/100% 100%;
-        }
+        
     }
 }
     

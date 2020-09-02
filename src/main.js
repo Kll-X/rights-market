@@ -19,7 +19,7 @@ Vue.use(VueAwesomeSwiper );
 Vue.use(Vuex);
 Vue.config.productionTip = false
 window.preRoute = ''
-// Vue.prototype.$homeScroll = 0;
+Vue.prototype.$homeScroll = 0;
 
 router.beforeEach((to, from, next) => {
     window.preRoute = Object.assign({},from);

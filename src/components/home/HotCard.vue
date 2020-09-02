@@ -1,8 +1,8 @@
 <template>
-    <router-link tag='div' :class="{'hot-card':true}" :to="{name: 'goodsDetail', params: {mid:this.info.mid,saleid:this.info.saleid,proid: this.info.proid }}">
+    <router-link tag='div' :class="{'hot-card':true}" :to="{name: 'goodsDetail', params: {mid:this.info.mid,saleid:this.info.saleid,proid: this.info.proid,paytype: this.info.paytype,tc:this.info.tc }}">
         <div class="card-item">
             <div>
-                <img class="img" :src="Common.getImgUrl(info.icon)" alt="">
+                <img class="img" @error="defalutImg" :src="Common.getImgUrl(info.icon)" alt="">
             </div>            
             <div class="item-dec">
                 <div class="item-dec-line1">
@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="buy-item">
-            <img class="buy-item" src="@imgs/home/hotSell_buy.png">
+            <img class="buy-item-img" src="@imgs/home/hotSell_buy.png">
         </div>
     </router-link>
 </template>
@@ -39,8 +39,8 @@
                 "sysInfo"
             ]),
             is_hotOrNew(){
-                this.info.saleid = this.info.saleid+""
-                return this.saleId.indexOf(this.info.saleid);            
+                // this.info.saleid = this.info.saleid+"";
+                return this.saleId.indexOf(this.info.saleid + '');            
             },
             item_price(){
                 let price = this.info.price/100
@@ -64,16 +64,20 @@
             }
         },
         methods:{
+            defalutImg() {
+                let img = event.srcElement;
+                img.src = require('@imgs/default.png');
+                img.onerror = null;
+            },
         }
     }
 </script>
 
 <style lang="less" scoped>
     .hot-card{
-        height: 1.6rem;
+        height: 1.7rem;
         display: flex;
         justify-content: space-between;
-        align-items: center;
         border-bottom: .01rem solid rgba(240, 240, 240, 1);
         .img{
             width: 1.3rem;
@@ -81,10 +85,15 @@
         }
         .card-item{
             display: flex;
+            height: 1.3rem;
+            margin-top: 0.22rem;
         }
         .buy-item{
-            width: 1.16rem;
-            height: 0.56rem;
+            margin-top: 0.59rem;
+            .buy-item-img{
+                width: 1.16rem;
+                height: 0.56rem;
+            }
         }
         .item-dec{
             display: flex;
@@ -105,7 +114,7 @@
         .item-price{
             margin-left: .21rem;
             color: #fd7028;
-            margin-top: 0.16rem;
+            margin-top: 0.1rem;
             .item-price-flag{
                 font-size: 0.26rem;
                 line-height: 0.26rem;
@@ -127,6 +136,7 @@
             font-size: 0.3rem;
             color: #333333;
             margin-left: .13rem;
+            line-height: 0.3rem;
         }
     }
 </style>

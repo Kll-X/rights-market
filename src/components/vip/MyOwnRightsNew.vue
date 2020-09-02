@@ -1,22 +1,32 @@
 <template>
     <div class="my-own-rights">
-        <div class="part-vip" v-if="type">
+        <div class="part-vip" v-if="type == 1">
             <GuideHeadline :info="name"></GuideHeadline>
             <div class="rights-vip">
-                <div class="item" v-for="(item,index) in list" :key="index" @click="clickHandler(index,item)">
+                <div class="item" v-for="(item,index) in vipList" :key="index" @click="clickHandler(index,item)">
                     <img :src="item.icon" alt="">
                     <span class="title">{{item.title}}</span>
                     <span class="tips">{{item.tips}}</span>
                 </div>
             </div>
         </div>
-        <div class="part-notvip" v-else>
+        <div class="part-vip" v-if="type == 2">
+            <GuideHeadline :info="name"></GuideHeadline>
+            <div class="rights-vip">
+                <div class="item" v-for="(item,index) in newStarVipList" :key="index" @click="clickHandler(index,item)">
+                    <img :src="item.icon" alt="">
+                    <span class="title">{{item.title}}</span>
+                    <span class="tips">{{item.tips}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="part-notvip" v-if="type == 0 ">
             <div class="rights-tips" @click="gotoLink({name:'vipBenefit'})">
                 黄金会员权益
                 <div class="rights-tips-icon"></div>
             </div>
             <div class="rights-notvip">
-                <div class="item" v-for="(item,index) in list" :key="index" @click="clickHandler(index,item)">
+                <div class="item" v-for="(item,index) in notVipList" :key="index" @click="clickHandler(index,item)">
                     <img :src="item.icon" alt="">
                     <span class="title">{{item.title}}</span>
                     <span class="tips">{{item.tips}}</span>
@@ -35,78 +45,7 @@
         mixins:[blocklogMixin],
         data(){
             return{
-            }
-        },
-        props:[
-            'type',
-        ],
-        computed:{
-            ...mapState([
-                "userInfo"
-            ]),
-            list(){
-                let tips = +this.type?+this.info.hasNewGift?'已领取':'点击领取':'开通立享';
-                let res;
-                switch(+this.type){
-                    case 0: res = [
-                    {
-                        icon: require('@imgs/vip/icon_gift.png'),
-                        title: '流量礼包',
-                        // tips: tips,
-                        path: {name:'vipBenefit'}
-                    },{
-                        icon: require('@imgs/vip/icon_shopping.png'),
-                        title: '优惠购',
-                        // tips: '开通立享',
-                        path: {name:'vipBenefit'}
-                    },{
-                        icon: require('@imgs/vip/icon_discount.png'),
-                        title: '5折购',
-                        // tips: '开通立享',
-                        path: {name:'vipBenefit'}
-                    },{
-                        icon: require('@imgs/vip/icon_service.png'),
-                        title: '福利社',
-                        // tips: '开通立享',
-                        path: {name:'vipBenefit'}
-                    },{
-                        icon: require('@imgs/vip/icon_service.png'),
-                        title: '专属客服',
-                        // tips: '开通立享',
-                        path: {name:'vipBenefit'}
-                    }
-                ];break;
-                case 1: res = [
-                    {
-                        icon: require('@imgs/vip/icon_gift_vip.png'),
-                        title: '流量礼包',
-                        tips: tips,
-                        path: {name: 'newGuest'}
-                    },{
-                        icon: require('@imgs/vip/icon_shopping_vip.png'),
-                        title: '优惠购',
-                        tips: '点击选购',
-                        path: {name: 'vipPreferential'}
-                    },{
-                        icon: require('@imgs/vip/icon_discount_vip.png'),
-                        title: '5折购',
-                        tips: '点击抢购',
-                        path: {name: 'halfPrice'}
-                    },
-                    {
-                        icon: require('@imgs/vip/icon_welfare.png'),
-                        title: '福利社',
-                        tips: '点击领取',
-                        path: {name:'vipBenefit'}
-                    },
-                    {
-                        icon: require('@imgs/vip/icon_service_vip.png'),
-                        title: '专属客服',
-                        tips: '点击沟通',
-                        path: {name:'customerService'}
-                    }
-                ];break;
-                case 2: res = [
+                newStarVipList:[
                     {
                         icon: require('@imgs/vip/icon_shopping_vip.png'),
                         title: '优惠购',
@@ -114,10 +53,11 @@
                         path: {name: 'vipPreferential'}
                     },
                     {
-                        icon: require('@imgs/vip/icon_welfare.png'),
+                        icon: require('@imgs/vip/icon_welfare_vip.png'),
                         title: '福利社',
                         tips: '点击领取',
-                        path: {name:'vipBenefit'}
+                        path: process.env.VUE_APP_BUILD !== 'production' ?'http://rwktst.aspire-tech.com:19088/frcm/fcyr4/index.html#/vipClub':'https://apiserv.cmicrwx.cn/fcyr4/index.html#/vipClub',
+                        needParams:['pnsign','selfChannelCode']
                     },
                     {
                         icon: require('@imgs/vip/icon_service_vip.png'),
@@ -139,8 +79,78 @@
                         locked: true
                         // path: {name: 'newGuest'}
                     }
-                ];break;
+                ],
+                notVipList:[
+                    {
+                        icon: require('@imgs/vip/icon_gift.png'),
+                        title: '流量礼包',
+                        path: {name:'vipBenefit'}
+                    },{
+                        icon: require('@imgs/vip/icon_shopping.png'),
+                        title: '优惠购',
+                        path: {name:'vipBenefit'}
+                    },{
+                        icon: require('@imgs/vip/icon_discount.png'),
+                        title: '5折购',
+                        path: {name:'vipBenefit'}
+                    },{
+                        icon: require('@imgs/vip/icon_welfare.png'),
+                        title: '福利社',
+                        path: {name:'vipBenefit'}
+                    },{
+                        icon: require('@imgs/vip/icon_service.png'),
+                        title: '专属客服',
+                        path: {name:'vipBenefit'}
+                    }
+                ]
+            }
+        },
+        props:[
+            'type',
+        ],
+        computed:{
+            ...mapState([
+                "userInfo"
+            ]),
+            vipList(){
+                let tips = +this.info.hasNewGift?'已领取':'点击领取';
+                let res,vipWelfareUrl ;
+                if (process.env.VUE_APP_BUILD  !== 'production') {
+                    vipWelfareUrl = 'http://rwktst.aspire-tech.com:19088/frcm/fcyr4/index.html#/vipClub';
+                } else {
+                    vipWelfareUrl = 'https://apiserv.cmicrwx.cn/fcyr4/index.html#/vipClub';
                 }
+                res = [
+                    {
+                        icon: require('@imgs/vip/icon_gift_vip.png'),
+                        title: '流量礼包',
+                        tips: tips,
+                        path: {name: 'newGuest'}
+                    },{
+                        icon: require('@imgs/vip/icon_shopping_vip.png'),
+                        title: '优惠购',
+                        tips: '点击选购',
+                        path: {name: 'vipPreferential'}
+                    },{
+                        icon: require('@imgs/vip/icon_discount_vip.png'),
+                        title: '5折购',
+                        tips: '点击抢购',
+                        path: {name: 'halfPrice'}
+                    },
+                    {
+                        icon: require('@imgs/vip/icon_welfare_vip.png'),
+                        title: '福利社',
+                        tips: '点击领取',
+                        path: vipWelfareUrl,
+                        needParams:['pnsign','selfChannelCode']
+                    },
+                    {
+                        icon: require('@imgs/vip/icon_service_vip.png'),
+                        title: '专属客服',
+                        tips: '点击沟通',
+                        path: {name:'customerService'}
+                    }
+                ]
                 return res;
             },
             name(){
@@ -162,7 +172,19 @@
             },
             clickHandler(index,item){
                 this.blocklogHandler('专属权益入口','0026','000'+(index+1));
-                item.path&&this.$router.push(item.path);
+                if (item.needParams) {
+                    // 暂时只针对path为字符串的情况
+                    item.needParams.forEach(params=>{
+                        switch (params) {
+                            case 'pnsign': item.path += '?pnsign=' + encodeURIComponent(this.userInfo.pnsign);break;
+                            case 'selfChannelCode': item.path += '&selfChannelCode=' + this.sysInfo.selfChannelCode;break;
+                        }
+                    })
+                }
+                if(item.path){
+                    typeof item.path == 'string'?(location.href = item.path) :  this.$router.push(item.path);
+                }
+                // item.path&&this.$router.push(item.path);
                 item.locked&&this.$emit('placeVipOrder');
             }
         },

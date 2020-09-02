@@ -41,7 +41,7 @@
         mixins:[blocklogMixin],
         created(){
             // 曝光统计：会员优惠购
-            this.blocklogHandler('会员优惠购','0011','');
+            // this.blocklogHandler('会员优惠购','0011','');
         },
         components:{
             // AppCard1
@@ -69,21 +69,24 @@
             .logo{
                 width:1.3rem;
                 height:1.3rem;
-                margin: 0.19rem auto 0.1rem;
+                margin: 0.19rem auto 0;
                 display: block;
             }
             .name{
                 box-sizing: border-box;
                 width: 100%;
                 font-size: 0.26rem;
-                height:0.25rem;
+                height: 0.45rem;
                 color:#333;
                 font-weight: 500;
-                margin-bottom: 0.13rem;
+                margin-bottom: 0.03rem;
                 padding: 0 .1rem;
                 overflow: hidden;  /*超出部分隐藏*/
                 white-space: nowrap;  /*禁止换行*/
                 text-overflow: ellipsis; /*省略号*/
+                display:flex;
+                align-items:center;
+                justify-content:center;
             }
             .pay{
                 width: 100%;
@@ -131,6 +134,7 @@
         .vip-pay{
             width: 100%;
             font-size: 0.24rem;
+            height: 0.33rem;
             overflow: hidden;  /*超出部分隐藏*/
             white-space: nowrap;  /*禁止换行*/
             text-overflow: ellipsis; /*省略号*/
@@ -140,7 +144,7 @@
             -webkit-justify-content: center;
             align-items:center;
             -webkit-align-items: center;
-            margin-bottom: 0.11rem;
+            margin-bottom: 0.08rem;
             .symbol{
                 height:0.25rem;
             }

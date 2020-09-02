@@ -3,10 +3,12 @@ var config = {
     vipFlag:0
 }
 const mockingAPI = [
-    // 'api/order/placeOrder'
+    // 'api/order/placeOrder',
     // 'api/vip/myVip',
-    // 'api/channel/verfy'
-    // 'api/cmpp/checkSmsCode'
+    // 'api/channel/verfy',
+    // 'api/cmpp/checkSmsCode',
+    // 'api/order/queryOrderList.do',
+    // 'api/sales/hotSales'
 ]
 
 function mock(api,method,data,callback,dataIndexName){
@@ -116,34 +118,35 @@ mock('api/home/findSecKill','post',
 )
 
 mock('api/vip/myVip','post', [
-    {
-        data: [],
-        msg: "success",
-        resultCode: 0
-    },
+    // {
+    //     data: [],
+    //     msg: "success",
+    //     resultCode: 0
+    // },
+    // {
+    //     data: [
+    //         {
+    //         cancelFlag: "1",
+    //         effectDaysBefore: 54,
+    //         effectTime: "20200617234550",
+    //         expireTime: "20200820000000",
+    //         hasNewGift: "1",
+    //         id: "722960366632947712",
+    //         orderId: "722960070972301312",
+    //         vipLevel: "4",
+    //         vipType: "1"
+    //     }
+    // ],
+    //     msg: "success",
+    //     resultCode: 0
+    // },
     {
         data: [
             {
-            cancelFlag: "1",
+            cancelFlag: "0",
             effectDaysBefore: 54,
             effectTime: "20200617234550",
-            expireTime: "20200820000000",
-            hasNewGift: "1",
-            id: "722960366632947712",
-            orderId: "722960070972301312",
-            vipLevel: "4",
-            vipType: "1"
-        }
-    ],
-        msg: "success",
-        resultCode: 0
-    },{
-        data: [
-            {
-            cancelFlag: "1",
-            effectDaysBefore: 54,
-            effectTime: "20200617234550",
-            expireTime: "20200820000000",
+            expireTime: "20200710000000",
             hasNewGift: "1",
             id: "722960366632947712",
             orderId: "722960070972301312",
@@ -151,7 +154,6 @@ mock('api/vip/myVip','post', [
             vipType: "1"
         },
         {
-            cancelFlag: "1",
             effectDaysBefore: 54,
             effectTime: "20200617234550",
             expireTime: "20200820000000",
@@ -181,3 +183,50 @@ mock('api/cmpp/checkSmsCode','post',{
     resultCode: 0
     }
 )
+
+mock('api/order/queryOrderList.do','post', {
+    data: [{
+        custVipId: "123123123121",
+        effect: "0",
+        expireTime: "20200931235958",
+        iconUrl: "icon_vip.png",
+        istx: 2,
+        mainStatus: 5,
+        mid: 0,
+        name: "权益超市黄金会员",
+        orderId: "HjGTnOVtyM3W5VXg+sKDIfK+lq6crjYAjTo4c09eDck=",
+        orderWay: "2",
+        payType: 2,
+        price: 500,
+        prodId: 6001727,
+        qyPayType: "10",
+        renewId: "",
+        salesId: 102160,
+        salesType: 0,
+        status: 1,
+        td: "",
+        updateTime: "2020-05-29 12:01:37"
+    }],
+    msg: "success",
+    resultCode: 0
+    })
+
+mock('api/sales/hotSales','post',{
+    data:[{
+        countdate: "2020-09-01",
+        icon: "102175&6000851.png",
+        id: 102041,
+        mid: 16,
+        name: "饿了么会员",
+        originprice: null,
+        paytype: 2,
+        price: 1000,
+        proid: 6000883,
+        remark: null,
+        saleid: 102207,
+        tc: 1,
+        tcremark: "月卡"
+    }],
+    msg:"success",
+    resultCode: 0
+})

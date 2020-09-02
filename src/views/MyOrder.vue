@@ -400,7 +400,10 @@
                     })
                 }
             }
-            this.scroll();
+            
+            //滚动事件触发
+            window.addEventListener('scroll', this.scrollHandler); 
+
             if (this.sysInfo.channel == 'st' || this.sysInfo.channel == 'wx'){
                 customAnalysis(STATISTICS.activityId, STATISTICS[this.sysInfo.channel][2])
             }
@@ -433,6 +436,7 @@
                 clearInterval(interval);
             })
             messageBus.$off(['msg_loginCheck', 'msg_loginFail']);
+            window.removeEventListener('scroll', this.scrollHandler); 
         },
         methods: {
             getOrderList(name){
@@ -592,8 +596,7 @@
                     return order.orderId === orderId
                 })
             },
-            scroll(){
-                let that = this;
+            scrollHandler(){
                 //获取滚动条当前的位置
                 function getScrollTop() {
                     var scrollTop = 0;
@@ -626,13 +629,9 @@
                     scrollHeight = (bodyScrollHeight - documentScrollHeight > 0) ? bodyScrollHeight : documentScrollHeight;
                     return scrollHeight;
                 }
-
-                //滚动事件触发
-                window.onscroll = function() {
-                    //加1的原因是移动端有1像素的偏差（这是在设置了容器不显示横向滚动条的情况下overflow-x: hidden,否则可能不止1像素、可能是4像素）
-                    if(getScrollHeight() - 10 < getScrollTop() + getClientHeight() +1 && getScrollTop() + getClientHeight() +1 < getScrollHeight() + 10) {
-                        that.loadMore();
-                    }
+                //加1的原因是移动端有1像素的偏差（这是在设置了容器不显示横向滚动条的情况下overflow-x: hidden,否则可能不止1像素、可能是4像素）
+                if(getScrollHeight() - 10 < getScrollTop() + getClientHeight() +1 && getScrollTop() + getClientHeight() +1 < getScrollHeight() + 10) {
+                    this.loadMore();
                 }
             }
         }

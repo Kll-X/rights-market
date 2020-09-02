@@ -5,6 +5,7 @@
             <van-swipe-item :class="{'van-swipe-five': (itemDetail.fivego == 1 && swipeIndex == index), 'van-swipe-seckill': (itemDetail.aid !== '0')}"
                 v-for="(item, index) in swipeList" :key="index">
                 <div class="swipe-item">
+                    <div v-show="itemDetail.price2 && item.mid == itemDetail.mid && !itemDetail.fivego && itemDetail.aid == '0'" class="swipe-item-flag"></div>
                     <img class="swipe-item-icon" :src=" Common.getImgUrl(item.icon)" alt="">
                     <div class="swipe-item-font-wrap">
                         <div class="swipe-item-font-con">
@@ -94,6 +95,14 @@
                         padding: .35rem 0 .35rem .80rem;
                         font-size: 0;
                         text-align: left;
+                        .swipe-item-flag{
+                            position: absolute;
+                            top: 0;
+                            right: .09rem;
+                            width: 1.18rem;
+                            height: .36rem;
+                            background: url('../../assets/imgs/goodsdetail/vipFlag.png') no-repeat center/100% 100%;
+                        }
                         .swipe-item-icon{
                             display: inline-block;
                             vertical-align: top;

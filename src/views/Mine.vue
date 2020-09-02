@@ -23,7 +23,7 @@
         <span v-if="!userInfo.vipInfo&&!userInfo.newStarVipInfo" class="card-right" @click="placeVipOrder()">
           <img class="order-btn" src="@imgs/mine/new/btn_opennow.png" alt="" srcset="">
         </span>
-        <span v-if="!userInfo.vipInfo&&userInfo.newStarVipInfo" class="vip-card-right-upgrade">连续包月中</span>
+        <span v-if="!userInfo.vipInfo&&userInfo.newStarVipInfo" class="vip-card-right-upgrade">会员生效中</span>
         <!-- <span v-if="!userInfo.vipInfo&&userInfo.newStarVipInfo&&+userInfo.newStarVipInfo.cancelFlag" class="vip-card-right" >有效期至 {{userInfo.newStarVipInfo.expireTime | timeFormat}}</span> -->
         <span v-if="!userInfo.vipInfo&&userInfo.newStarVipInfo" class="card-right-upgrade" @click="placeVipOrder()">
           <img class="order-btn" src="@imgs/mine/btn_upgrade.png" alt="" srcset="">
@@ -143,7 +143,6 @@ export default {
   created() {
     //曝光统计：
     this.blocklogHandler('用户中心个人信息', '0025', '')
-    this.blocklogHandler('专属权益入口', '0026', '')
     this.blocklogHandler('我的订单', '0027', '')
     this.blocklogHandler('常见问题入口', '0028', '')
     this.blocklogHandler('退出', '0029', '')

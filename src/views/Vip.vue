@@ -12,7 +12,7 @@
                                 <div class="star-top-text2">新星会员用户</div>
                             </div>
                         </div>  
-                        <div class="star-middle">连续包月中</div>    
+                        <div class="star-middle">会员生效中</div>    
                         <div class="star-btn" @click="placeVipOrder"><img src="@imgs/vip/update_subscribe_now.png"></div>          
                     </div>
                 </swiper-slide>
@@ -31,7 +31,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-if="+userInfo.vipInfo&&+userInfo.vipInfo.cancelFlag" class="avatar-bottom">有效期至{{userInfo.vipInfo.expireTime | timeFormat}}</div>
+                            <div v-if="userInfo.vipInfo&&+userInfo.vipInfo.cancelFlag" class="avatar-bottom">有效期至 {{userInfo.vipInfo.expireTime | timeFormat}}</div>
                             <div v-else class="avatar-bottom">连续包月中</div>
                         </div>
                         <div class="part-notvip" v-else>
@@ -381,11 +381,14 @@
                         }
                     }
                     .avatar-bottom{
+                        // text-align: left;
+                        // color: white;
+                        // padding-left: .4rem;
+                        // font-size: .36rem;
+                        // line-height: .36rem;
                         text-align: left;
-                        color: white;
+                        color: #fff;
                         padding-left: .4rem;
-                        font-size: .36rem;
-                        line-height: .36rem;
                     }
                 }
                 .part-notvip{

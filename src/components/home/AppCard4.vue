@@ -45,7 +45,7 @@
         .logo{
             width:1.3rem;
             height:1.3rem;
-            margin-bottom:0.2rem;
+            margin-bottom:0.05rem;
             display: block;
             position: relative;
             top:0;
@@ -65,13 +65,16 @@
             box-sizing: border-box;
             width: 100%;
             font-size: 0.26rem;
+            height:0.55rem;
             color:#333;
             padding: 0 .15rem;
-            margin-bottom: 0.15rem;
             text-align: left;
             overflow: hidden;  /*超出部分隐藏*/
             white-space: nowrap;  /*禁止换行*/
             text-overflow: ellipsis; /*省略号*/
+            display:flex;
+            justify-content:center;
+            align-items:center
         }
         .pay{
             box-sizing: border-box;
